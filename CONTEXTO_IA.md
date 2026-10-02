@@ -448,7 +448,8 @@ Formación), `CargosAgente` (quién cuenta como agente en «Total agentes»).
       carga y el `.csproj` copia las consultas siempre (`Always`).
     - En producción (la versión anterior, que aún lee de su carpeta de binarios) se sustituyó
       solo `publicacion\app\Consultas\Auditorias.sql` por el nuevo y se pulsó «Actualizar»; no
-      se reinició nada. El fichero anterior está en el scratchpad de la sesión del 02-10-2026.
+      se reinició nada. Para volver a la anterior (`- 2`), está en git:
+      `git show 2caa2bd:"CDM Auditorias Calidad/Consultas/Auditorias.sql"`.
   - WEB (WhatsApp, Jazztel, Orange): las tablas de origen empiezan el 01/08/2026, no hay julio.
     **El usuario va a pedir que las tablas WEB traigan 4 meses y avisará**: no investigar más
     hasta entonces. La consulta no filtra fechas en WEB, así que en cuanto el origen tenga
