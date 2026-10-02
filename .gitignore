@@ -1,0 +1,18 @@
+**/.pbi/localSettings.json
+**/.pbi/cache.abf
+# Visual Studio y compilación
+.vs/
+**/bin/
+**/obj/
+
+# Credenciales (plantilla en env.ejemplo)
+**/.env
+
+# Publicaciones
+publicacion/
+
+# Capturas con datos reales (nombres de auditores y agentes)
+capturas/
+
+# Ficheros de usuario de Visual Studio
+*.user

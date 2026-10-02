@@ -1,0 +1,44 @@
+@model TableroModelo
+@* «Top 10 auditores»: tabla que se ordena y colorea (table.ranking[data-mapa], guía de estilos 5).
+   th[data-sentido]: 1 = más es mejor, -1 = más es peor, 0 = sin color. td[data-valor] lleva el
+   valor crudo. Los auditores con menos de 20 auditorías van al final y en gris. Pulsar un
+   auditor lo añade al filtro. *@
+@{
+    var url = "/" + Model.Pagina.Clave;
+    const int Minimo = 20;
+}
+@if (Model.TopAuditores.Count == 0)
+{
+    <p class="vacio">Sin auditorías con estos filtros</p>
+}
+else
+{
+    <div class="tabla-contenedor">
+        <table class="ranking" data-mapa>
+            <colgroup><col style="width:36%" /><col style="width:28%" /><col style="width:17%" /><col style="width:19%" /></colgroup>
+            <thead>
+                <tr>
+                    <th scope="col" data-sentido="0"><button type="button" class="ordenar">Auditor</button></th>
+                    <th scope="col" data-sentido="0"><button type="button" class="ordenar">Cargo</button></th>
+                    <th scope="col" data-sentido="0" class="num" aria-sort="descending"><button type="button" class="ordenar">Auditorías</button></th>
+                    <th scope="col" data-sentido="1" class="num"><button type="button" class="ordenar">Nota promedio</button></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var a in Model.TopAuditores.OrderBy(a => a.Cantidad < Minimo ? 1 : 0).ThenByDescending(a => a.Cantidad))
+                {
+                    var clases = string.Join(" ", new[] { a.Marcado ? "marcada" : null, a.Cantidad < Minimo ? "pocas" : null }.Where(c => c is not null));
+                    <tr class="@(clases.Length > 0 ? clases : null)">
+                        <td data-valor="@a.Auditor">
+                            <a href="@(url + Model.Filtros.Alternar("auditor", a.Auditor).Consulta())" data-parcial
+                               title="@a.Auditor · @a.Cargo · @(a.Marcado ? "Pulsa para quitar el filtro" : "Pulsa para filtrar por este auditor")">@a.Auditor</a>
+                        </td>
+                        <td data-valor="@a.Cargo">@a.Cargo</td>
+                        <td class="num" data-valor="@a.Cantidad">@Formato.Entero(a.Cantidad)</td>
+                        <td class="num" data-valor="@Formato.Crudo(a.Nota)">@Formato.Porcentaje(a.Nota)</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

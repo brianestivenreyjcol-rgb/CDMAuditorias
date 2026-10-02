@@ -1,0 +1,65 @@
+@model MenuModelo
+@* Portada: la página «Menú» del Power BI. Estilo ejecutivo de la guía (marino y grises,
+   tarjetas grandes en fila); el color de marca solo queda en el logotipo. *@
+@{
+    ViewData["Title"] = "Menú";
+    ViewData["Marca"] = "portada";
+}
+<partial name="_Cabecera" model="new CabeceraModelo()" />
+
+<main class="portada">
+    <section class="portada-encabezado">
+        <h1 class="portada-titulo">Auditorías de calidad</h1>
+        <p class="portada-lema">Control, análisis y seguimiento integral de auditorías de calidad y formación</p>
+    </section>
+
+    @* Solo la entrada general: «Formación & Calidad» se abre desde las pestañas del informe
+       (lo pidió el usuario el 02-10-2026). *@
+    <nav class="portada-tarjetas" aria-label="Informes">
+        <a class="portada-tarjeta" href="/general">
+            <span class="portada-tarjeta-icono">@Iconos.Svg("columnas")</span>
+            <strong>General</strong>
+            <span class="portada-tarjeta-texto">Vista general de auditorías y seguimiento operativo. Dentro, en las pestañas, está también Formación &amp; Calidad.</span>
+            <span class="portada-tarjeta-ir">Entrar @Iconos.Svg("derecha")</span>
+        </a>
+    </nav>
+
+    <ul class="portada-ventajas">
+        <li>
+            @Iconos.Svg("escudo")
+            <span><strong>Información confiable</strong><small>Datos consolidados y validados</small></span>
+        </li>
+        <li>
+            @Iconos.Svg("diana")
+            <span><strong>Análisis inteligente</strong><small>Indicadores clave para la toma de decisiones</small></span>
+        </li>
+        <li>
+            @Iconos.Svg("personas")
+            <span><strong>Mejora continua</strong><small>Calidad y formación al servicio de la excelencia</small></span>
+        </li>
+    </ul>
+
+    <p class="portada-estado">
+        @if (Model.Datos is { } d)
+        {
+            @Iconos.Svg("reloj")
+            <span>
+                Datos actualizados el @Formato.FechaHora(d.CargadoEn) · @Formato.Entero(d.Filas.Count) auditorías
+                @if (d.PrimeraFecha is { } p && d.UltimaFecha is { } u)
+                {
+                    <text>del @Formato.Fecha(p) al @Formato.Fecha(u)</text>
+                }
+            </span>
+        }
+        else if (Model.Error is not null)
+        {
+            @Iconos.Svg("alerta")
+            <span>No se pudieron cargar los datos: @Model.Error</span>
+        }
+        else
+        {
+            @Iconos.Svg("reloj")
+            <span>Cargando los datos de auditorías…</span>
+        }
+    </p>
+</main>

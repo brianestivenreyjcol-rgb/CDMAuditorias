@@ -1,0 +1,4 @@
+relationship 4e67fef8-fc94-05df-4c91-d9ef647bd08a
+	fromColumn: Auditorias.Fecha
+	toColumn: Calendario.Fecha
+

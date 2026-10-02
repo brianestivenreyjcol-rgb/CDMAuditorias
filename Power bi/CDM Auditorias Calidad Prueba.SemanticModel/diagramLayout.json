@@ -1,0 +1,63 @@
+{
+  "version": "1.1.0",
+  "diagrams": [
+    {
+      "ordinal": 0,
+      "scrollPosition": {
+        "x": 0,
+        "y": 0
+      },
+      "nodes": [
+        {
+          "location": {
+            "x": 0,
+            "y": 0
+          },
+          "nodeIndex": "Auditorias",
+          "nodeLineageTag": "7be14eea-7259-4537-90fd-7847def48aa5",
+          "size": {
+            "height": 104,
+            "width": 234
+          },
+          "zIndex": 1,
+          "expandedHeight": 300
+        },
+        {
+          "location": {
+            "x": 254,
+            "y": 407
+          },
+          "nodeIndex": "Medidas",
+          "nodeLineageTag": "f14ae041-cfae-43f7-9a09-de7a4d75ef9b",
+          "size": {
+            "height": 104,
+            "width": 234
+          },
+          "zIndex": 2
+        },
+        {
+          "location": {
+            "x": 0,
+            "y": 405
+          },
+          "nodeIndex": "Calendario",
+          "nodeLineageTag": "550544d9-3a1f-4cec-835a-e4f8223a94ee",
+          "size": {
+            "height": 104,
+            "width": 234
+          },
+          "zIndex": 3,
+          "expandedHeight": 200
+        }
+      ],
+      "name": "Todas las tablas",
+      "zoomValue": 100,
+      "pinKeyFieldsToTop": false,
+      "showExtraHeaderInfo": false,
+      "hideKeyFieldsWhenCollapsed": false,
+      "tablesLocked": false
+    }
+  ],
+  "selectedDiagram": "Todas las tablas",
+  "defaultDiagram": "Todas las tablas"
+}

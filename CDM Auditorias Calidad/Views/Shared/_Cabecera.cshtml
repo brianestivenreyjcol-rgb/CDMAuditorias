@@ -1,0 +1,24 @@
+@model CabeceraModelo
+<header class="cabecera">
+    <a class="cabecera-logo" href="/" title="Volver al menú">
+        @Iconos.Logotipo()
+        <span class="cabecera-marca">CDM Auditorías</span>
+    </a>
+    <div class="cabecera-titulo">
+        @if (Model.Titulo is not null)
+        {
+            <h1>@Model.Titulo</h1>
+            @if (Model.Subtitulo is not null)
+            {
+                <p>@Model.Subtitulo</p>
+            }
+        }
+    </div>
+    <div class="cabecera-acciones">
+        <button type="button" class="boton-tema" data-boton-tema aria-label="Cambiar el tema">
+            <span class="tema-icono tema-auto">@Iconos.Svg("tema-auto")</span>
+            <span class="tema-icono tema-claro">@Iconos.Svg("sol")</span>
+            <span class="tema-icono tema-oscuro">@Iconos.Svg("luna")</span>
+        </button>
+    </div>
+</header>

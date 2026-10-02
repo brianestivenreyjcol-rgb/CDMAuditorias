@@ -1,0 +1,3247 @@
+cultureInfo es-ES
+
+	linguisticMetadata =
+			{
+			  "Version": "4.1.0",
+			  "Language": "en-US",
+			  "Entities": {
+			    "calendario.me": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Calendario",
+			          "ConceptualProperty": "Mes"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "me": {
+			            "State": "Generated"
+			          }
+			        },
+			        {
+			          "Mes": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "auditoria": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Auditorias"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "auditoria": {
+			            "State": "Generated"
+			          }
+			        },
+			        {
+			          "auditorium": {
+			            "Type": "Noun",
+			            "State": "Generated",
+			            "Weight": 0.78
+			          }
+			        }
+			      ]
+			    },
+			    "auditoria.fecha": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Auditorias",
+			          "ConceptualProperty": "Fecha"
+			        }
+			      },
+			      "State": "Generated",
+			      "Visibility": {
+			        "Value": "Hidden"
+			      },
+			      "Terms": [
+			        {
+			          "fecha": {
+			            "State": "Generated"
+			          }
+			        },
+			        {
+			          "date": {
+			            "State": "Generated",
+			            "Weight": 0.7
+			          }
+			        }
+			      ],
+			      "SemanticType": "Time"
+			    },
+			    "auditoria.legajo": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Auditorias",
+			          "ConceptualProperty": "legajo"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "legajo": {
+			            "State": "Generated"
+			          }
+			        }
+			      ]
+			    },
+			    "auditoria.sector": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Auditorias",
+			          "ConceptualProperty": "Sector"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "sector": {
+			            "State": "Generated"
+			          }
+			        },
+			        {
+			          "subdivision": {
+			            "Type": "Noun",
+			            "State": "Suggested",
+			            "Source": {
+			              "Agent": "Thesaurus"
+			            },
+			            "Weight": 0.491
+			          }
+			        },
+			        {
+			          "division": {
+			            "Type": "Noun",
+			            "State": "Suggested",
+			            "Source": {
+			              "Agent": "Thesaurus"
+			            },
+			            "Weight": 0.491
+			          }
+			        },
+			        {
+			          "segment": {
+			            "Type": "Noun",
+			            "State": "Suggested",
+			            "Source": {
+			              "Agent": "Thesaurus"
+			            },
+			            "Weight": 0.476
+			          }
+			        },
+			        {
+			          "area": {
+			            "Type": "Noun",
+			            "State": "Suggested",
+			            "Source": {
+			              "Agent": "Thesaurus"
+			            },
+			            "Weight": 0.476
+			          }
+			        },
+			        {
+			          "part": {
+			            "Type": "Noun",
+			            "State": "Suggested",
+			            "Source": {
+			              "Agent": "Thesaurus"
+			            },
+			            "Weight": 0.476
+			          }
+			        },
+			        {
+			          "region": {
+			            "Type": "Noun",
+			            "State": "Suggested",
+			            "Source": {
+			              "Agent": "Thesaurus"
+			            },
+			            "Weight": 0.466
+			          }
+			        },
+			        {
+			          "zone": {
+			            "Type": "Noun",
+			            "State": "Suggested",
+			            "Source": {
+			              "Agent": "Thesaurus"
+			            },
+			            "Weight": 0.452
+			          }
+			        },
+			        {
+			          "quarter": {
+			            "Type": "Noun",
+			            "State": "Suggested",
+			            "Source": {
+			              "Agent": "Thesaurus"
+			            },
+			            "Weight": 0.452
+			          }
+			        },
+			        {
+			          "district": {
+			            "Type": "Noun",
+			            "State": "Suggested",
+			            "Source": {
+			              "Agent": "Thesaurus"
+			            },
+			            "Weight": 0.452
+			          }
+			        }
+			      ]
+			    },
+			    "auditoria.super": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Auditorias",
+			          "ConceptualProperty": "Super"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "super": {
+			            "State": "Generated"
+			          }
+			        },
+			        {
+			          "great": {
+			            "Type": "Noun",
+			            "State": "Suggested",
+			            "Source": {
+			              "Agent": "Thesaurus"
+			            },
+			            "Weight": 0.476
+			          }
+			        },
+			        {
+			          "brilliant": {
+			            "Type": "Noun",
+			            "State": "Suggested",
+			            "Source": {
+			              "Agent": "Thesaurus"
+			            },
+			            "Weight": 0.476
+			          }
+			        },
+			        {
+			          "ace": {
+			            "Type": "Noun",
+			            "State": "Suggested",
+			            "Source": {
+			              "Agent": "Thesaurus"
+			            },
+			            "Weight": 0.476
+			          }
+			        },
+			        {
+			          "cracking": {
+			            "Type": "Noun",
+			            "State": "Suggested",
+			            "Source": {
+			              "Agent": "Thesaurus"
+			            },
+			            "Weight": 0.476
+			          }
+			        },
+			        {
+			          "outstanding": {
+			            "Type": "Noun",
+			            "State": "Suggested",
+			            "Source": {
+			              "Agent": "Thesaurus"
+			            },
+			            "Weight": 0.476
+			          }
+			        },
+			        {
+			          "superior": {
+			            "Type": "Noun",
+			            "State": "Suggested",
+			            "Source": {
+			              "Agent": "Thesaurus"
+			            },
+			            "Weight": 0.452
+			          }
+			        },
+			        {
+			          "better": {
+			            "Type": "Noun",
+			            "State": "Suggested",
+			            "Source": {
+			              "Agent": "Thesaurus"
+			            },
+			            "Weight": 0.452
+			          }
+			        },
+			        {
+			          "high-quality": {
+			            "Type": "Noun",
+			            "State": "Suggested",
+			            "Source": {
+			              "Agent": "Thesaurus"
+			            },
+			            "Weight": 0.452
+			          }
+			        },
+			        {
+			          "high-class": {
+			            "Type": "Noun",
+			            "State": "Suggested",
+			            "Source": {
+			              "Agent": "Thesaurus"
+			            },
+			            "Weight": 0.452
+			          }
+			        },
+			        {
+			          "topnotch": {
+			            "Type": "Noun",
+			            "State": "Suggested",
+			            "Source": {
+			              "Agent": "Thesaurus"
+			            },
+			            "Weight": 0.452
+			          }
+			        }
+			      ]
+			    },
+			    "auditoria.team": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Auditorias",
+			          "ConceptualProperty": "Team"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "team": {
+			            "State": "Generated"
+			          }
+			        },
+			        {
+			          "lineup": {
+			            "Type": "Noun",
+			            "State": "Suggested",
+			            "Source": {
+			              "Agent": "Thesaurus"
+			            },
+			            "Weight": 0.491
+			          }
+			        },
+			        {
+			          "side": {
+			            "Type": "Noun",
+			            "State": "Suggested",
+			            "Source": {
+			              "Agent": "Thesaurus"
+			            },
+			            "Weight": 0.476
+			          }
+			        },
+			        {
+			          "squad": {
+			            "Type": "Noun",
+			            "State": "Suggested",
+			            "Source": {
+			              "Agent": "Thesaurus"
+			            },
+			            "Weight": 0.476
+			          }
+			        },
+			        {
+			          "crew": {
+			            "Type": "Noun",
+			            "State": "Suggested",
+			            "Source": {
+			              "Agent": "Thesaurus"
+			            },
+			            "Weight": 0.476
+			          }
+			        },
+			        {
+			          "club": {
+			            "Type": "Noun",
+			            "State": "Suggested",
+			            "Source": {
+			              "Agent": "Thesaurus"
+			            },
+			            "Weight": 0.476
+			          }
+			        },
+			        {
+			          "unit": {
+			            "Type": "Noun",
+			            "State": "Suggested",
+			            "Source": {
+			              "Agent": "Thesaurus"
+			            },
+			            "Weight": 0.466
+			          }
+			        },
+			        {
+			          "band": {
+			            "Type": "Noun",
+			            "State": "Suggested",
+			            "Source": {
+			              "Agent": "Thesaurus"
+			            },
+			            "Weight": 0.452
+			          }
+			        },
+			        {
+			          "panel": {
+			            "Type": "Noun",
+			            "State": "Suggested",
+			            "Source": {
+			              "Agent": "Thesaurus"
+			            },
+			            "Weight": 0.452
+			          }
+			        },
+			        {
+			          "set": {
+			            "Type": "Noun",
+			            "State": "Suggested",
+			            "Source": {
+			              "Agent": "Thesaurus"
+			            },
+			            "Weight": 0.452
+			          }
+			        },
+			        {
+			          "bunch": {
+			            "Type": "Noun",
+			            "State": "Suggested",
+			            "Source": {
+			              "Agent": "Thesaurus"
+			            },
+			            "Weight": 0.452
+			          }
+			        }
+			      ]
+			    },
+			    "auditoria.agente": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Auditorias",
+			          "ConceptualProperty": "Agente"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "agente": {
+			            "State": "Generated"
+			          }
+			        }
+			      ]
+			    },
+			    "auditoria.ID_llamada": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Auditorias",
+			          "ConceptualProperty": "ID_Llamada"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "ID llamada": {
+			            "State": "Generated"
+			          }
+			        },
+			        {
+			          "ID_Llamada": {
+			            "Type": "Noun",
+			            "State": "Generated",
+			            "Weight": 0.99
+			          }
+			        },
+			        {
+			          "identification llamada": {
+			            "Type": "Noun",
+			            "State": "Suggested",
+			            "Source": {
+			              "Agent": "Thesaurus"
+			            },
+			            "Weight": 0.6
+			          }
+			        },
+			        {
+			          "identity llamada": {
+			            "Type": "Noun",
+			            "State": "Suggested",
+			            "Source": {
+			              "Agent": "Thesaurus"
+			            },
+			            "Weight": 0.6
+			          }
+			        },
+			        {
+			          "identifier llamada": {
+			            "Type": "Noun",
+			            "State": "Suggested",
+			            "Source": {
+			              "Agent": "Thesaurus"
+			            },
+			            "Weight": 0.6
+			          }
+			        },
+			        {
+			          "credential llamada": {
+			            "Type": "Noun",
+			            "State": "Suggested",
+			            "Source": {
+			              "Agent": "Thesaurus"
+			            },
+			            "Weight": 0.582
+			          }
+			        }
+			      ]
+			    },
+			    "auditoria.correo_auditor": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Auditorias",
+			          "ConceptualProperty": "CorreoAuditor"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "correo auditor": {
+			            "State": "Generated"
+			          }
+			        },
+			        {
+			          "CorreoAuditor": {
+			            "Type": "Noun",
+			            "State": "Generated",
+			            "Weight": 0.99
+			          }
+			        },
+			        {
+			          "correo examiner": {
+			            "Type": "Noun",
+			            "State": "Suggested",
+			            "Source": {
+			              "Agent": "Thesaurus"
+			            },
+			            "Weight": 0.5
+			          }
+			        },
+			        {
+			          "correo accountant": {
+			            "Type": "Noun",
+			            "State": "Suggested",
+			            "Source": {
+			              "Agent": "Thesaurus"
+			            },
+			            "Weight": 0.5
+			          }
+			        },
+			        {
+			          "correo assessor": {
+			            "Type": "Noun",
+			            "State": "Suggested",
+			            "Source": {
+			              "Agent": "Thesaurus"
+			            },
+			            "Weight": 0.5
+			          }
+			        },
+			        {
+			          "correo inspector": {
+			            "Type": "Noun",
+			            "State": "Suggested",
+			            "Source": {
+			              "Agent": "Thesaurus"
+			            },
+			            "Weight": 0.5
+			          }
+			        },
+			        {
+			          "correo checker": {
+			            "Type": "Noun",
+			            "State": "Suggested",
+			            "Source": {
+			              "Agent": "Thesaurus"
+			            },
+			            "Weight": 0.485
+			          }
+			        },
+			        {
+			          "correo listener": {
+			            "Type": "Noun",
+			            "State": "Suggested",
+			            "Source": {
+			              "Agent": "Thesaurus"
+			            },
+			            "Weight": 0.475
+			          }
+			        },
+			        {
+			          "correo hearer": {
+			            "Type": "Noun",
+			            "State": "Suggested",
+			            "Source": {
+			              "Agent": "Thesaurus"
+			            },
+			            "Weight": 0.475
+			          }
+			        },
+			        {
+			          "correo eavesdropper": {
+			            "Type": "Noun",
+			            "State": "Suggested",
+			            "Source": {
+			              "Agent": "Thesaurus"
+			            },
+			            "Weight": 0.475
+			          }
+			        }
+			      ]
+			    },
+			    "auditoria.nombre_auditor": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Auditorias",
+			          "ConceptualProperty": "Nombre_Auditor"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "nombre auditor": {
+			            "State": "Generated"
+			          }
+			        },
+			        {
+			          "Nombre_Auditor": {
+			            "Type": "Noun",
+			            "State": "Generated",
+			            "Weight": 0.99
+			          }
+			        },
+			        {
+			          "nombre examiner": {
+			            "Type": "Noun",
+			            "State": "Suggested",
+			            "Source": {
+			              "Agent": "Thesaurus"
+			            },
+			            "Weight": 0.5
+			          }
+			        },
+			        {
+			          "nombre accountant": {
+			            "Type": "Noun",
+			            "State": "Suggested",
+			            "Source": {
+			              "Agent": "Thesaurus"
+			            },
+			            "Weight": 0.5
+			          }
+			        },
+			        {
+			          "nombre assessor": {
+			            "Type": "Noun",
+			            "State": "Suggested",
+			            "Source": {
+			              "Agent": "Thesaurus"
+			            },
+			            "Weight": 0.5
+			          }
+			        },
+			        {
+			          "nombre inspector": {
+			            "Type": "Noun",
+			            "State": "Suggested",
+			            "Source": {
+			              "Agent": "Thesaurus"
+			            },
+			            "Weight": 0.5
+			          }
+			        },
+			        {
+			          "nombre checker": {
+			            "Type": "Noun",
+			            "State": "Suggested",
+			            "Source": {
+			              "Agent": "Thesaurus"
+			            },
+			            "Weight": 0.485
+			          }
+			        },
+			        {
+			          "nombre listener": {
+			            "Type": "Noun",
+			            "State": "Suggested",
+			            "Source": {
+			              "Agent": "Thesaurus"
+			            },
+			            "Weight": 0.475
+			          }
+			        },
+			        {
+			          "nombre hearer": {
+			            "Type": "Noun",
+			            "State": "Suggested",
+			            "Source": {
+			              "Agent": "Thesaurus"
+			            },
+			            "Weight": 0.475
+			          }
+			        },
+			        {
+			          "nombre eavesdropper": {
+			            "Type": "Noun",
+			            "State": "Suggested",
+			            "Source": {
+			              "Agent": "Thesaurus"
+			            },
+			            "Weight": 0.475
+			          }
+			        },
+			        {
+			          "Auditor": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "auditoria.cargo_auditor": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Auditorias",
+			          "ConceptualProperty": "Cargo_Auditor"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "cargo auditor": {
+			            "State": "Generated"
+			          }
+			        },
+			        {
+			          "Cargo_Auditor": {
+			            "Type": "Noun",
+			            "State": "Generated",
+			            "Weight": 0.99
+			          }
+			        },
+			        {
+			          "cargo examiner": {
+			            "Type": "Noun",
+			            "State": "Suggested",
+			            "Source": {
+			              "Agent": "Thesaurus"
+			            },
+			            "Weight": 0.5
+			          }
+			        },
+			        {
+			          "cargo accountant": {
+			            "Type": "Noun",
+			            "State": "Suggested",
+			            "Source": {
+			              "Agent": "Thesaurus"
+			            },
+			            "Weight": 0.5
+			          }
+			        },
+			        {
+			          "cargo assessor": {
+			            "Type": "Noun",
+			            "State": "Suggested",
+			            "Source": {
+			              "Agent": "Thesaurus"
+			            },
+			            "Weight": 0.5
+			          }
+			        },
+			        {
+			          "cargo inspector": {
+			            "Type": "Noun",
+			            "State": "Suggested",
+			            "Source": {
+			              "Agent": "Thesaurus"
+			            },
+			            "Weight": 0.5
+			          }
+			        },
+			        {
+			          "cargo checker": {
+			            "Type": "Noun",
+			            "State": "Suggested",
+			            "Source": {
+			              "Agent": "Thesaurus"
+			            },
+			            "Weight": 0.485
+			          }
+			        },
+			        {
+			          "cargo listener": {
+			            "Type": "Noun",
+			            "State": "Suggested",
+			            "Source": {
+			              "Agent": "Thesaurus"
+			            },
+			            "Weight": 0.475
+			          }
+			        },
+			        {
+			          "cargo hearer": {
+			            "Type": "Noun",
+			            "State": "Suggested",
+			            "Source": {
+			              "Agent": "Thesaurus"
+			            },
+			            "Weight": 0.475
+			          }
+			        },
+			        {
+			          "cargo eavesdropper": {
+			            "Type": "Noun",
+			            "State": "Suggested",
+			            "Source": {
+			              "Agent": "Thesaurus"
+			            },
+			            "Weight": 0.475
+			          }
+			        }
+			      ]
+			    },
+			    "auditoria.respuesta": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Auditorias",
+			          "ConceptualProperty": "Respuesta"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "respuesta": {
+			            "State": "Generated"
+			          }
+			        },
+			        {
+			          "Nota Calidad": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "auditoria.base": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Auditorias",
+			          "ConceptualProperty": "Base"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "base": {
+			            "State": "Generated"
+			          }
+			        },
+			        {
+			          "headquarters": {
+			            "Type": "Noun",
+			            "State": "Suggested",
+			            "Source": {
+			              "Agent": "Thesaurus"
+			            },
+			            "Weight": 0.452
+			          }
+			        },
+			        {
+			          "center": {
+			            "Type": "Noun",
+			            "State": "Suggested",
+			            "Source": {
+			              "Agent": "Thesaurus"
+			            },
+			            "Weight": 0.452
+			          }
+			        },
+			        {
+			          "seat": {
+			            "Type": "Noun",
+			            "State": "Suggested",
+			            "Source": {
+			              "Agent": "Thesaurus"
+			            },
+			            "Weight": 0.452
+			          }
+			        },
+			        {
+			          "station": {
+			            "Type": "Noun",
+			            "State": "Suggested",
+			            "Source": {
+			              "Agent": "Thesaurus"
+			            },
+			            "Weight": 0.452
+			          }
+			        }
+			      ]
+			    },
+			    "medida": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Medidas"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "medida": {
+			            "State": "Generated"
+			          }
+			        }
+			      ]
+			    },
+			    "medida.auditorías_del_día": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Medidas",
+			          "ConceptualProperty": "Auditorías del Día"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "auditorías del día": {
+			            "State": "Generated"
+			          }
+			        }
+			      ]
+			    },
+			    "medida.auditorías_ayer": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Medidas",
+			          "ConceptualProperty": "Auditorías Ayer"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "auditorías ayer": {
+			            "State": "Generated"
+			          }
+			        }
+			      ]
+			    },
+			    "medida.auditorías_de_la_semana": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Medidas",
+			          "ConceptualProperty": "Auditorías de la Semana"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "auditorías de la semana": {
+			            "State": "Generated"
+			          }
+			        }
+			      ]
+			    },
+			    "medida.auditorías_semana_anterior": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Medidas",
+			          "ConceptualProperty": "Auditorías Semana Anterior"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "auditorías semana anterior": {
+			            "State": "Generated"
+			          }
+			        }
+			      ]
+			    },
+			    "medida.auditorías_del_mes": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Medidas",
+			          "ConceptualProperty": "Auditorías del Mes"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "auditorías del mes": {
+			            "State": "Generated"
+			          }
+			        }
+			      ]
+			    },
+			    "medida.auditorías_mes_anterior": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Medidas",
+			          "ConceptualProperty": "Auditorías Mes Anterior"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "auditorías mes anterior": {
+			            "State": "Generated"
+			          }
+			        }
+			      ]
+			    },
+			    "medida.var__semana_vs_anterior": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Medidas",
+			          "ConceptualProperty": "Var % Semana vs Anterior"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "var % semana vs anterior": {
+			            "State": "Generated"
+			          }
+			        },
+			        {
+			          "var percentage semana vs anterior": {
+			            "Type": "Noun",
+			            "State": "Suggested",
+			            "Source": {
+			              "Agent": "Thesaurus"
+			            },
+			            "Weight": 0.624
+			          }
+			        },
+			        {
+			          "var pct semana vs anterior": {
+			            "Type": "Noun",
+			            "State": "Suggested",
+			            "Source": {
+			              "Agent": "Thesaurus"
+			            },
+			            "Weight": 0.605
+			          }
+			        }
+			      ]
+			    },
+			    "medida.var__mes_vs_anterior": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Medidas",
+			          "ConceptualProperty": "Var % Mes vs Anterior"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "var % mes vs anterior": {
+			            "State": "Generated"
+			          }
+			        },
+			        {
+			          "var percentage me vs anterior": {
+			            "Type": "Noun",
+			            "State": "Suggested",
+			            "Source": {
+			              "Agent": "Thesaurus"
+			            },
+			            "Weight": 0.624
+			          }
+			        },
+			        {
+			          "var pct me vs anterior": {
+			            "Type": "Noun",
+			            "State": "Suggested",
+			            "Source": {
+			              "Agent": "Thesaurus"
+			            },
+			            "Weight": 0.605
+			          }
+			        }
+			      ]
+			    },
+			    "medida.nota_promedio_de_calidad": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Medidas",
+			          "ConceptualProperty": "Nota Promedio de Calidad"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "nota promedio de calidad": {
+			            "State": "Generated"
+			          }
+			        },
+			        {
+			          "Nota Promedio": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "medida.meta_de_calidad": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Medidas",
+			          "ConceptualProperty": "Meta de Calidad"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "meta de calidad": {
+			            "State": "Generated"
+			          }
+			        }
+			      ]
+			    },
+			    "medida.agentes_auditados": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Medidas",
+			          "ConceptualProperty": "Agentes Auditados"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "agentes auditados": {
+			            "State": "Generated"
+			          }
+			        }
+			      ]
+			    },
+			    "medida.promedio_auditorías_por_agente": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Medidas",
+			          "ConceptualProperty": "Promedio Auditorías por Agente"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "promedio auditorías por agente": {
+			            "State": "Generated"
+			          }
+			        }
+			      ]
+			    },
+			    "medida.var__agentes_vs_periodo_anterior": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Medidas",
+			          "ConceptualProperty": "Var % Agentes vs Periodo Anterior"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "var % agentes vs periodo anterior": {
+			            "State": "Generated"
+			          }
+			        }
+			      ]
+			    },
+			    "medida.tarjetas_KPI": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Medidas",
+			          "ConceptualProperty": "Tarjetas KPI"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "tarjetas KPI": {
+			            "State": "Generated"
+			          }
+			        }
+			      ]
+			    },
+			    "medida.auditorías_periodo_anterior": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Medidas",
+			          "ConceptualProperty": "Auditorías Periodo Anterior"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "auditorías periodo anterior": {
+			            "State": "Generated"
+			          }
+			        }
+			      ]
+			    },
+			    "medida.var__vs_periodo_anterior": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Medidas",
+			          "ConceptualProperty": "Var % vs Periodo Anterior"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "var % vs periodo anterior": {
+			            "State": "Generated"
+			          }
+			        },
+			        {
+			          "var percentage vs periodo anterior": {
+			            "Type": "Noun",
+			            "State": "Suggested",
+			            "Source": {
+			              "Agent": "Thesaurus"
+			            },
+			            "Weight": 0.624
+			          }
+			        },
+			        {
+			          "var pct vs periodo anterior": {
+			            "Type": "Noun",
+			            "State": "Suggested",
+			            "Source": {
+			              "Agent": "Thesaurus"
+			            },
+			            "Weight": 0.605
+			          }
+			        }
+			      ]
+			    },
+			    "medida.var_pp_vs_periodo_anterior": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Medidas",
+			          "ConceptualProperty": "Var pp vs Periodo Anterior"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "var pp vs periodo anterior": {
+			            "State": "Generated"
+			          }
+			        }
+			      ]
+			    },
+			    "medida.nota_promedio_periodo_anterior": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Medidas",
+			          "ConceptualProperty": "Nota Promedio Periodo Anterior"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "nota promedio periodo anterior": {
+			            "State": "Generated"
+			          }
+			        }
+			      ]
+			    },
+			    "medida.total_auditorías": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Medidas",
+			          "ConceptualProperty": "Total Auditorías"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "total auditorías": {
+			            "State": "Generated"
+			          }
+			        },
+			        {
+			          "aggregate auditoría": {
+			            "Type": "Noun",
+			            "State": "Suggested",
+			            "Source": {
+			              "Agent": "Thesaurus"
+			            },
+			            "Weight": 0.582
+			          }
+			        },
+			        {
+			          "overall auditoría": {
+			            "Type": "Noun",
+			            "State": "Suggested",
+			            "Source": {
+			              "Agent": "Thesaurus"
+			            },
+			            "Weight": 0.582
+			          }
+			        },
+			        {
+			          "Cantidad Auditorías": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "calendario": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Calendario"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "calendario": {
+			            "State": "Generated"
+			          }
+			        }
+			      ]
+			    },
+			    "calendario.fecha": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Calendario",
+			          "ConceptualProperty": "Fecha"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "fecha": {
+			            "State": "Generated"
+			          }
+			        },
+			        {
+			          "date": {
+			            "State": "Generated",
+			            "Weight": 0.7
+			          }
+			        }
+			      ],
+			      "SemanticType": "Time"
+			    },
+			    "calendario.año": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Calendario",
+			          "ConceptualProperty": "Año"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "año": {
+			            "State": "Generated"
+			          }
+			        }
+			      ]
+			    },
+			    "calendario.num_me": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Calendario",
+			          "ConceptualProperty": "NumMes"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "num me": {
+			            "State": "Generated"
+			          }
+			        },
+			        {
+			          "NumMes": {
+			            "Type": "Noun",
+			            "State": "Generated",
+			            "Weight": 0.99
+			          }
+			        },
+			        {
+			          "number me": {
+			            "Type": "Noun",
+			            "State": "Suggested",
+			            "Source": {
+			              "Agent": "Thesaurus"
+			            },
+			            "Weight": 0.727
+			          }
+			        }
+			      ]
+			    },
+			    "calendario.mes_año": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Calendario",
+			          "ConceptualProperty": "MesAño"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "mes año": {
+			            "State": "Generated"
+			          }
+			        },
+			        {
+			          "me año": {
+			            "Type": "Noun",
+			            "State": "Generated",
+			            "Weight": 0.78
+			          }
+			        },
+			        {
+			          "MesAño": {
+			            "Type": "Noun",
+			            "State": "Generated",
+			            "Weight": 0.99
+			          }
+			        }
+			      ]
+			    },
+			    "calendario.día": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Calendario",
+			          "ConceptualProperty": "Día"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "día": {
+			            "State": "Generated"
+			          }
+			        }
+			      ]
+			    },
+			    "calendario.dia_semana": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Calendario",
+			          "ConceptualProperty": "DiaSemana"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "dia semana": {
+			            "State": "Generated"
+			          }
+			        },
+			        {
+			          "DiaSemana": {
+			            "Type": "Noun",
+			            "State": "Generated",
+			            "Weight": 0.99
+			          }
+			        }
+			      ]
+			    },
+			    "calendario.num_dia_semana": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Calendario",
+			          "ConceptualProperty": "NumDiaSemana"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "num dia semana": {
+			            "State": "Generated"
+			          }
+			        },
+			        {
+			          "NumDiaSemana": {
+			            "Type": "Noun",
+			            "State": "Generated",
+			            "Weight": 0.99
+			          }
+			        },
+			        {
+			          "number dia semana": {
+			            "Type": "Noun",
+			            "State": "Suggested",
+			            "Source": {
+			              "Agent": "Thesaurus"
+			            },
+			            "Weight": 0.591
+			          }
+			        }
+			      ]
+			    },
+			    "calendario.semana": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Calendario",
+			          "ConceptualProperty": "Semana"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "semana": {
+			            "State": "Generated"
+			          }
+			        }
+			      ]
+			    },
+			    "calendario.trimestre": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Calendario",
+			          "ConceptualProperty": "Trimestre"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "trimestre": {
+			            "State": "Generated"
+			          }
+			        }
+			      ]
+			    },
+			    "fecha_parametro": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Fecha_Parametro"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "fecha parametro": {
+			            "State": "Generated"
+			          }
+			        },
+			        {
+			          "Fecha_Parametro": {
+			            "Type": "Noun",
+			            "State": "Generated",
+			            "Weight": 0.99
+			          }
+			        }
+			      ]
+			    },
+			    "fecha_parametro.fecha_parametro": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Fecha_Parametro",
+			          "ConceptualProperty": "Fecha_Parametro"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "fecha parametro": {
+			            "State": "Generated"
+			          }
+			        },
+			        {
+			          "fecha parametro name": {
+			            "State": "Generated"
+			          }
+			        },
+			        {
+			          "Fecha_Parametro": {
+			            "Type": "Noun",
+			            "State": "Generated",
+			            "Weight": 0.99
+			          }
+			        }
+			      ],
+			      "NameType": "Name"
+			    },
+			    "fecha_parametro.Fecha_Parametro_campos": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Fecha_Parametro",
+			          "ConceptualProperty": "Fecha_Parametro Campos"
+			        }
+			      },
+			      "State": "Generated",
+			      "Visibility": {
+			        "Value": "Hidden"
+			      },
+			      "Terms": [
+			        {
+			          "Fecha_Parametro campos": {
+			            "State": "Generated"
+			          }
+			        }
+			      ]
+			    },
+			    "fecha_parametro.Fecha_Parametro_orden": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Fecha_Parametro",
+			          "ConceptualProperty": "Fecha_Parametro Orden"
+			        }
+			      },
+			      "State": "Generated",
+			      "Visibility": {
+			        "Value": "Hidden"
+			      },
+			      "Terms": [
+			        {
+			          "Fecha_Parametro orden": {
+			            "State": "Generated"
+			          }
+			        }
+			      ]
+			    },
+			    "medida.titulo_encabezado_general": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Medidas",
+			          "ConceptualProperty": "Titulo Encabezado General"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "titulo encabezado general": {
+			            "State": "Generated"
+			          }
+			        }
+			      ]
+			    },
+			    "medida.titulo_encabezado_formación": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Medidas",
+			          "ConceptualProperty": "Titulo Encabezado Formación"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "titulo encabezado formación": {
+			            "State": "Generated"
+			          }
+			        }
+			      ]
+			    },
+			    "medida.tarjeta_flip_agentes_nota": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Medidas",
+			          "ConceptualProperty": "Tarjeta Flip Agentes Nota"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "tarjeta flip agentes nota": {
+			            "State": "Generated"
+			          }
+			        }
+			      ]
+			    }
+			  },
+			  "Relationships": {
+			    "calendario_has_trimestre": {
+			      "Binding": {
+			        "ConceptualEntity": "Calendario"
+			      },
+			      "State": "Generated",
+			      "Roles": {
+			        "calendario": {
+			          "Target": {
+			            "Entity": "calendario"
+			          }
+			        },
+			        "calendario.trimestre": {
+			          "Target": {
+			            "Entity": "calendario.trimestre"
+			          }
+			        }
+			      },
+			      "Phrasings": [
+			        {
+			          "Attribute": {
+			            "Subject": {
+			              "Role": "calendario"
+			            },
+			            "Object": {
+			              "Role": "calendario.trimestre"
+			            }
+			          },
+			          "State": "Generated",
+			          "Weight": 0.99,
+			          "ID": "calendarios_have_trimestres"
+			        }
+			      ]
+			    },
+			    "calendario_has_semana": {
+			      "Binding": {
+			        "ConceptualEntity": "Calendario"
+			      },
+			      "State": "Generated",
+			      "Roles": {
+			        "calendario": {
+			          "Target": {
+			            "Entity": "calendario"
+			          }
+			        },
+			        "calendario.semana": {
+			          "Target": {
+			            "Entity": "calendario.semana"
+			          }
+			        }
+			      },
+			      "Phrasings": [
+			        {
+			          "Attribute": {
+			            "Subject": {
+			              "Role": "calendario"
+			            },
+			            "Object": {
+			              "Role": "calendario.semana"
+			            }
+			          },
+			          "State": "Generated",
+			          "Weight": 0.99,
+			          "ID": "calendarios_have_semanas"
+			        }
+			      ]
+			    },
+			    "calendario_has_num_dia_semana": {
+			      "Binding": {
+			        "ConceptualEntity": "Calendario"
+			      },
+			      "State": "Generated",
+			      "Roles": {
+			        "calendario": {
+			          "Target": {
+			            "Entity": "calendario"
+			          }
+			        },
+			        "calendario.num_dia_semana": {
+			          "Target": {
+			            "Entity": "calendario.num_dia_semana"
+			          }
+			        }
+			      },
+			      "Phrasings": [
+			        {
+			          "Attribute": {
+			            "Subject": {
+			              "Role": "calendario"
+			            },
+			            "Object": {
+			              "Role": "calendario.num_dia_semana"
+			            }
+			          },
+			          "State": "Generated",
+			          "Weight": 0.99,
+			          "ID": "calendarios_have_num_dia_semanas"
+			        }
+			      ]
+			    },
+			    "calendario_has_dia_semana": {
+			      "Binding": {
+			        "ConceptualEntity": "Calendario"
+			      },
+			      "State": "Generated",
+			      "Roles": {
+			        "calendario": {
+			          "Target": {
+			            "Entity": "calendario"
+			          }
+			        },
+			        "calendario.dia_semana": {
+			          "Target": {
+			            "Entity": "calendario.dia_semana"
+			          }
+			        }
+			      },
+			      "Phrasings": [
+			        {
+			          "Attribute": {
+			            "Subject": {
+			              "Role": "calendario"
+			            },
+			            "Object": {
+			              "Role": "calendario.dia_semana"
+			            }
+			          },
+			          "State": "Generated",
+			          "Weight": 0.99,
+			          "ID": "calendarios_have_dia_semanas"
+			        }
+			      ]
+			    },
+			    "calendario_has_día": {
+			      "Binding": {
+			        "ConceptualEntity": "Calendario"
+			      },
+			      "State": "Generated",
+			      "Roles": {
+			        "calendario": {
+			          "Target": {
+			            "Entity": "calendario"
+			          }
+			        },
+			        "calendario.día": {
+			          "Target": {
+			            "Entity": "calendario.día"
+			          }
+			        }
+			      },
+			      "Phrasings": [
+			        {
+			          "Attribute": {
+			            "Subject": {
+			              "Role": "calendario"
+			            },
+			            "Object": {
+			              "Role": "calendario.día"
+			            }
+			          },
+			          "State": "Generated",
+			          "Weight": 0.99,
+			          "ID": "calendarios_have_días"
+			        }
+			      ]
+			    },
+			    "calendario_has_mes_año": {
+			      "Binding": {
+			        "ConceptualEntity": "Calendario"
+			      },
+			      "State": "Generated",
+			      "Roles": {
+			        "calendario": {
+			          "Target": {
+			            "Entity": "calendario"
+			          }
+			        },
+			        "calendario.mes_año": {
+			          "Target": {
+			            "Entity": "calendario.mes_año"
+			          }
+			        }
+			      },
+			      "Phrasings": [
+			        {
+			          "Attribute": {
+			            "Subject": {
+			              "Role": "calendario"
+			            },
+			            "Object": {
+			              "Role": "calendario.mes_año"
+			            }
+			          },
+			          "State": "Generated",
+			          "Weight": 0.99,
+			          "ID": "calendarios_have_mes_años"
+			        }
+			      ]
+			    },
+			    "calendario_has_num_me": {
+			      "Binding": {
+			        "ConceptualEntity": "Calendario"
+			      },
+			      "State": "Generated",
+			      "Roles": {
+			        "calendario": {
+			          "Target": {
+			            "Entity": "calendario"
+			          }
+			        },
+			        "calendario.num_me": {
+			          "Target": {
+			            "Entity": "calendario.num_me"
+			          }
+			        }
+			      },
+			      "Phrasings": [
+			        {
+			          "Attribute": {
+			            "Subject": {
+			              "Role": "calendario"
+			            },
+			            "Object": {
+			              "Role": "calendario.num_me"
+			            }
+			          },
+			          "State": "Generated",
+			          "Weight": 0.99,
+			          "ID": "calendarios_have_num_me"
+			        }
+			      ]
+			    },
+			    "calendario_has_año": {
+			      "Binding": {
+			        "ConceptualEntity": "Calendario"
+			      },
+			      "State": "Generated",
+			      "Roles": {
+			        "calendario": {
+			          "Target": {
+			            "Entity": "calendario"
+			          }
+			        },
+			        "calendario.año": {
+			          "Target": {
+			            "Entity": "calendario.año"
+			          }
+			        }
+			      },
+			      "Phrasings": [
+			        {
+			          "Attribute": {
+			            "Subject": {
+			              "Role": "calendario"
+			            },
+			            "Object": {
+			              "Role": "calendario.año"
+			            }
+			          },
+			          "State": "Generated",
+			          "Weight": 0.99,
+			          "ID": "calendarios_have_años"
+			        }
+			      ]
+			    },
+			    "calendario_has_fecha": {
+			      "Binding": {
+			        "ConceptualEntity": "Calendario"
+			      },
+			      "State": "Generated",
+			      "Roles": {
+			        "calendario": {
+			          "Target": {
+			            "Entity": "calendario"
+			          }
+			        },
+			        "calendario.fecha": {
+			          "Target": {
+			            "Entity": "calendario.fecha"
+			          }
+			        }
+			      },
+			      "Phrasings": [
+			        {
+			          "Attribute": {
+			            "Subject": {
+			              "Role": "calendario"
+			            },
+			            "Object": {
+			              "Role": "calendario.fecha"
+			            }
+			          },
+			          "State": "Generated",
+			          "Weight": 0.99,
+			          "ID": "calendarios_have_fechas"
+			        }
+			      ]
+			    },
+			    "auditoria_has_medida_total_auditorías": {
+			      "Binding": {
+			        "ConceptualEntity": "Auditorias"
+			      },
+			      "State": "Generated",
+			      "Roles": {
+			        "auditoria": {
+			          "Target": {
+			            "Entity": "auditoria"
+			          }
+			        },
+			        "medida.total_auditorías": {
+			          "Target": {
+			            "Entity": "medida.total_auditorías"
+			          }
+			        }
+			      },
+			      "Phrasings": [
+			        {
+			          "Attribute": {
+			            "Subject": {
+			              "Role": "auditoria"
+			            },
+			            "Object": {
+			              "Role": "medida.total_auditorías"
+			            }
+			          },
+			          "State": "Generated",
+			          "Weight": 0.99,
+			          "ID": "auditoria_have_total_auditorías"
+			        }
+			      ]
+			    },
+			    "auditoria_has_medida_nota_promedio_periodo_anterior": {
+			      "Binding": {
+			        "ConceptualEntity": "Auditorias"
+			      },
+			      "State": "Generated",
+			      "Roles": {
+			        "auditoria": {
+			          "Target": {
+			            "Entity": "auditoria"
+			          }
+			        },
+			        "medida.nota_promedio_periodo_anterior": {
+			          "Target": {
+			            "Entity": "medida.nota_promedio_periodo_anterior"
+			          }
+			        }
+			      },
+			      "Phrasings": [
+			        {
+			          "Attribute": {
+			            "Subject": {
+			              "Role": "auditoria"
+			            },
+			            "Object": {
+			              "Role": "medida.nota_promedio_periodo_anterior"
+			            }
+			          },
+			          "State": "Generated",
+			          "Weight": 0.99,
+			          "ID": "auditoria_have_nota_promedio_periodo_anterior"
+			        }
+			      ]
+			    },
+			    "auditoria_has_medida_var_pp_vs_periodo_anterior": {
+			      "Binding": {
+			        "ConceptualEntity": "Auditorias"
+			      },
+			      "State": "Generated",
+			      "Roles": {
+			        "auditoria": {
+			          "Target": {
+			            "Entity": "auditoria"
+			          }
+			        },
+			        "medida.var_pp_vs_periodo_anterior": {
+			          "Target": {
+			            "Entity": "medida.var_pp_vs_periodo_anterior"
+			          }
+			        }
+			      },
+			      "Phrasings": [
+			        {
+			          "Attribute": {
+			            "Subject": {
+			              "Role": "auditoria"
+			            },
+			            "Object": {
+			              "Role": "medida.var_pp_vs_periodo_anterior"
+			            }
+			          },
+			          "State": "Generated",
+			          "Weight": 0.99,
+			          "ID": "auditoria_have_var_pp_vs_periodo_anterior"
+			        }
+			      ]
+			    },
+			    "auditoria_has_medida_var__vs_periodo_anterior": {
+			      "Binding": {
+			        "ConceptualEntity": "Auditorias"
+			      },
+			      "State": "Generated",
+			      "Roles": {
+			        "auditoria": {
+			          "Target": {
+			            "Entity": "auditoria"
+			          }
+			        },
+			        "medida.var__vs_periodo_anterior": {
+			          "Target": {
+			            "Entity": "medida.var__vs_periodo_anterior"
+			          }
+			        }
+			      },
+			      "Phrasings": [
+			        {
+			          "Attribute": {
+			            "Subject": {
+			              "Role": "auditoria"
+			            },
+			            "Object": {
+			              "Role": "medida.var__vs_periodo_anterior"
+			            }
+			          },
+			          "State": "Generated",
+			          "Weight": 0.99,
+			          "ID": "auditoria_have_var__vs_periodo_anterior"
+			        }
+			      ]
+			    },
+			    "auditoria_has_medida_auditorías_periodo_anterior": {
+			      "Binding": {
+			        "ConceptualEntity": "Auditorias"
+			      },
+			      "State": "Generated",
+			      "Roles": {
+			        "auditoria": {
+			          "Target": {
+			            "Entity": "auditoria"
+			          }
+			        },
+			        "medida.auditorías_periodo_anterior": {
+			          "Target": {
+			            "Entity": "medida.auditorías_periodo_anterior"
+			          }
+			        }
+			      },
+			      "Phrasings": [
+			        {
+			          "Attribute": {
+			            "Subject": {
+			              "Role": "auditoria"
+			            },
+			            "Object": {
+			              "Role": "medida.auditorías_periodo_anterior"
+			            }
+			          },
+			          "State": "Generated",
+			          "Weight": 0.99,
+			          "ID": "auditoria_have_auditorías_periodo_anterior"
+			        }
+			      ]
+			    },
+			    "auditoria_has_medida_tarjetas_KPI": {
+			      "Binding": {
+			        "ConceptualEntity": "Auditorias"
+			      },
+			      "State": "Generated",
+			      "Roles": {
+			        "auditoria": {
+			          "Target": {
+			            "Entity": "auditoria"
+			          }
+			        },
+			        "medida.tarjetas_KPI": {
+			          "Target": {
+			            "Entity": "medida.tarjetas_KPI"
+			          }
+			        }
+			      },
+			      "Phrasings": [
+			        {
+			          "Attribute": {
+			            "Subject": {
+			              "Role": "auditoria"
+			            },
+			            "Object": {
+			              "Role": "medida.tarjetas_KPI"
+			            }
+			          },
+			          "State": "Generated",
+			          "Weight": 0.99,
+			          "ID": "auditoria_have_tarjetas_KPI"
+			        }
+			      ]
+			    },
+			    "auditoria_has_medida_var__agentes_vs_periodo_anterior": {
+			      "Binding": {
+			        "ConceptualEntity": "Auditorias"
+			      },
+			      "State": "Generated",
+			      "Roles": {
+			        "auditoria": {
+			          "Target": {
+			            "Entity": "auditoria"
+			          }
+			        },
+			        "medida.var__agentes_vs_periodo_anterior": {
+			          "Target": {
+			            "Entity": "medida.var__agentes_vs_periodo_anterior"
+			          }
+			        }
+			      },
+			      "Phrasings": [
+			        {
+			          "Attribute": {
+			            "Subject": {
+			              "Role": "auditoria"
+			            },
+			            "Object": {
+			              "Role": "medida.var__agentes_vs_periodo_anterior"
+			            }
+			          },
+			          "State": "Generated",
+			          "Weight": 0.99,
+			          "ID": "auditoria_have_var__agentes_vs_periodo_anterior"
+			        }
+			      ]
+			    },
+			    "auditoria_has_medida_promedio_auditorías_por_agente": {
+			      "Binding": {
+			        "ConceptualEntity": "Auditorias"
+			      },
+			      "State": "Generated",
+			      "Roles": {
+			        "auditoria": {
+			          "Target": {
+			            "Entity": "auditoria"
+			          }
+			        },
+			        "medida.promedio_auditorías_por_agente": {
+			          "Target": {
+			            "Entity": "medida.promedio_auditorías_por_agente"
+			          }
+			        }
+			      },
+			      "Phrasings": [
+			        {
+			          "Attribute": {
+			            "Subject": {
+			              "Role": "auditoria"
+			            },
+			            "Object": {
+			              "Role": "medida.promedio_auditorías_por_agente"
+			            }
+			          },
+			          "State": "Generated",
+			          "Weight": 0.99,
+			          "ID": "auditoria_have_promedio_auditorías_por_agente"
+			        }
+			      ]
+			    },
+			    "auditoria_has_medida_agentes_auditados": {
+			      "Binding": {
+			        "ConceptualEntity": "Auditorias"
+			      },
+			      "State": "Generated",
+			      "Roles": {
+			        "auditoria": {
+			          "Target": {
+			            "Entity": "auditoria"
+			          }
+			        },
+			        "medida.agentes_auditados": {
+			          "Target": {
+			            "Entity": "medida.agentes_auditados"
+			          }
+			        }
+			      },
+			      "Phrasings": [
+			        {
+			          "Attribute": {
+			            "Subject": {
+			              "Role": "auditoria"
+			            },
+			            "Object": {
+			              "Role": "medida.agentes_auditados"
+			            }
+			          },
+			          "State": "Generated",
+			          "Weight": 0.99,
+			          "ID": "auditoria_have_agentes_auditados"
+			        }
+			      ]
+			    },
+			    "medida_has_meta_de_calidad": {
+			      "Binding": {
+			        "ConceptualEntity": "Medidas"
+			      },
+			      "State": "Generated",
+			      "Roles": {
+			        "medida": {
+			          "Target": {
+			            "Entity": "medida"
+			          }
+			        },
+			        "medida.meta_de_calidad": {
+			          "Target": {
+			            "Entity": "medida.meta_de_calidad"
+			          }
+			        }
+			      },
+			      "Phrasings": [
+			        {
+			          "Attribute": {
+			            "Subject": {
+			              "Role": "medida"
+			            },
+			            "Object": {
+			              "Role": "medida.meta_de_calidad"
+			            }
+			          },
+			          "State": "Generated",
+			          "Weight": 0.99,
+			          "ID": "medidas_have_meta_de_calidad"
+			        }
+			      ]
+			    },
+			    "auditoria_has_medida_nota_promedio_de_calidad": {
+			      "Binding": {
+			        "ConceptualEntity": "Auditorias"
+			      },
+			      "State": "Generated",
+			      "Roles": {
+			        "auditoria": {
+			          "Target": {
+			            "Entity": "auditoria"
+			          }
+			        },
+			        "medida.nota_promedio_de_calidad": {
+			          "Target": {
+			            "Entity": "medida.nota_promedio_de_calidad"
+			          }
+			        }
+			      },
+			      "Phrasings": [
+			        {
+			          "Attribute": {
+			            "Subject": {
+			              "Role": "auditoria"
+			            },
+			            "Object": {
+			              "Role": "medida.nota_promedio_de_calidad"
+			            }
+			          },
+			          "State": "Generated",
+			          "Weight": 0.99,
+			          "ID": "auditoria_have_nota_promedio_de_calidad"
+			        }
+			      ]
+			    },
+			    "auditoria_has_medida_var__mes_vs_anterior": {
+			      "Binding": {
+			        "ConceptualEntity": "Auditorias"
+			      },
+			      "State": "Generated",
+			      "Roles": {
+			        "auditoria": {
+			          "Target": {
+			            "Entity": "auditoria"
+			          }
+			        },
+			        "medida.var__mes_vs_anterior": {
+			          "Target": {
+			            "Entity": "medida.var__mes_vs_anterior"
+			          }
+			        }
+			      },
+			      "Phrasings": [
+			        {
+			          "Attribute": {
+			            "Subject": {
+			              "Role": "auditoria"
+			            },
+			            "Object": {
+			              "Role": "medida.var__mes_vs_anterior"
+			            }
+			          },
+			          "State": "Generated",
+			          "Weight": 0.99,
+			          "ID": "auditoria_have_var__mes_vs_anterior"
+			        }
+			      ]
+			    },
+			    "auditoria_has_medida_var__semana_vs_anterior": {
+			      "Binding": {
+			        "ConceptualEntity": "Auditorias"
+			      },
+			      "State": "Generated",
+			      "Roles": {
+			        "auditoria": {
+			          "Target": {
+			            "Entity": "auditoria"
+			          }
+			        },
+			        "medida.var__semana_vs_anterior": {
+			          "Target": {
+			            "Entity": "medida.var__semana_vs_anterior"
+			          }
+			        }
+			      },
+			      "Phrasings": [
+			        {
+			          "Attribute": {
+			            "Subject": {
+			              "Role": "auditoria"
+			            },
+			            "Object": {
+			              "Role": "medida.var__semana_vs_anterior"
+			            }
+			          },
+			          "State": "Generated",
+			          "Weight": 0.99,
+			          "ID": "auditoria_have_var__semana_vs_anterior"
+			        }
+			      ]
+			    },
+			    "auditoria_has_medida_auditorías_mes_anterior": {
+			      "Binding": {
+			        "ConceptualEntity": "Auditorias"
+			      },
+			      "State": "Generated",
+			      "Roles": {
+			        "auditoria": {
+			          "Target": {
+			            "Entity": "auditoria"
+			          }
+			        },
+			        "medida.auditorías_mes_anterior": {
+			          "Target": {
+			            "Entity": "medida.auditorías_mes_anterior"
+			          }
+			        }
+			      },
+			      "Phrasings": [
+			        {
+			          "Attribute": {
+			            "Subject": {
+			              "Role": "auditoria"
+			            },
+			            "Object": {
+			              "Role": "medida.auditorías_mes_anterior"
+			            }
+			          },
+			          "State": "Generated",
+			          "Weight": 0.99,
+			          "ID": "auditoria_have_auditorías_mes_anterior"
+			        }
+			      ]
+			    },
+			    "auditoria_has_medida_auditorías_del_mes": {
+			      "Binding": {
+			        "ConceptualEntity": "Auditorias"
+			      },
+			      "State": "Generated",
+			      "Roles": {
+			        "auditoria": {
+			          "Target": {
+			            "Entity": "auditoria"
+			          }
+			        },
+			        "medida.auditorías_del_mes": {
+			          "Target": {
+			            "Entity": "medida.auditorías_del_mes"
+			          }
+			        }
+			      },
+			      "Phrasings": [
+			        {
+			          "Attribute": {
+			            "Subject": {
+			              "Role": "auditoria"
+			            },
+			            "Object": {
+			              "Role": "medida.auditorías_del_mes"
+			            }
+			          },
+			          "State": "Generated",
+			          "Weight": 0.99,
+			          "ID": "auditoria_have_auditorías_del_mes"
+			        }
+			      ]
+			    },
+			    "auditoria_has_medida_auditorías_semana_anterior": {
+			      "Binding": {
+			        "ConceptualEntity": "Auditorias"
+			      },
+			      "State": "Generated",
+			      "Roles": {
+			        "auditoria": {
+			          "Target": {
+			            "Entity": "auditoria"
+			          }
+			        },
+			        "medida.auditorías_semana_anterior": {
+			          "Target": {
+			            "Entity": "medida.auditorías_semana_anterior"
+			          }
+			        }
+			      },
+			      "Phrasings": [
+			        {
+			          "Attribute": {
+			            "Subject": {
+			              "Role": "auditoria"
+			            },
+			            "Object": {
+			              "Role": "medida.auditorías_semana_anterior"
+			            }
+			          },
+			          "State": "Generated",
+			          "Weight": 0.99,
+			          "ID": "auditoria_have_auditorías_semana_anterior"
+			        }
+			      ]
+			    },
+			    "auditoria_has_medida_auditorías_de_la_semana": {
+			      "Binding": {
+			        "ConceptualEntity": "Auditorias"
+			      },
+			      "State": "Generated",
+			      "Roles": {
+			        "auditoria": {
+			          "Target": {
+			            "Entity": "auditoria"
+			          }
+			        },
+			        "medida.auditorías_de_la_semana": {
+			          "Target": {
+			            "Entity": "medida.auditorías_de_la_semana"
+			          }
+			        }
+			      },
+			      "Phrasings": [
+			        {
+			          "Attribute": {
+			            "Subject": {
+			              "Role": "auditoria"
+			            },
+			            "Object": {
+			              "Role": "medida.auditorías_de_la_semana"
+			            }
+			          },
+			          "State": "Generated",
+			          "Weight": 0.99,
+			          "ID": "auditoria_have_auditorías_de_la_semana"
+			        }
+			      ]
+			    },
+			    "auditoria_has_medida_auditorías_ayer": {
+			      "Binding": {
+			        "ConceptualEntity": "Auditorias"
+			      },
+			      "State": "Generated",
+			      "Roles": {
+			        "auditoria": {
+			          "Target": {
+			            "Entity": "auditoria"
+			          }
+			        },
+			        "medida.auditorías_ayer": {
+			          "Target": {
+			            "Entity": "medida.auditorías_ayer"
+			          }
+			        }
+			      },
+			      "Phrasings": [
+			        {
+			          "Attribute": {
+			            "Subject": {
+			              "Role": "auditoria"
+			            },
+			            "Object": {
+			              "Role": "medida.auditorías_ayer"
+			            }
+			          },
+			          "State": "Generated",
+			          "Weight": 0.99,
+			          "ID": "auditoria_have_auditorías_ayer"
+			        }
+			      ]
+			    },
+			    "auditoria_has_medida_auditorías_del_día": {
+			      "Binding": {
+			        "ConceptualEntity": "Auditorias"
+			      },
+			      "State": "Generated",
+			      "Roles": {
+			        "auditoria": {
+			          "Target": {
+			            "Entity": "auditoria"
+			          }
+			        },
+			        "medida.auditorías_del_día": {
+			          "Target": {
+			            "Entity": "medida.auditorías_del_día"
+			          }
+			        }
+			      },
+			      "Phrasings": [
+			        {
+			          "Attribute": {
+			            "Subject": {
+			              "Role": "auditoria"
+			            },
+			            "Object": {
+			              "Role": "medida.auditorías_del_día"
+			            }
+			          },
+			          "State": "Generated",
+			          "Weight": 0.99,
+			          "ID": "auditoria_have_auditorías_del_día"
+			        }
+			      ]
+			    },
+			    "auditoria_has_base": {
+			      "Binding": {
+			        "ConceptualEntity": "Auditorias"
+			      },
+			      "State": "Generated",
+			      "Roles": {
+			        "auditoria": {
+			          "Target": {
+			            "Entity": "auditoria"
+			          }
+			        },
+			        "auditoria.base": {
+			          "Target": {
+			            "Entity": "auditoria.base"
+			          }
+			        }
+			      },
+			      "Phrasings": [
+			        {
+			          "Attribute": {
+			            "Subject": {
+			              "Role": "auditoria"
+			            },
+			            "Object": {
+			              "Role": "auditoria.base"
+			            }
+			          },
+			          "State": "Generated",
+			          "Weight": 0.99,
+			          "ID": "auditoria_have_bases"
+			        }
+			      ]
+			    },
+			    "auditoria_has_respuesta": {
+			      "Binding": {
+			        "ConceptualEntity": "Auditorias"
+			      },
+			      "State": "Generated",
+			      "Roles": {
+			        "auditoria": {
+			          "Target": {
+			            "Entity": "auditoria"
+			          }
+			        },
+			        "auditoria.respuesta": {
+			          "Target": {
+			            "Entity": "auditoria.respuesta"
+			          }
+			        }
+			      },
+			      "Phrasings": [
+			        {
+			          "Attribute": {
+			            "Subject": {
+			              "Role": "auditoria"
+			            },
+			            "Object": {
+			              "Role": "auditoria.respuesta"
+			            }
+			          },
+			          "State": "Generated",
+			          "Weight": 0.99,
+			          "ID": "auditoria_have_respuestas"
+			        }
+			      ]
+			    },
+			    "auditoria_has_cargo_auditor": {
+			      "Binding": {
+			        "ConceptualEntity": "Auditorias"
+			      },
+			      "State": "Generated",
+			      "Roles": {
+			        "auditoria": {
+			          "Target": {
+			            "Entity": "auditoria"
+			          }
+			        },
+			        "auditoria.cargo_auditor": {
+			          "Target": {
+			            "Entity": "auditoria.cargo_auditor"
+			          }
+			        }
+			      },
+			      "Phrasings": [
+			        {
+			          "Attribute": {
+			            "Subject": {
+			              "Role": "auditoria"
+			            },
+			            "Object": {
+			              "Role": "auditoria.cargo_auditor"
+			            }
+			          },
+			          "State": "Generated",
+			          "Weight": 0.99,
+			          "ID": "auditoria_have_cargo_auditors"
+			        }
+			      ]
+			    },
+			    "auditoria_has_nombre_auditor": {
+			      "Binding": {
+			        "ConceptualEntity": "Auditorias"
+			      },
+			      "State": "Generated",
+			      "Roles": {
+			        "auditoria": {
+			          "Target": {
+			            "Entity": "auditoria"
+			          }
+			        },
+			        "auditoria.nombre_auditor": {
+			          "Target": {
+			            "Entity": "auditoria.nombre_auditor"
+			          }
+			        }
+			      },
+			      "Phrasings": [
+			        {
+			          "Attribute": {
+			            "Subject": {
+			              "Role": "auditoria"
+			            },
+			            "Object": {
+			              "Role": "auditoria.nombre_auditor"
+			            }
+			          },
+			          "State": "Generated",
+			          "Weight": 0.99,
+			          "ID": "auditoria_have_nombre_auditors"
+			        },
+			        {
+			          "Verb": {
+			            "Subject": {
+			              "Role": "auditoria.nombre_auditor"
+			            },
+			            "Verbs": [
+			              {
+			                "Audit": {
+			                  "State": "Generated"
+			                }
+			              }
+			            ],
+			            "Object": {
+			              "Role": "auditoria"
+			            }
+			          },
+			          "State": "Generated",
+			          "Weight": 0.75,
+			          "ID": "nombre_auditors_Audit_auditoria"
+			        },
+			        {
+			          "Attribute": {
+			            "Subject": {
+			              "Role": "auditoria.nombre_auditor"
+			            },
+			            "Object": {
+			              "Role": "auditoria"
+			            }
+			          },
+			          "State": "Generated",
+			          "Weight": 0.99,
+			          "ID": "nombre_auditors_have_auditoria"
+			        }
+			      ]
+			    },
+			    "auditoria_has_correo_auditor": {
+			      "Binding": {
+			        "ConceptualEntity": "Auditorias"
+			      },
+			      "State": "Generated",
+			      "Roles": {
+			        "auditoria": {
+			          "Target": {
+			            "Entity": "auditoria"
+			          }
+			        },
+			        "auditoria.correo_auditor": {
+			          "Target": {
+			            "Entity": "auditoria.correo_auditor"
+			          }
+			        }
+			      },
+			      "Phrasings": [
+			        {
+			          "Attribute": {
+			            "Subject": {
+			              "Role": "auditoria"
+			            },
+			            "Object": {
+			              "Role": "auditoria.correo_auditor"
+			            }
+			          },
+			          "State": "Generated",
+			          "Weight": 0.99,
+			          "ID": "auditoria_have_correo_auditors"
+			        }
+			      ]
+			    },
+			    "auditoria_has_ID_llamada": {
+			      "Binding": {
+			        "ConceptualEntity": "Auditorias"
+			      },
+			      "State": "Generated",
+			      "Roles": {
+			        "auditoria": {
+			          "Target": {
+			            "Entity": "auditoria"
+			          }
+			        },
+			        "auditoria.ID_llamada": {
+			          "Target": {
+			            "Entity": "auditoria.ID_llamada"
+			          }
+			        }
+			      },
+			      "Phrasings": [
+			        {
+			          "Attribute": {
+			            "Subject": {
+			              "Role": "auditoria"
+			            },
+			            "Object": {
+			              "Role": "auditoria.ID_llamada"
+			            }
+			          },
+			          "State": "Generated",
+			          "Weight": 0.99,
+			          "ID": "auditoria_have_ID_llamadas"
+			        }
+			      ]
+			    },
+			    "auditoria_has_agente": {
+			      "Binding": {
+			        "ConceptualEntity": "Auditorias"
+			      },
+			      "State": "Generated",
+			      "Roles": {
+			        "auditoria": {
+			          "Target": {
+			            "Entity": "auditoria"
+			          }
+			        },
+			        "auditoria.agente": {
+			          "Target": {
+			            "Entity": "auditoria.agente"
+			          }
+			        }
+			      },
+			      "Phrasings": [
+			        {
+			          "Attribute": {
+			            "Subject": {
+			              "Role": "auditoria"
+			            },
+			            "Object": {
+			              "Role": "auditoria.agente"
+			            }
+			          },
+			          "State": "Generated",
+			          "Weight": 0.99,
+			          "ID": "auditoria_have_agentes"
+			        }
+			      ]
+			    },
+			    "auditoria_has_team": {
+			      "Binding": {
+			        "ConceptualEntity": "Auditorias"
+			      },
+			      "State": "Generated",
+			      "Roles": {
+			        "auditoria": {
+			          "Target": {
+			            "Entity": "auditoria"
+			          }
+			        },
+			        "auditoria.team": {
+			          "Target": {
+			            "Entity": "auditoria.team"
+			          }
+			        }
+			      },
+			      "Phrasings": [
+			        {
+			          "Attribute": {
+			            "Subject": {
+			              "Role": "auditoria"
+			            },
+			            "Object": {
+			              "Role": "auditoria.team"
+			            }
+			          },
+			          "State": "Generated",
+			          "Weight": 0.99,
+			          "ID": "auditoria_have_teams"
+			        }
+			      ]
+			    },
+			    "auditoria_has_super": {
+			      "Binding": {
+			        "ConceptualEntity": "Auditorias"
+			      },
+			      "State": "Generated",
+			      "Roles": {
+			        "auditoria": {
+			          "Target": {
+			            "Entity": "auditoria"
+			          }
+			        },
+			        "auditoria.super": {
+			          "Target": {
+			            "Entity": "auditoria.super"
+			          }
+			        }
+			      },
+			      "Phrasings": [
+			        {
+			          "Attribute": {
+			            "Subject": {
+			              "Role": "auditoria"
+			            },
+			            "Object": {
+			              "Role": "auditoria.super"
+			            }
+			          },
+			          "State": "Generated",
+			          "Weight": 0.99,
+			          "ID": "auditoria_have_supers"
+			        }
+			      ]
+			    },
+			    "auditoria_has_sector": {
+			      "Binding": {
+			        "ConceptualEntity": "Auditorias"
+			      },
+			      "State": "Generated",
+			      "Roles": {
+			        "auditoria": {
+			          "Target": {
+			            "Entity": "auditoria"
+			          }
+			        },
+			        "auditoria.sector": {
+			          "Target": {
+			            "Entity": "auditoria.sector"
+			          }
+			        }
+			      },
+			      "Phrasings": [
+			        {
+			          "Attribute": {
+			            "Subject": {
+			              "Role": "auditoria"
+			            },
+			            "Object": {
+			              "Role": "auditoria.sector"
+			            }
+			          },
+			          "State": "Generated",
+			          "Weight": 0.99,
+			          "ID": "auditoria_have_sectors"
+			        }
+			      ]
+			    },
+			    "auditoria_has_legajo": {
+			      "Binding": {
+			        "ConceptualEntity": "Auditorias"
+			      },
+			      "State": "Generated",
+			      "Roles": {
+			        "auditoria": {
+			          "Target": {
+			            "Entity": "auditoria"
+			          }
+			        },
+			        "auditoria.legajo": {
+			          "Target": {
+			            "Entity": "auditoria.legajo"
+			          }
+			        }
+			      },
+			      "Phrasings": [
+			        {
+			          "Attribute": {
+			            "Subject": {
+			              "Role": "auditoria"
+			            },
+			            "Object": {
+			              "Role": "auditoria.legajo"
+			            }
+			          },
+			          "State": "Generated",
+			          "Weight": 0.99,
+			          "ID": "auditoria_have_legajos"
+			        }
+			      ]
+			    },
+			    "calendario_has_me": {
+			      "Binding": {
+			        "ConceptualEntity": "Calendario"
+			      },
+			      "State": "Generated",
+			      "Roles": {
+			        "calendario": {
+			          "Target": {
+			            "Entity": "calendario"
+			          }
+			        },
+			        "calendario.me": {
+			          "Target": {
+			            "Entity": "calendario.me"
+			          }
+			        }
+			      },
+			      "Phrasings": [
+			        {
+			          "Attribute": {
+			            "Subject": {
+			              "Role": "calendario"
+			            },
+			            "Object": {
+			              "Role": "calendario.me"
+			            }
+			          },
+			          "State": "Generated",
+			          "Weight": 0.99,
+			          "ID": "calendarios_have_me"
+			        }
+			      ]
+			    },
+			    "fecha_parametro_is_named_fecha_parametro": {
+			      "Binding": {
+			        "ConceptualEntity": "Fecha_Parametro"
+			      },
+			      "State": "Generated",
+			      "Roles": {
+			        "fecha_parametro": {
+			          "Target": {
+			            "Entity": "fecha_parametro"
+			          }
+			        },
+			        "fecha_parametro.fecha_parametro": {
+			          "Target": {
+			            "Entity": "fecha_parametro.fecha_parametro"
+			          }
+			        }
+			      },
+			      "Phrasings": [
+			        {
+			          "Name": {
+			            "Subject": {
+			              "Role": "fecha_parametro"
+			            },
+			            "Name": {
+			              "Role": "fecha_parametro.fecha_parametro"
+			            }
+			          },
+			          "State": "Generated",
+			          "Weight": 0.99,
+			          "ID": "fecha_parametros_are_names_IDs_of_fecha_parametros"
+			        },
+			        {
+			          "Attribute": {
+			            "Subject": {
+			              "Role": "fecha_parametro"
+			            },
+			            "Object": {
+			              "Role": "fecha_parametro.fecha_parametro"
+			            }
+			          },
+			          "State": "Generated",
+			          "Weight": 0.99,
+			          "ID": "fecha_parametros_have_fecha_parametros"
+			        }
+			      ]
+			    },
+			    "medida_has_titulo_encabezado_general": {
+			      "Binding": {
+			        "ConceptualEntity": "Medidas"
+			      },
+			      "State": "Generated",
+			      "Roles": {
+			        "medida": {
+			          "Target": {
+			            "Entity": "medida"
+			          }
+			        },
+			        "medida.titulo_encabezado_general": {
+			          "Target": {
+			            "Entity": "medida.titulo_encabezado_general"
+			          }
+			        }
+			      },
+			      "Phrasings": [
+			        {
+			          "Attribute": {
+			            "Subject": {
+			              "Role": "medida"
+			            },
+			            "Object": {
+			              "Role": "medida.titulo_encabezado_general"
+			            }
+			          },
+			          "State": "Generated",
+			          "Weight": 0.99,
+			          "ID": "medidas_have_titulo_encabezado_general"
+			        }
+			      ]
+			    },
+			    "medida_has_titulo_encabezado_formación": {
+			      "Binding": {
+			        "ConceptualEntity": "Medidas"
+			      },
+			      "State": "Generated",
+			      "Roles": {
+			        "medida": {
+			          "Target": {
+			            "Entity": "medida"
+			          }
+			        },
+			        "medida.titulo_encabezado_formación": {
+			          "Target": {
+			            "Entity": "medida.titulo_encabezado_formación"
+			          }
+			        }
+			      },
+			      "Phrasings": [
+			        {
+			          "Attribute": {
+			            "Subject": {
+			              "Role": "medida"
+			            },
+			            "Object": {
+			              "Role": "medida.titulo_encabezado_formación"
+			            }
+			          },
+			          "State": "Generated",
+			          "Weight": 0.99,
+			          "ID": "medidas_have_titulo_encabezado_formación"
+			        }
+			      ]
+			    },
+			    "auditoria_has_medida_tarjeta_flip_agentes_nota": {
+			      "Binding": {
+			        "ConceptualEntity": "Auditorias"
+			      },
+			      "State": "Generated",
+			      "Roles": {
+			        "auditoria": {
+			          "Target": {
+			            "Entity": "auditoria"
+			          }
+			        },
+			        "medida.tarjeta_flip_agentes_nota": {
+			          "Target": {
+			            "Entity": "medida.tarjeta_flip_agentes_nota"
+			          }
+			        }
+			      },
+			      "Phrasings": [
+			        {
+			          "Attribute": {
+			            "Subject": {
+			              "Role": "auditoria"
+			            },
+			            "Object": {
+			              "Role": "medida.tarjeta_flip_agentes_nota"
+			            }
+			          },
+			          "State": "Generated",
+			          "Weight": 0.99,
+			          "ID": "auditoria_have_tarjeta_flip_agentes_nota"
+			        }
+			      ]
+			    },
+			    "auditoria_has_calendario": {
+			      "Binding": {
+			        "ConceptualEntity": "Auditorias"
+			      },
+			      "State": "Generated",
+			      "Roles": {
+			        "auditoria": {
+			          "Target": {
+			            "Entity": "auditoria"
+			          }
+			        },
+			        "calendario": {
+			          "Target": {
+			            "Entity": "calendario"
+			          }
+			        }
+			      },
+			      "Phrasings": [
+			        {
+			          "Attribute": {
+			            "Subject": {
+			              "Role": "auditoria"
+			            },
+			            "Object": {
+			              "Role": "calendario"
+			            }
+			          },
+			          "State": "Generated",
+			          "Weight": 0.99,
+			          "ID": "auditoria_have_calendarios"
+			        },
+			        {
+			          "Attribute": {
+			            "Subject": {
+			              "Role": "calendario"
+			            },
+			            "Object": {
+			              "Role": "auditoria"
+			            }
+			          },
+			          "State": "Generated",
+			          "Weight": 0.99,
+			          "ID": "calendarios_have_auditoria"
+			        }
+			      ]
+			    }
+			  },
+			  "Agents": {
+			    "Internal": {
+			      "Version": "1.1.0"
+			    }
+			  }
+			}
+		contentType: json
+

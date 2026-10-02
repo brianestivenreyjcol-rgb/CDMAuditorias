@@ -1,0 +1,49 @@
+table Fecha_Parametro
+	lineageTag: 0994932f-a9d3-462f-8f88-051ca7c57d3c
+
+	column Fecha_Parametro
+		lineageTag: cc7f8730-e219-4cca-8e1b-bc80d0c9cc37
+		summarizeBy: none
+		sourceColumn: [Value1]
+		sortByColumn: 'Fecha_Parametro Orden'
+
+		relatedColumnDetails
+			groupByColumn: 'Fecha_Parametro Campos'
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Fecha_Parametro Campos'
+		isHidden
+		lineageTag: 46c1a011-8344-4b68-805d-1110a21ae339
+		summarizeBy: none
+		sourceColumn: [Value2]
+		sortByColumn: 'Fecha_Parametro Orden'
+
+		extendedProperty ParameterMetadata =
+				{
+				  "version": 3,
+				  "kind": 2
+				}
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Fecha_Parametro Orden'
+		isHidden
+		formatString: 0
+		lineageTag: 780bab88-82d9-42c1-9699-e606f6dd822c
+		summarizeBy: sum
+		sourceColumn: [Value3]
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Fecha_Parametro = calculated
+		mode: import
+		source =
+				{
+				    ("Día", NAMEOF('Calendario'[Día]), 0),
+				    ("Semana", NAMEOF('Calendario'[Semana]), 1),
+				    ("Mes", NAMEOF('Calendario'[Mes]), 2)
+				}
+
+	annotation PBI_Id = 43d02f31be7c48888709c230c919b015
+
