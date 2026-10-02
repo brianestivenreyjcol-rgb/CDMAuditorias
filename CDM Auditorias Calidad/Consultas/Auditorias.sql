@@ -1,7 +1,10 @@
 -- Consulta de la tabla «Auditorias» del Power BI «CDM Auditorias Calidad Prueba»
--- (Power bi/…SemanticModel/definition/tables/Auditorias.tmdl), copiada tal cual.
--- Solo se quitó el ORDER BY final: la web ordena en memoria.
--- Si cambia en el Power BI, hay que copiarla otra vez aquí (ver CONTEXTO_IA.md).
+-- (Power bi/…SemanticModel/definition/tables/Auditorias.tmdl; el usuario quitó la carpeta del
+-- PBI del proyecto el 02-10-2026, sigue en el historial de git). Copiada tal cual, salvo:
+--   - se quitó el ORDER BY final (la web ordena en memoria);
+--   - ICEBERG trae 3 meses atrás + el mes en curso («- 3»; en el PBI era «- 2»): lo cambió el
+--     usuario el 02-10-2026.
+-- La web la lee en cada carga: un cambio aquí vale con pulsar «Actualizar».
 -- Columnas que lee la web, en este orden: Fecha, legajo, Sector, Super, Team, Agente,
 -- ID_Llamada, CorreoAuditor, Nombre_Auditor, Cargo_Auditor, Respuesta, Base.
 
@@ -217,7 +220,7 @@ ICEBERG AS
         ON CAST(IC.[Fecha Auditoria] AS DATE) = CAST(N.Fecha AS DATE)
         AND IC.[Legajo] = N.legajo
 
-    WHERE IC.[Fecha Auditoria] >= DATEADD(MONTH, DATEDIFF(MONTH, 0, GETDATE()) - 2, 0)
+    WHERE IC.[Fecha Auditoria] >= DATEADD(MONTH, DATEDIFF(MONTH, 0, GETDATE()) - 3, 0)
       AND IC.[Fecha Auditoria] < DATEADD(MONTH, DATEDIFF(MONTH, 0, GETDATE()) + 1, 0)
 )
 

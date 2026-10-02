@@ -15,9 +15,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- La consulta del Power BI viaja con la aplicación y se lee al arrancar. -->
+    <!-- Las consultas viajan con la aplicación publicada y se leen en cada carga desde la carpeta
+         de la aplicación (en desarrollo, la del proyecto). Always: que nunca quede una copia vieja. -->
     <None Remove="Consultas\**" />
-    <Content Include="Consultas\**" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <Content Include="Consultas\**" CopyToOutputDirectory="Always" CopyToPublishDirectory="Always" />
   </ItemGroup>
 
   <ItemGroup>

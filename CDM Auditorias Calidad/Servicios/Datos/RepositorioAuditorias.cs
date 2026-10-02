@@ -21,7 +21,11 @@ public sealed class RepositorioAuditorias
         _entorno = entorno;
     }
 
-    public string RutaConsulta => Path.Combine(AppContext.BaseDirectory, "Consultas", "Auditorias.sql");
+    // Las consultas se leen de la carpeta de la aplicación (en desarrollo, la del proyecto; en
+    // producción, la publicada) y en cada carga: un cambio en el .sql vale con pulsar
+    // «Actualizar», sin recompilar. Antes se leía la copia de bin, que no siempre se refrescaba
+    // al compilar (02-10-2026: el «- 3» de ICEBERG no llegaba a la web).
+    public string RutaConsulta => Path.Combine(_entorno.ContentRootPath, "Consultas", "Auditorias.sql");
 
     public async Task<InstantaneaAuditorias> CargarAsync(CancellationToken ct)
     {
@@ -85,7 +89,7 @@ public sealed class RepositorioAuditorias
         return new InstantaneaAuditorias(filas, DateTime.Now, reloj.Elapsed, nomina, errorNomina);
     }
 
-    public string RutaConsultaNomina => Path.Combine(AppContext.BaseDirectory, "Consultas", "Nomina.sql");
+    public string RutaConsultaNomina => Path.Combine(_entorno.ContentRootPath, "Consultas", "Nomina.sql");
 
     private async Task<IReadOnlyList<RegistroNomina>> CargarNominaAsync(SqlConnection cn, DateOnly desde, DateOnly hasta, int segundos, CancellationToken ct)
     {

@@ -21,8 +21,10 @@
 - **Datos**: SQL Server `10.148.226.40\REPORTING` con la misma consulta del PBI
   (`Consultas/Auditorias.sql`), más la nómina (`Consultas/Nomina.sql`). Todo en memoria,
   recarga cada 30 min.
-- **Pendiente principal**: actualizar producción cuando el usuario lo diga, cuenta de servicio
-  para SQL, decidir si hace falta inicio de sesión (sección 7).
+- **Ventana de datos**: 3 meses atrás + el mes en curso (hoy, julio a octubre). ICEBERG ya trae
+  julio; las tablas WEB empiezan el 01/08 y el usuario **avisará** cuando el origen traiga 4 meses.
+- **Pendiente principal**: actualizar producción a la versión nueva cuando el usuario lo diga,
+  cuenta de servicio para SQL, decidir si hace falta inicio de sesión (sección 7).
 
 ---
 
@@ -31,8 +33,10 @@
 Pasar a web el informe de Power BI **«CDM Auditorías Calidad»** (auditorías de calidad de
 llamadas/chats del call center), manteniendo sus pantallas, filtros y cálculos.
 
-- Power BI de origen: `Power bi\` (formato PBIP: `*.SemanticModel` = modelo y consultas,
-  `*.Report` = páginas y visuales, todo en texto).
+- Power BI de origen: estaba en `Power bi\` (formato PBIP: `*.SemanticModel` = modelo y
+  consultas, `*.Report` = páginas y visuales, todo en texto). **El usuario quitó esa carpeta
+  del proyecto el 02-10-2026**; sigue en el historial de git (commit `2caa2bd`:
+  `git show 2caa2bd:"Power bi/…"`). Todo lo necesario de él está resumido en la sección 2.
 - Web: `CDM Auditorias Calidad\` (lo creó el usuario con la plantilla MVC de Visual Studio).
 - Mismo estilo de trabajo que su otro proyecto, `C:\Proyectos\ranking-mvc` (MVC + Razor, sin
   API JSON, acceso a datos en `Servicios/`). De allí se reutilizaron ideas (lector de `.env`,
@@ -57,8 +61,11 @@ auditorías, no al revés).
 ### 2.2 Consulta SQL de auditorías
 
 Servidor `10.148.226.40\REPORTING`, base `REPORTING` (usa nombres de 3 partes, cruza bases).
-Copia literal en `CDM Auditorias Calidad/Consultas/Auditorias.sql` (la web la ejecuta tal
-cual, sin el `ORDER BY`). Por partes (CTE):
+Copia en `CDM Auditorias Calidad/Consultas/Auditorias.sql`, igual que la del PBI salvo dos
+cosas: sin el `ORDER BY` final y con la ventana de ICEBERG ampliada a `- 3` (ver más abajo).
+La web la lee **en cada carga** desde la carpeta de la aplicación (en desarrollo, la del
+proyecto; en producción, `publicacion\app`): un cambio en el `.sql` vale con pulsar
+«Actualizar». Por partes (CTE):
 
 - **`NominaAntiguedad`** (líneas 8–26): `Planificacion.Nomina.NominaAntiguedad`, una fila por
   legajo y día (`ROW_NUMBER` por fecha y legajo) → sector (`sec_descrip`), super, team, nombre.
@@ -77,8 +84,9 @@ cual, sin el `ORDER BY`). Por partes (CTE):
   agente (**INNER JOIN**: auditorías sin agente en nómina ese día se pierden) y con
   `Auditores` por correo (normaliza `@masorange.es` → `@orange.es`).
 - **`ICEBERG`** (190–222): `ModulosIceberg.Calidad.PlantillaCalidadUnificada` (nota en
-  `Nota Calidad` sobre 100), con `Nomina` por legajo y fecha. **Solo trae desde el día 1 de
-  hace dos meses** (`DATEADD(MONTH, DATEDIFF(MONTH,0,GETDATE())-2, 0)`) hasta fin del mes actual.
+  `Nota Calidad` sobre 100), con `Nomina` por legajo y fecha. Trae **3 meses atrás + el mes en
+  curso** (`DATEADD(MONTH, DATEDIFF(MONTH,0,GETDATE())-3, 0)` hasta fin del mes actual): en el
+  PBI era `- 2`; lo cambió el usuario el 02-10-2026 para tener julio.
 - Al final: `WEB UNION ALL ICEBERG WHERE Agente IS NOT NULL`.
 
 Medido el 01-10-2026: ~15.150 filas (WEB 5.638 desde 01-08; ICEBERG 9.510 desde 01-08), la
@@ -301,7 +309,7 @@ C:\Proyectos\CDM Auditorias Calidad\
 ├─ publicar.cmd / arrancar.cmd    ← publicación en este equipo (ver 5)
 ├─ publicacion\                   ← (sin versionar) app publicada + .env de producción
 ├─ capturas\                      ← (sin versionar) capturas con datos reales
-├─ Power bi\                      ← el PBIP original (no se toca)
+│                                   (la carpeta «Power bi\» con el PBIP se quitó el 02-10-2026; en git, commit 2caa2bd)
 ├─ CDM Auditorias Calidad\        ← la web (ASP.NET Core MVC, .NET 8)
 │  ├─ Program.cs                  ← cultura es-ES, servicios, rutas por atributo
 │  ├─ appsettings.json            ← sección "Auditorias" (OpcionesAuditorias)
@@ -425,9 +433,28 @@ Formación), `CargosAgente` (quién cuenta como agente en «Total agentes»).
 - **Acceso**: no hay inicio de sesión. Decidir si hace falta (ranking-mvc tiene uno).
 - **SOLARIS**: la guía es de la plataforma SOLARIS · GAIA. Si esta web pasa a formar parte de
   ella, falta su logotipo (`_MarcaSolaris`) en la portada y quizá el login de SOLARIS.
-- **Histórico**: la consulta solo trae ICEBERG desde el día 1 de hace dos meses y las tablas
-  WEB tienen datos desde el 01-08-2026; si se quiere más historia hay que cambiar la consulta
-  (y en el PBI también).
+- **Histórico: 3 meses atrás + el mes en curso (pedido del usuario el 02-10-2026)**.
+  - ICEBERG: el usuario cambió él mismo en `Consultas/Auditorias.sql` el filtro de `- 2` a
+    `- 3`: hoy, desde el 01/07 (hay datos desde el 04/07). **Activo** en desarrollo y en
+    producción desde el 02-10-2026: 20.350 auditorías del 04/07 al 02/10, julio = 5.009 (solo
+    ICEBERG), igual que con SQL directo.
+    - Por qué al principio no salía: la web leía la copia de `bin\…\Consultas`, que la
+      compilación no había refrescado. Ahora lee la de la carpeta de la aplicación en cada
+      carga y el `.csproj` copia las consultas siempre (`Always`).
+    - En producción (la versión anterior, que aún lee de su carpeta de binarios) se sustituyó
+      solo `publicacion\app\Consultas\Auditorias.sql` por el nuevo y se pulsó «Actualizar»; no
+      se reinició nada. El fichero anterior está en el scratchpad de la sesión del 02-10-2026.
+  - WEB (WhatsApp, Jazztel, Orange): las tablas de origen empiezan el 01/08/2026, no hay julio.
+    **El usuario va a pedir que las tablas WEB traigan 4 meses y avisará**: no investigar más
+    hasta entonces. La consulta no filtra fechas en WEB, así que en cuanto el origen tenga
+    julio, saldrá; si luego trae más de 4 meses, habría que poner a WEB la misma ventana.
+  - Visto de paso (sin usar): `Reporting.WO.Auditoria_Grupo1/3/5` y `Auditoria_YGMMKRTV` tienen
+    auditorías de julio, pero son otros formularios, no están en el PBI y `Grupo3` llega hasta
+    el 08/09 (se solaparía con las tablas nuevas). La vista `WO.vw_auditorias` está rota (usa
+    `Auditoria_Grupo4`, que no existe).
+- Cuidado al comparar agosto con julio mientras WEB no traiga julio: julio solo tiene ICEBERG,
+  así que la variación de agosto frente a julio sale inflada (con el filtro Base = ICEBERG es
+  justa).
 - Ideas no hechas: exportar también legajo e ID de llamada en el Excel.
 
 ---
@@ -455,3 +482,7 @@ Formación), `CargosAgente` (quién cuenta como agente en «Total agentes»).
   arriba si no caben; sin animaciones de entrada al filtrar. Documentación repasada entera.
 - **02-10-2026** — La variación de «Total auditorías» y de la nota compara con el mismo tiempo
   justo antes (el DATEADD -1 MONTH del PBI daba +102 % con el rango completo).
+- **02-10-2026** — Julio: ICEBERG con 3 meses atrás + el mes en curso (`- 3`, cambio del usuario)
+  activo en desarrollo y producción; las consultas se leen de la carpeta de la aplicación en cada
+  carga. WEB sin julio en origen: el usuario pedirá que traiga 4 meses y avisará. El usuario
+  quitó la carpeta `Power bi\` del proyecto (subido el borrado; sigue en el historial).
