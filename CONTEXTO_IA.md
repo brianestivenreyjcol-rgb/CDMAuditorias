@@ -347,7 +347,13 @@ Formación), `CargosAgente` (quién cuenta como agente en «Total agentes»).
   `ModulosIceberg.Calidad.PlantillaCalidadUnificada` y
   `Planificacion.Nomina.(NominaAntiguedad, Nomina_User_Avaya, PD_Usuarios)`.
 - **Acceso**: no hay inicio de sesión. Decidir si hace falta (ranking-mvc tiene uno).
-- **Publicar en la red** (5180): falta que el usuario lo confirme.
+- **Producción en la red (5180)**: el usuario la arrancó con `arrancar.cmd` el 02-10-2026 a las
+  06:03 (`http://10.148.223.143:5180`), con la versión **anterior** a la guía de estilos, a
+  «Total agentes» y a la portada con solo «General». Para actualizarla hay que cerrar su
+  ventana «CDM Auditorias Calidad (5180)», ejecutar `publicar.cmd` y volver a `arrancar.cmd`;
+  hacerlo solo cuando el usuario lo diga. Un `publicar.cmd` con la web en marcha falla al copiar
+  la DLL, pero antes deja copiados `appsettings.json`, `Consultas/Nomina.sql` y el `.pdb` (la
+  versión en marcha no los usa: comprobado que sigue respondiendo).
 - **SOLARIS**: la guía es de la plataforma SOLARIS · GAIA. Si esta web pasa a formar parte de
   ella, falta su logotipo (`_MarcaSolaris`) en la portada y quizá el login de SOLARIS.
 - **Histórico**: la consulta solo trae ICEBERG desde el día 1 de hace dos meses y las tablas
