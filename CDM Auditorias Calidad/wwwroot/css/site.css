@@ -271,6 +271,9 @@ label.opcion { display: flex; align-items: center; gap: 8px; padding: 5px 6px; b
 label.opcion:hover { background: var(--superficie-2); }
 label.opcion input { width: 15px; height: 15px; margin: 0; flex: none; accent-color: var(--acento); }
 label.opcion.vacia .opcion-texto { color: var(--texto-tenue); }
+/* El buscador oculta con [hidden]; sin esto, el display:flex de arriba lo anula y no filtra nada. */
+label.opcion[hidden] { display: none; }
+.sin-opciones[hidden] { display: none; }
 .opcion-texto { flex: 1; min-width: 0; overflow-wrap: anywhere; }
 .cuenta { font-size: 11px; color: var(--texto-tenue); font-variant-numeric: tabular-nums; }
 .acciones { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-top: 6px; padding: 8px 4px 2px; border-top: 1px solid var(--borde); }

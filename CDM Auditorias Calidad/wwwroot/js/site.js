@@ -143,11 +143,24 @@
 
   const sinTildes = s => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
 
+  /** Filtra las opciones del desplegable mientras se escribe (sin tildes ni mayúsculas). */
   function filtrarOpciones(buscar) {
     const texto = sinTildes(buscar.value);
-    buscar.closest('.desplegable').querySelectorAll('label.opcion').forEach(l => {
-      l.hidden = texto !== '' && !sinTildes(l.textContent).includes(texto);
+    const lista = buscar.closest('.desplegable').querySelector('.opciones');
+    let visibles = 0;
+    lista.querySelectorAll('label.opcion').forEach(l => {
+      const nombre = sinTildes(l.querySelector('.opcion-texto')?.textContent ?? l.textContent);
+      l.hidden = texto !== '' && !nombre.includes(texto);
+      if (!l.hidden) visibles++;
     });
+    let aviso = lista.querySelector('.sin-coincidencias');
+    if (!aviso) {
+      aviso = document.createElement('p');
+      aviso.className = 'sin-opciones sin-coincidencias';
+      lista.appendChild(aviso);
+    }
+    aviso.textContent = `Sin coincidencias para «${buscar.value.trim()}»`;
+    aviso.hidden = visibles > 0;
   }
 
   document.addEventListener('click', e => {
@@ -206,6 +219,11 @@
   });
 
   document.addEventListener('keydown', e => {
+    // Intro en el buscador no envía el formulario: se filtra al marcar las casillas.
+    if (e.key === 'Enter' && e.target.matches?.('.buscar-opcion')) {
+      e.preventDefault();
+      return;
+    }
     if (e.key !== 'Escape') return;
     ocultarFicha();
     document.querySelectorAll('details.multi[open]').forEach(d => {

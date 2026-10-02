@@ -187,7 +187,12 @@ Todo esto está en `Servicios/Tablero/CalculadoraTablero.cs` y `Periodos.cs`, co
     mismo desplazamiento y el foco en la casilla) para poder marcar más. Ya no hay botón
     «Aplicar»; «Quitar selección (n)» aparece cuando hay algo marcado. Las fechas filtran al
     cambiarlas. Un clic fuera o Escape cierran el desplegable.
-  - Buscador si hay más de 8 opciones; cada opción lleva su cifra de auditorías.
+  - Buscador si hay más de 8 opciones: **filtra mientras se escribe** (sin tildes ni
+    mayúsculas, sobre el nombre de la opción), dice «Sin coincidencias para «…»» si no queda
+    ninguna, e Intro no envía el formulario. Ojo: las opciones se ocultan con `[hidden]` y
+    `label.opcion` es `display: flex`, así que hace falta `label.opcion[hidden] { display: none }`
+    (sin esa regla el buscador no ocultaba nada; lo vio el usuario el 02-10-2026). Cada opción
+    lleva su cifra de auditorías.
   - Las opciones se filtran entre sí, como los segmentadores del PBI (cada filtro muestra lo
     que queda con los demás); las marcadas se ven siempre, aunque queden a 0.
   - Valores vacíos = «(En blanco)», como en Power BI.
@@ -486,3 +491,6 @@ Formación), `CargosAgente` (quién cuenta como agente en «Total agentes»).
   activo en desarrollo y producción; las consultas se leen de la carpeta de la aplicación en cada
   carga. WEB sin julio en origen: el usuario pedirá que traiga 4 meses y avisará. El usuario
   quitó la carpeta `Power bi\` del proyecto (subido el borrado; sigue en el historial).
+- **02-10-2026** — El buscador de los desplegables filtra mientras se escribe (antes ocultaba con
+  `[hidden]` pero el CSS lo anulaba). La producción antigua del 5180 tiene el mismo fallo hasta
+  que se publique la versión nueva.
