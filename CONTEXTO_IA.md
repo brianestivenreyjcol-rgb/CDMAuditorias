@@ -14,17 +14,19 @@
 - **Dónde**: `C:\Proyectos\CDM Auditorias Calidad\` (solución `CDM Auditorias Calidad.sln`).
   En GitHub: repositorio **privado** `brianestivenreyjcol-rgb/CDMAuditorias`, rama `main`.
 - **Aspecto**: sigue `docs/guia-de-estilos.md` (guía SOLARIS · GAIA que dio el usuario).
-- **En marcha**:
-  - Producción en la red: `http://10.148.223.143:5180`. La arrancó el usuario con
-    `arrancar.cmd` y lleva una **versión anterior** (ver 7).
-  - Desarrollo: 5157 (Visual Studio del usuario) y 5158 (copia para probar sin pisarle).
+- **Una sola dirección: el puerto 5180** (pedido del usuario el 02-10-2026: «deja solo 1»).
+  - `http://localhost:5180/general` en este equipo, `http://10.148.223.143:5180/general` para los
+    compañeros: es el mismo servidor (`arrancar.cmd`, `publicacion\app`), con la **versión
+    actual** (publicada el 02-10-2026).
+  - El perfil de Visual Studio también usa el 5180: solo puede haber una en marcha (cerrar la
+    ventana de `arrancar.cmd` antes de F5, y al revés). Ya no se usan el 5157 ni el 5158.
 - **Datos**: SQL Server `10.148.226.40\REPORTING` con la misma consulta del PBI
   (`Consultas/Auditorias.sql`), más la nómina (`Consultas/Nomina.sql`). Todo en memoria,
   recarga cada 30 min.
 - **Ventana de datos**: 3 meses atrás + el mes en curso (hoy, julio a octubre). ICEBERG ya trae
   julio; las tablas WEB empiezan el 01/08 y el usuario **avisará** cuando el origen traiga 4 meses.
-- **Pendiente principal**: actualizar producción a la versión nueva cuando el usuario lo diga,
-  cuenta de servicio para SQL, decidir si hace falta inicio de sesión (sección 7).
+- **Pendiente principal**: cuenta de servicio para SQL, decidir si hace falta inicio de sesión,
+  y julio de WEB cuando avise el usuario (sección 7).
 
 ---
 
@@ -357,17 +359,19 @@ Formación), `CargosAgente` (quién cuenta como agente en «Total agentes»).
 
 ## 5. Cómo se ejecuta
 
-- **Desarrollo**: abrir `CDM Auditorias Calidad.sln` en Visual Studio y F5 (perfil `http`), o
-  `dotnet run --launch-profile http` en la carpeta del proyecto → `http://localhost:5157`.
-  Lee las credenciales de `CDM Auditorias Calidad\.env`.
-  - El usuario suele tener Visual Studio abierto con la web en el 5157: para probar sin
-    pisarle, arrancar otra copia en el 5158 (`ASPNETCORE_URLS=http://localhost:5158`,
-    `dotnet run --no-build --no-launch-profile`).
+- **Una sola dirección**: todo va por el **5180** (el usuario lo pidió así el 02-10-2026).
+  - **Desarrollo**: abrir `CDM Auditorias Calidad.sln` en Visual Studio y F5 (perfil `http`), o
+    `dotnet run --launch-profile http` en la carpeta del proyecto → `http://localhost:5180/general`.
+    Lee las credenciales de `CDM Auditorias Calidad\.env`. Como producción usa el mismo puerto,
+    hay que cerrar antes la ventana «CDM Auditorias Calidad (5180)».
+  - Si hace falta probar algo sin parar producción, levantar una copia temporal en otro puerto
+    (`ASPNETCORE_URLS=http://localhost:<puerto>`, `dotnet run --no-build --no-launch-profile`)
+    y **pararla al terminar**: el usuario no quiere varias direcciones en marcha.
   - Las vistas Razor se compilan con el proyecto: tras cambiar un `.cshtml` hay que
     recompilar y reiniciar. CSS y JS se sirven directamente (basta recargar el navegador).
   - Antes de compilar hay que parar la web en marcha que use `bin\Debug`: la DLL queda bloqueada.
 - **Pruebas**: `dotnet test "CDM Auditorias Calidad.sln"` (con la web parada).
-- **Publicación para los compañeros** (en marcha desde el 02-10-2026, ver 7):
+- **Publicación** (la del 5180, en marcha con la versión actual desde el 02-10-2026):
   1. Cerrar la ventana «CDM Auditorias Calidad (5180)».
   2. `publicar.cmd` → compila en Release en `publicacion\app` y, si no existe, copia el `.env`
      del proyecto a `publicacion\.env`.
@@ -377,7 +381,7 @@ Formación), `CargosAgente` (quién cuenta como agente en «Total agentes»).
     (`cmd /c "C:\Proyectos\CDM Auditorias Calidad\publicar.cmd"`); con el nombre solo, en este
     entorno, cmd no los encuentra. Doble clic también vale.
 - **Capturas sin ventana** (para revisar el aspecto): Edge sin cabeza,
-  `msedge --headless=new --force-prefers-reduced-motion --blink-settings=preferredColorScheme=1 --window-size=1680,1000 --screenshot=salida.png http://localhost:5158/general`
+  `msedge --headless=new --force-prefers-reduced-motion --blink-settings=preferredColorScheme=1 --window-size=1680,1000 --screenshot=salida.png http://localhost:5180/general`
   (`preferredColorScheme=0` para el tema oscuro). Sin `--force-prefers-reduced-motion` la
   captura sale a mitad de las animaciones de entrada (y con `--virtual-time-budget` se cuelga).
   No baja de ~500 px de ancho; para móvil, mejor el panel del navegador en modo móvil. Si el
@@ -422,14 +426,11 @@ Formación), `CargosAgente` (quién cuenta como agente en «Total agentes»).
 
 ## 7. Pendientes y decisiones abiertas
 
-- **Producción en la red (5180)**: el usuario la arrancó con `arrancar.cmd` el 02-10-2026 a las
-  06:03 (`http://10.148.223.143:5180`) con una versión **anterior** a la guía de estilos, a
-  «Total agentes», a la portada con solo «General» y al arreglo de los filtros. Para
-  actualizarla: cerrar su ventana «CDM Auditorias Calidad (5180)», `publicar.cmd` y otra vez
-  `arrancar.cmd`. **Hacerlo solo cuando el usuario lo diga.** Un `publicar.cmd` con la web en
-  marcha falla al copiar la DLL, pero antes deja copiados `appsettings.json`,
-  `Consultas/Nomina.sql` y el `.pdb` (la versión en marcha no los usa: comprobado que sigue
-  respondiendo).
+- **Producción (5180)**: al día con la versión actual desde el 02-10-2026 (el usuario pidió una
+  sola dirección que funcione: `http://localhost:5180/general`). Para los próximos cambios:
+  cerrar la ventana «CDM Auditorias Calidad (5180)», `publicar.cmd` y otra vez `arrancar.cmd`.
+  Un `publicar.cmd` con la web en marcha falla al copiar la DLL (y deja copiados algunos
+  ficheros sueltos antes de fallar).
 - **Credenciales personales**: la web usa el login de SQL del usuario (el de `DB_2` de
   ranking-mvc). Para entregarla, pedir una cuenta de servicio con SELECT en
   `Reporting.WO.AuditoriasWhatsapp/Jazztel/Orange`,
@@ -493,5 +494,7 @@ Formación), `CargosAgente` (quién cuenta como agente en «Total agentes»).
   carga. WEB sin julio en origen: el usuario pedirá que traiga 4 meses y avisará. El usuario
   quitó la carpeta `Power bi\` del proyecto (subido el borrado; sigue en el historial).
 - **02-10-2026** — El buscador de los desplegables filtra mientras se escribe (antes ocultaba con
-  `[hidden]` pero el CSS lo anulaba). La producción antigua del 5180 tiene el mismo fallo hasta
-  que se publique la versión nueva.
+  `[hidden]` pero el CSS lo anulaba).
+- **02-10-2026** — Una sola dirección: el 5180 (también el perfil de Visual Studio); producción
+  publicada con la versión actual y comprobada (`localhost` y la IP del equipo, julio en el
+  filtro: 5.530 auditorías, todas ICEBERG; datos del 01/07 al 02/10, 20.874 auditorías).

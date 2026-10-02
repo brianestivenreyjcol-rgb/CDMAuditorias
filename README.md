@@ -17,9 +17,10 @@ pasado a ASP.NET Core MVC (.NET 8, C#, Razor), con sus mismas medidas y filtros.
 1. Copiar `CDM Auditorias Calidad/env.ejemplo` como `CDM Auditorias Calidad/.env` y poner las
    credenciales de SQL Server (el `.env` no se sube al repositorio).
 2. Abrir `CDM Auditorias Calidad.sln` en Visual Studio y pulsar F5, o ejecutar
-   `dotnet run --launch-profile http` en `CDM Auditorias Calidad/` → `http://localhost:5157`.
+   `dotnet run --launch-profile http` en `CDM Auditorias Calidad/` → `http://localhost:5180/general`.
 3. Pruebas: `dotnet test "CDM Auditorias Calidad.sln"`.
-4. Para servirla a los compañeros: `publicar.cmd` y luego `arrancar.cmd` (puerto 5180).
+4. Para servirla a los compañeros: `publicar.cmd` y luego `arrancar.cmd`, en el mismo puerto
+   5180 (`http://<IP del equipo>:5180/general`). Solo puede haber una en marcha a la vez.
 
 ## Documentación
 
