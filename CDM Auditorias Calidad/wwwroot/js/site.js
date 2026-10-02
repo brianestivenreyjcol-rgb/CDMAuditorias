@@ -1,14 +1,16 @@
 // CDM Auditorías Calidad — comportamiento de las páginas.
 //
 // Sin JavaScript todo funciona con enlaces y un formulario GET. Con él:
-// - Filtros: se aplican al cerrar el desplegable (o con «Aplicar») y al cambiar una fecha. Los
-//   enlaces con data-parcial (Día/Semana/Mes, clic en un sector o un auditor, borrar filtros)
-//   no recargan: se pide la página con la cabecera X-Parcial y se sustituye #informe.
+// - Filtros: cada casilla de un desplegable filtra al marcarla (el desplegable sigue abierto
+//   para marcar más) y cada fecha al cambiarla. Los enlaces con data-parcial (Día/Semana/Mes,
+//   clic en un sector o un auditor, borrar filtros) tampoco recargan: se pide la página con la
+//   cabecera X-Parcial y se sustituye #informe.
 // - Fichas: cada <title> de las gráficas («Etiqueta · Serie valor · …») y el title de las
 //   piezas marcadas se convierte en una ficha al pasar el ratón, con guía vertical.
 // - Tablas table.ranking[data-mapa]: se ordenan al pulsar la cabecera y se colorean con el
 //   semáforo según th[data-sentido] (1 más es mejor, -1 más es peor, 0 sin color).
-// - Cifras de la tira de indicadores: cuentan desde cero al aparecer.
+// - Cifras de la tira de indicadores: cuentan desde cero al cargar la página y, al filtrar,
+//   pasan del valor anterior al nuevo (las animaciones de entrada solo se ven al cargar).
 // Con «reducir movimiento» no se anima nada.
 (() => {
   'use strict';
@@ -22,7 +24,13 @@
 
   let peticion = null;
 
-  async function cargar(url, empujar = true) {
+  /**
+   * Pide la página con X-Parcial y sustituye #informe.
+   * @param {string} url
+   * @param {{ empujar?: boolean, reabrir?: { campo: string, busqueda: string, scroll: number, foco: string | null } | null }} [opciones]
+   *   reabrir: el desplegable que estaba abierto al marcar una casilla, para dejarlo igual.
+   */
+  async function cargar(url, { empujar = true, reabrir = null } = {}) {
     const informe = document.getElementById('informe');
     if (!informe) { location.href = url; return; }
 
@@ -30,6 +38,7 @@
     peticion = new AbortController();
     raiz.classList.add('cargando');
     const masFiltrosAbierto = informe.querySelector('.mas-filtros')?.open;
+    const cifrasAntes = [...informe.querySelectorAll('.resumen-cifra')].map(el => Number(el.dataset.contar));
 
     try {
       const r = await fetch(url, { headers: { 'X-Parcial': '1' }, signal: peticion.signal });
@@ -39,12 +48,15 @@
       const nuevo = molde.content.querySelector('#informe');
       if (!nuevo) throw new Error('Respuesta sin informe');
 
+      // Al filtrar no se repiten las animaciones de entrada.
+      nuevo.classList.add('actualizado');
       const mas = nuevo.querySelector('.mas-filtros');
       if (mas && masFiltrosAbierto) mas.open = true;
 
       ocultarFicha();
       informe.replaceWith(nuevo);
-      preparar(nuevo);
+      preparar(nuevo, cifrasAntes);
+      if (reabrir) reabrirDesplegable(nuevo, reabrir);
       if (nuevo.dataset.titulo) document.title = nuevo.dataset.titulo;
       if (empujar) history.pushState({ informe: true }, '', url);
     } catch (e) {
@@ -71,15 +83,72 @@
     return form.getAttribute('action') + (q ? '?' + q : '');
   }
 
-  const marcadas = d => [...d.querySelectorAll('input[type=checkbox]:checked')].map(c => c.value).join('\u0001');
+  /** Envía los filtros. Con «desplegable», ese se vuelve a abrir tal cual tras la carga. */
+  function enviar(form, desplegable = null) {
+    let reabrir = null;
+    if (desplegable) {
+      const activo = document.activeElement;
+      reabrir = {
+        campo: desplegable.dataset.campo,
+        busqueda: desplegable.querySelector('.buscar-opcion')?.value ?? '',
+        scroll: desplegable.querySelector('.opciones')?.scrollTop ?? 0,
+        foco: activo instanceof HTMLInputElement && activo.type === 'checkbox' && desplegable.contains(activo) ? activo.value : null,
+      };
+    }
+    form.querySelectorAll('details.multi[open]').forEach(d => { if (d !== desplegable) d.open = false; });
+    cargar(urlDe(form), { reabrir });
+  }
 
-  function enviar(form) {
-    // Que el cierre de los desplegables no vuelva a enviar.
-    form.querySelectorAll('details.multi[open]').forEach(d => { d.dataset.inicial = marcadas(d); d.open = false; });
-    cargar(urlDe(form));
+  let reabriendo = false;
+
+  function reabrirDesplegable(contenedor, { campo, busqueda, scroll, foco }) {
+    const d = contenedor.querySelector(`details.multi[data-campo="${CSS.escape(campo)}"]`);
+    if (!d) return;
+    // Si estaba dentro de «Más filtros», que se vea.
+    const mas = d.closest('.mas-filtros');
+    if (mas) mas.open = true;
+    reabriendo = true;
+    d.open = true;
+    const buscar = d.querySelector('.buscar-opcion');
+    if (buscar && busqueda) {
+      buscar.value = busqueda;
+      filtrarOpciones(buscar);
+    }
+    colocarDesplegable(d);
+    const opciones = d.querySelector('.opciones');
+    if (opciones) opciones.scrollTop = scroll;
+    const casilla = foco === null ? null : [...d.querySelectorAll('input[type=checkbox]')].find(c => c.value === foco);
+    (casilla ?? buscar ?? d.querySelector('summary'))?.focus({ preventScroll: true });
+  }
+
+  /** Abre el desplegable hacia arriba si no cabe debajo, y ajusta el alto de la lista. */
+  function colocarDesplegable(d) {
+    d.classList.remove('hacia-arriba');
+    const panel = d.querySelector('.desplegable');
+    const opciones = d.querySelector('.opciones');
+    if (!panel || !opciones) return;
+    opciones.style.maxHeight = '';
+    const caja = d.querySelector('summary').getBoundingClientRect();
+    const alto = panel.getBoundingClientRect().height;
+    const cabecera = document.querySelector('.cabecera')?.getBoundingClientRect().bottom ?? 0;
+    const abajo = window.innerHeight - caja.bottom - 12;
+    const arriba = caja.top - cabecera - 12;
+    if (alto > abajo && arriba > abajo) d.classList.add('hacia-arriba');
+    const disponible = Math.max(abajo, arriba);
+    if (alto > disponible) {
+      const resto = alto - opciones.getBoundingClientRect().height;
+      opciones.style.maxHeight = Math.max(120, disponible - resto) + 'px';
+    }
   }
 
   const sinTildes = s => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
+
+  function filtrarOpciones(buscar) {
+    const texto = sinTildes(buscar.value);
+    buscar.closest('.desplegable').querySelectorAll('label.opcion').forEach(l => {
+      l.hidden = texto !== '' && !sinTildes(l.textContent).includes(texto);
+    });
+  }
 
   document.addEventListener('click', e => {
     const enlace = e.target.closest('a[data-parcial]');
@@ -93,7 +162,7 @@
     if (limpiar) {
       const d = limpiar.closest('details');
       d.querySelectorAll('input[type=checkbox]').forEach(c => { c.checked = false; });
-      enviar(d.closest('form'));
+      enviar(d.closest('form'), d);
       return;
     }
 
@@ -103,42 +172,37 @@
       return;
     }
 
-    // Clic fuera: cierra los desplegables abiertos (y aplica si cambió algo).
+    // Clic fuera: cierra los desplegables abiertos.
     document.querySelectorAll('details.multi[open]').forEach(d => { if (!d.contains(e.target)) d.open = false; });
   });
 
   // «toggle» no burbujea: se escucha en fase de captura.
   document.addEventListener('toggle', e => {
     const d = e.target;
-    if (!(d instanceof HTMLDetailsElement) || !d.matches('details.multi')) return;
-    if (d.open) {
-      document.querySelectorAll('details.multi[open]').forEach(o => { if (o !== d) o.open = false; });
-      d.dataset.inicial = marcadas(d);
-      d.querySelector('.buscar-opcion')?.focus();
-    } else if (d.dataset.inicial !== undefined && d.dataset.inicial !== marcadas(d) && d.isConnected) {
-      enviar(d.closest('form'));
-    }
+    if (!(d instanceof HTMLDetailsElement) || !d.matches('details.multi') || !d.open) return;
+    document.querySelectorAll('details.multi[open]').forEach(o => { if (o !== d) o.open = false; });
+    colocarDesplegable(d);
+    // Al abrirlo la persona (no al reabrirlo tras filtrar), el foco va al buscador.
+    if (!reabriendo) d.querySelector('.buscar-opcion')?.focus();
+    reabriendo = false;
   }, true);
 
   document.addEventListener('submit', e => {
     const form = e.target;
     if (!form.matches('[data-tablero-filtros]')) return;
     e.preventDefault();
-    enviar(form);
+    enviar(form, form.querySelector('details.multi[open]'));
   });
 
   document.addEventListener('change', e => {
     const campo = e.target;
-    if (campo.matches('[data-tablero-filtros] input[type=date]') && campo.value) enviar(campo.form);
+    if (!campo.closest?.('[data-tablero-filtros]')) return;
+    if (campo.matches('input[type=date]') && campo.value) enviar(campo.form);
+    if (campo.matches('details.multi input[type=checkbox]')) enviar(campo.form, campo.closest('details.multi'));
   });
 
   document.addEventListener('input', e => {
-    const buscar = e.target;
-    if (!buscar.matches('.buscar-opcion')) return;
-    const texto = sinTildes(buscar.value);
-    buscar.closest('.desplegable').querySelectorAll('label.opcion').forEach(l => {
-      l.hidden = texto !== '' && !sinTildes(l.textContent).includes(texto);
-    });
+    if (e.target.matches('.buscar-opcion')) filtrarOpciones(e.target);
   });
 
   document.addEventListener('keydown', e => {
@@ -151,7 +215,7 @@
   });
 
   window.addEventListener('popstate', () => {
-    if (document.getElementById('informe')) cargar(location.href, false);
+    if (document.getElementById('informe')) cargar(location.href, { empujar: false });
   });
 
   // ---------------------------------------------------------------------------------------
@@ -326,11 +390,14 @@
   const porcentaje = new Intl.NumberFormat('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2, useGrouping: 'always' });
   const suavizar = t => 1 - Math.pow(1 - t, 3);
 
-  function contarCifras(contenedor) {
+  /** @param {number[]} [antes] las cifras que había antes de filtrar: se cuenta desde ellas. */
+  function contarCifras(contenedor, antes = []) {
     if (sinMovimiento.matches) return;
-    contenedor.querySelectorAll('.resumen-cifra[data-contar]').forEach(el => {
+    contenedor.querySelectorAll('.resumen-cifra[data-contar]').forEach((el, i) => {
       const final = Number(el.dataset.contar);
       if (el.dataset.contar === '' || Number.isNaN(final)) return;
+      const inicial = Number.isFinite(antes[i]) ? antes[i] : 0;
+      if (inicial === final) return;
       const textoFinal = el.textContent;
       const esPorcentaje = el.dataset.formato === 'porcentaje';
       const inicio = performance.now();
@@ -338,7 +405,7 @@
       function paso(ahora) {
         if (!el.isConnected) return;
         const t = Math.min(1, (ahora - inicio) / duracion);
-        const v = final * suavizar(t);
+        const v = inicial + (final - inicial) * suavizar(t);
         el.textContent = t >= 1 ? textoFinal : esPorcentaje ? porcentaje.format(v * 100) + ' %' : entero.format(v);
         if (t < 1) requestAnimationFrame(paso);
       }
@@ -348,10 +415,10 @@
 
   // ---------------------------------------------------------------------------------------
 
-  function preparar(contenedor) {
+  function preparar(contenedor, cifrasAntes = []) {
     prepararFichas(contenedor);
     contenedor.querySelectorAll('table.ranking[data-mapa]').forEach(colorearTabla);
-    contarCifras(contenedor);
+    contarCifras(contenedor, cifrasAntes);
   }
 
   preparar(document);

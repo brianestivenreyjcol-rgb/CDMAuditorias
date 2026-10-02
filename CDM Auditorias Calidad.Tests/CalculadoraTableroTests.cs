@@ -77,11 +77,42 @@ public class CalculadoraTableroTests
     }
 
     [Fact]
-    public void El_periodo_anterior_es_un_mes_antes_recortado_al_calendario()
+    public void Con_el_rango_completo_no_hay_periodo_anterior()
     {
-        // 01/08–01/10 frente a 01/08–01/09 (el calendario empieza el 01/08): 11 frente a 4.
+        // 01/08–01/10 se compararía con 01/05–01/07, y no hay datos antes del 01/08: sin
+        // variación (el PBI comparaba con 01/08–01/09, solapado y más corto).
         var m = Calcular(new FiltrosTablero());
-        Assert.Equal((11 - 4) / 4.0, m.Tarjetas[0].Variacion!.Value, 6);
+        Assert.Null(m.Tarjetas[0].Variacion);
+        Assert.Equal("Sin período anterior con datos", m.Tarjetas[0].TextoVariacion);
+        Assert.Null(m.Tarjetas[3].Variacion);
+        Assert.Contains("no hay datos antes del 01/08/2026", m.Tarjetas[0].Ayuda);
+    }
+
+    [Fact]
+    public void Un_mes_se_compara_con_el_mes_anterior_entero()
+    {
+        // Septiembre (7) frente a agosto entero (3).
+        var m = Calcular(new FiltrosTablero { Mes = ["2026-09"] });
+        Assert.Equal((7 - 3) / 3.0, m.Tarjetas[0].Variacion!.Value, 6);
+        Assert.Contains("01/08/2026 – 31/08/2026", m.Tarjetas[0].Ayuda);
+    }
+
+    [Fact]
+    public void Un_mes_en_curso_se_compara_con_las_mismas_fechas_del_anterior()
+    {
+        // Octubre solo tiene datos hasta el 01/10: 01/10 (1) frente a 01/09 (1).
+        var m = Calcular(new FiltrosTablero { Mes = ["2026-10"] });
+        Assert.Equal(0.0, m.Tarjetas[0].Variacion!.Value, 6);
+        Assert.Contains("frente a 01/09/2026 (el mismo tiempo", m.Tarjetas[0].Ayuda);
+    }
+
+    [Fact]
+    public void Un_rango_de_dias_se_compara_con_los_mismos_dias_justo_antes()
+    {
+        // 02/09–22/09 (21 días: 3 auditorías) frente a 12/08–01/09 (21 días: 21/08, 24/08 y 01/09).
+        var m = Calcular(new FiltrosTablero { Desde = "2026-09-02", Hasta = "2026-09-22" });
+        Assert.Equal(0.0, m.Tarjetas[0].Variacion!.Value, 6);
+        Assert.Contains("12/08/2026 – 01/09/2026", m.Tarjetas[0].Ayuda);
     }
 
     [Fact]
@@ -130,10 +161,11 @@ public class CalculadoraTableroTests
     [Fact]
     public void Sin_periodo_anterior_no_inventa_variacion()
     {
+        // Agosto se compararía con julio, y no hay datos de julio.
         var m = Calcular(new FiltrosTablero { Desde = "2026-08-01", Hasta = "2026-08-31" });
         Assert.Null(m.Tarjetas[0].Variacion);
         Assert.Null(m.Tarjetas[3].Variacion);
-        Assert.Equal("Sin datos del período anterior", m.Tarjetas[3].TextoVariacion);
+        Assert.Equal("Sin período anterior con datos", m.Tarjetas[3].TextoVariacion);
     }
 
     [Fact]

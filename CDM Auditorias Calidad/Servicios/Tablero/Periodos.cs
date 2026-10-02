@@ -54,6 +54,37 @@ public static class Periodos
     }
 
     /// <summary>
+    /// El periodo con el que se comparan «Total auditorías» y la nota: <b>el mismo tiempo, justo
+    /// antes</b> (lo eligió el usuario el 02-10-2026 en lugar del DATEADD -1 MONTH del PBI, que
+    /// con más de un mes comparaba periodos solapados y de distinto largo).
+    /// </summary>
+    /// <remarks>
+    /// <list type="bullet">
+    /// <item>Si las fechas empiezan un día 1 y acaban a fin de mes, o en la última fecha con datos
+    /// (un mes en curso): los mismos meses de antes, con el mismo corte de día (septiembre →
+    /// agosto; 1–2 de octubre → 1–2 de septiembre).</item>
+    /// <item>Si no: los mismos días justo antes (21–27 de septiembre → 14–20 de septiembre).</item>
+    /// </list>
+    /// No se recorta al calendario: quien llama comprueba que empiece dentro de los datos (si no,
+    /// no hay variación). Null si no hay fechas.
+    /// </remarks>
+    public static SortedSet<DateOnly>? PeriodoAnterior(IReadOnlyCollection<DateOnly> fechas, DateOnly ultimaConDatos)
+    {
+        if (fechas.Count == 0) return null;
+        var min = fechas.Min();
+        var max = fechas.Max();
+
+        if (min.Day == 1 && (max == FinDeMes(max) || max == ultimaConDatos))
+        {
+            var meses = (max.Year * 12 + max.Month) - (min.Year * 12 + min.Month) + 1;
+            return DesplazarMeses(fechas, -meses, DateOnly.MinValue, DateOnly.MaxValue);
+        }
+
+        var dias = max.DayNumber - min.DayNumber + 1;
+        return DesplazarDias(fechas, -dias, DateOnly.MinValue, DateOnly.MaxValue);
+    }
+
+    /// <summary>
     /// <c>DATESBETWEEN(Calendario[Fecha], desde, hasta)</c>: el intervalo recortado al calendario.
     /// </summary>
     public static (DateOnly Desde, DateOnly Hasta)? Intervalo(DateOnly desde, DateOnly hasta, DateOnly minimo, DateOnly maximo)

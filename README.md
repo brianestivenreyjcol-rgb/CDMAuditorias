@@ -6,8 +6,8 @@ pasado a ASP.NET Core MVC (.NET 8, C#, Razor), con sus mismas medidas y filtros.
 - **General** y **Formación & Calidad**: 5 indicadores (total, semana, mes, nota promedio y total
   de agentes en nómina frente a auditados), evolución de auditorías y de la nota por día, semana o
   mes, auditorías y nota por sector, y top 10 de auditores.
-- Filtros en cascada (fecha, mes, sector, super, team, auditor, cargo, base), clic en un sector o
-  un auditor para filtrar, y descarga del detalle en Excel.
+- Filtros en cascada (fecha, mes, sector, super, team, auditor, cargo, base) que se aplican al
+  marcar, clic en un sector o un auditor para filtrar, y descarga del detalle en Excel.
 - Datos de SQL Server (la misma consulta del Power BI, en `CDM Auditorias Calidad/Consultas`),
   en memoria y recargados cada 30 minutos.
 - Aspecto según `docs/guia-de-estilos.md`, con tema claro y oscuro.

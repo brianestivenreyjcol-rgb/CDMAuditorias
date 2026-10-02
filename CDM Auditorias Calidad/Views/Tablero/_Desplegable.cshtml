@@ -1,5 +1,6 @@
 @model GrupoFiltro
-@* Desplegable de varias opciones (segmentador «Desplegable» del PBI), en cascada. *@
+@* Desplegable de varias opciones (segmentador «Desplegable» del PBI), en cascada. Cada casilla
+   filtra al marcarla (site.js) y el desplegable sigue abierto para poder marcar más. *@
 <div class="campo">
     <span class="campo-titulo" id="titulo-@Model.Campo">@Model.Titulo</span>
     <details class="multi@(Model.Marcadas > 0 ? " activo" : "")" data-campo="@Model.Campo">
@@ -23,8 +24,11 @@
                 }
             </div>
             <div class="acciones">
-                <button type="button" class="enlace" data-limpiar>Quitar selección</button>
-                <button type="submit" class="boton-aplicar">Aplicar</button>
+                <span class="acciones-nota">Se filtra al marcar</span>
+                @if (Model.Marcadas > 0)
+                {
+                    <button type="button" class="enlace" data-limpiar>Quitar selección (@Model.Marcadas)</button>
+                }
             </div>
         </div>
     </details>

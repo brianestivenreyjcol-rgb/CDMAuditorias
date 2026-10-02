@@ -201,17 +201,30 @@ public static class CalculadoraTablero
         // MAX(Calendario[Fecha]) del contexto: la última fecha elegida.
         DateOnly? maximo = fechas.Count > 0 ? fechas[^1] : null;
 
-        // Período anterior: las mismas fechas, un mes antes (DATEADD -1 MONTH).
-        var fechasAnteriores = Periodos.DesplazarMeses(fechas, -1, calMin, calMax);
-        var anteriores = EnFechas(fechasAnteriores);
+        // Período anterior de «Total auditorías» y de la nota: el mismo tiempo, justo antes
+        // (Periodos.PeriodoAnterior). El PBI usaba DATEADD -1 MONTH, que con más de un mes
+        // compara periodos solapados y de distinto largo (+102 % con el rango completo); el
+        // usuario lo cambió el 02-10-2026. Sin datos de todo ese periodo, no hay variación.
+        var periodoAnterior = Periodos.PeriodoAnterior(fechas, calMax);
+        var hayAnterior = periodoAnterior is { Count: > 0 } && periodoAnterior.Min >= calMin;
+        var anteriores = hayAnterior ? EnFechas(periodoAnterior!) : null;
 
         var total = contexto.Count;
-        var totalAnterior = anteriores.Count;
+        int? totalAnterior = anteriores?.Count;
 
         var nota = Media(contexto);
-        var notaAnterior = Media(anteriores);
+        var notaAnterior = anteriores is null ? null : Media(anteriores);
 
-        string ayudaPeriodo = $"{RangoDe(fechas)} frente a {RangoDe(fechasAnteriores)} (mismas fechas, un mes antes)";
+        string ayudaPeriodo = fechas.Count == 0
+            ? "Sin fechas elegidas"
+            : hayAnterior
+                ? $"{RangoDe(fechas)} frente a {RangoDe(periodoAnterior!)} (el mismo tiempo, justo antes)"
+                : $"{RangoDe(fechas)}: se compara con el mismo tiempo justo antes" +
+                  (periodoAnterior is { Count: > 0 } p0 ? $" ({RangoDe(p0)})" : "") +
+                  $", y no hay datos antes del {Formato.Fecha(calMin)}. Elige un rango más corto para ver la variación.";
+
+        // «Auditorías del mes anterior» sí sigue la medida del PBI: DATESMTD sobre DATEADD -1 MONTH.
+        var fechasMesAnterior = Periodos.DesplazarMeses(fechas, -1, calMin, calMax);
 
         // Semana: del lunes de la semana de la última fecha hasta ella; la anterior, 7 días antes.
         int? semana = null, semanaAnterior = null;
@@ -242,9 +255,9 @@ public static class CalculadoraTablero
             mes = actual is { } s ? Contar(s.Desde, s.Hasta) : 0;
             ayudaMes = actual is { } s1 ? Rango(s1.Desde, s1.Hasta) : "—";
 
-            if (fechasAnteriores.Count > 0)
+            if (fechasMesAnterior.Count > 0)
             {
-                var m = fechasAnteriores.Max;
+                var m = fechasMesAnterior.Max;
                 var previo = Periodos.Intervalo(Periodos.InicioDeMes(m), m, calMin, calMax);
                 mesAnterior = previo is { } p ? Contar(p.Desde, p.Hasta) : 0;
                 ayudaMes += previo is { } p1 ? $" frente a {Rango(p1.Desde, p1.Hasta)}" : "";
@@ -256,14 +269,16 @@ public static class CalculadoraTablero
         return
         [
             new("Total auditorías", "portapapeles", Formato.Entero(total), total, false,
-                Variacion(total, totalAnterior), TextoVariacion(Variacion(total, totalAnterior), "vs. período anterior"), false, ayudaPeriodo),
+                Variacion(total, totalAnterior),
+                hayAnterior ? TextoVariacion(Variacion(total, totalAnterior), "vs. período anterior") : SinPeriodoCompleto,
+                false, ayudaPeriodo),
             new("Auditorías de la semana", "calendario", semana is { } sv ? Formato.Entero(sv) : "—", semana, false,
                 Variacion(semana, semanaAnterior), TextoVariacion(Variacion(semana, semanaAnterior), "vs. semana anterior"), false, ayudaSemana),
             new("Auditorías del mes", "calendario-mes", mes is { } mv ? Formato.Entero(mv) : "—", mes, false,
                 Variacion(mes, mesAnterior), TextoVariacion(Variacion(mes, mesAnterior), "vs. mes anterior"), false, ayudaMes),
             new("Nota promedio de calidad", "estrella", Formato.Porcentaje(nota), nota, true,
                 variacionNota,
-                variacionNota is { } vn ? $"{Formato.Decimal2(Math.Abs(vn))} pp vs. período anterior" : SinAnterior,
+                variacionNota is { } vn ? $"{Formato.Decimal2(Math.Abs(vn))} pp vs. período anterior" : hayAnterior ? SinAnterior : SinPeriodoCompleto,
                 true, ayudaPeriodo),
         ];
     }
@@ -325,6 +340,9 @@ public static class CalculadoraTablero
     }
 
     private const string SinAnterior = "Sin datos del período anterior";
+
+    /// <summary>Cuando el periodo anterior empieza antes que los datos (p. ej., con el rango completo).</summary>
+    private const string SinPeriodoCompleto = "Sin período anterior con datos";
 
     /// <summary><c>DIVIDE(actual - anterior, anterior)</c>: null si no hay anterior o es 0.</summary>
     private static double? Variacion(int? actual, int? anterior)

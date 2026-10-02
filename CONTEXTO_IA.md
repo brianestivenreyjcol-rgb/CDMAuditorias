@@ -7,19 +7,36 @@
 
 ---
 
+## 0. Resumen rápido (estado al 02-10-2026)
+
+- **Qué es**: el Power BI «CDM Auditorías Calidad» pasado a una web ASP.NET Core MVC (.NET 8,
+  Razor), con sus páginas General y Formación & Calidad, sus medidas y sus filtros.
+- **Dónde**: `C:\Proyectos\CDM Auditorias Calidad\` (solución `CDM Auditorias Calidad.sln`).
+  En GitHub: repositorio **privado** `brianestivenreyjcol-rgb/CDMAuditorias`, rama `main`.
+- **Aspecto**: sigue `docs/guia-de-estilos.md` (guía SOLARIS · GAIA que dio el usuario).
+- **En marcha**:
+  - Producción en la red: `http://10.148.223.143:5180`. La arrancó el usuario con
+    `arrancar.cmd` y lleva una **versión anterior** (ver 7).
+  - Desarrollo: 5157 (Visual Studio del usuario) y 5158 (copia para probar sin pisarle).
+- **Datos**: SQL Server `10.148.226.40\REPORTING` con la misma consulta del PBI
+  (`Consultas/Auditorias.sql`), más la nómina (`Consultas/Nomina.sql`). Todo en memoria,
+  recarga cada 30 min.
+- **Pendiente principal**: actualizar producción cuando el usuario lo diga, cuenta de servicio
+  para SQL, decidir si hace falta inicio de sesión (sección 7).
+
+---
+
 ## 1. Objetivo
 
 Pasar a web el informe de Power BI **«CDM Auditorías Calidad»** (auditorías de calidad de
 llamadas/chats del call center), manteniendo sus pantallas, filtros y cálculos.
 
-- Power BI de origen: `C:\Proyectos\CDM Auditorias Calidad\Power bi\` (formato PBIP:
-  `*.SemanticModel` = modelo y consultas, `*.Report` = páginas y visuales, todo en texto).
-- Web: proyecto ASP.NET Core MVC (.NET 8, C#, Razor) en
-  `C:\Proyectos\CDM Auditorias Calidad\CDM Auditorias Calidad\` (lo creó el usuario con la
-  plantilla de Visual Studio; solución `CDM Auditorias Calidad.sln`).
-- Mismo estilo de trabajo que su otro proyecto, `C:\Proyectos\ranking-mvc` (también MVC +
-  Razor, sin API JSON, acceso a datos en `Servicios/`). De allí se reutilizaron ideas
-  (lector de `.env`, gráficos en SVG con textos en HTML), no código compartido.
+- Power BI de origen: `Power bi\` (formato PBIP: `*.SemanticModel` = modelo y consultas,
+  `*.Report` = páginas y visuales, todo en texto).
+- Web: `CDM Auditorias Calidad\` (lo creó el usuario con la plantilla MVC de Visual Studio).
+- Mismo estilo de trabajo que su otro proyecto, `C:\Proyectos\ranking-mvc` (MVC + Razor, sin
+  API JSON, acceso a datos en `Servicios/`). De allí se reutilizaron ideas (lector de `.env`,
+  gráficas SVG con textos en HTML), no código compartido.
 
 ---
 
@@ -37,29 +54,49 @@ llamadas/chats del call center), manteniendo sus pantallas, filtros y cálculos.
 Relación única: `Auditorias[Fecha]` → `Calendario[Fecha]` (el calendario filtra a las
 auditorías, no al revés).
 
-### 2.2 Consulta SQL
+### 2.2 Consulta SQL de auditorías
 
 Servidor `10.148.226.40\REPORTING`, base `REPORTING` (usa nombres de 3 partes, cruza bases).
 Copia literal en `CDM Auditorias Calidad/Consultas/Auditorias.sql` (la web la ejecuta tal
-cual, sin el `ORDER BY`). Resumen:
+cual, sin el `ORDER BY`). Por partes (CTE):
 
-- **WEB**: une `Reporting.WO.AuditoriasWhatsapp`, `AuditoriasJazztel` y `AuditoriasOrange`.
+- **`NominaAntiguedad`** (líneas 8–26): `Planificacion.Nomina.NominaAntiguedad`, una fila por
+  legajo y día (`ROW_NUMBER` por fecha y legajo) → sector (`sec_descrip`), super, team, nombre.
+- **`Nomina`** (28–46): `Planificacion.Nomina.Nomina_User_Avaya` (legajo ↔ usuario Avaya por
+  día) cruzada con la anterior → la nómina con usuario Avaya, que es la que se usa para saber
+  de quién es cada auditoría.
+- **`Auditores`** (48–71): `NominaAntiguedad` + `Planificacion.Nomina.PD_Usuarios` (correo) →
+  nombre y cargo del auditor.
+- **`Auditorias`** (73–135) = **WEB**: une `Reporting.WO.AuditoriasWhatsapp`,
+  `AuditoriasJazztel` y `AuditoriasOrange`.
   - WhatsApp y Jazztel: la nota viene en `Respuesta` (texto, a veces con `%`; si es > 1 se
     divide entre 100).
   - Orange: la nota se calcula con pesos: Saludo 10 %, Soy claro/fiable 15 %, Solucionó
     25 %, Resumió 20 %, Pregunta solución 20 %, Despedida 10 % (`SI` o `N/A` puntúan).
-  - Se cruza con la nómina (`Planificacion.Nomina.Nomina_User_Avaya` + `NominaAntiguedad`)
-    por fecha y usuario Avaya del agente → sector, super, team, agente, legajo. **INNER
-    JOIN**: auditorías sin agente en nómina ese día se pierden.
-  - El auditor se identifica por correo (normaliza `@masorange.es` → `@orange.es`) contra
-    `Planificacion.Nomina.PD_Usuarios` + `NominaAntiguedad` → nombre y cargo del auditor.
-- **ICEBERG**: `ModulosIceberg.Calidad.PlantillaCalidadUnificada` (nota en `Nota Calidad`
-  sobre 100), con nómina por legajo y fecha. **Solo trae desde el día 1 de hace dos meses**
-  (`DATEADD(MONTH, DATEDIFF(MONTH,0,GETDATE())-2, 0)`) hasta fin del mes actual.
+- **`WEB`** (137–188): cruza esas auditorías con `Nomina` por fecha y usuario Avaya del
+  agente (**INNER JOIN**: auditorías sin agente en nómina ese día se pierden) y con
+  `Auditores` por correo (normaliza `@masorange.es` → `@orange.es`).
+- **`ICEBERG`** (190–222): `ModulosIceberg.Calidad.PlantillaCalidadUnificada` (nota en
+  `Nota Calidad` sobre 100), con `Nomina` por legajo y fecha. **Solo trae desde el día 1 de
+  hace dos meses** (`DATEADD(MONTH, DATEDIFF(MONTH,0,GETDATE())-2, 0)`) hasta fin del mes actual.
 - Al final: `WEB UNION ALL ICEBERG WHERE Agente IS NOT NULL`.
 
 Medido el 01-10-2026: ~15.150 filas (WEB 5.638 desde 01-08; ICEBERG 9.510 desde 01-08), la
 consulta tarda ~2 s.
+
+### 2.2 bis Consulta de nómina (de la web, no del PBI)
+
+`CDM Auditorias Calidad/Consultas/Nomina.sql`, para la tarjeta «Total agentes» (ver 3): es la
+misma cadena que el CTE `Nomina` de arriba (`Nomina_User_Avaya` + `NominaAntiguedad` con
+`RN = 1`) pero devolviendo además el **cargo** (`car_descrip`). Parámetros `@Desde`/`@Hasta` =
+rango de las auditorías cargadas. Devuelve `Fecha, legajo, Sector, Super, Team, Cargo`
+(~205.000 filas del 01-08 al 02-10, ~2,5 s).
+
+Lo que se vio al explorarla (02-10-2026, desde el 01-08): unos 2.000 legajos con usuario
+Avaya; por cargo, 1.555 «Agente», 259 «Agente en Capacitacion», 106 «Team Leader»,
+29 «Formador», 21 «Técnico de Calidad», 18 «Aprendiz Sena Etapa Productiva»… De los auditados,
+1.433 son «Agente», 121 en capacitación, 57 Team Leader, 16 aprendices SENA y 15 técnicos de
+calidad. `Nomina_User_Avaya` trae también **fechas futuras** (planificadas, hasta noviembre).
 
 ### 2.3 Medidas DAX y cómo se reproducen
 
@@ -67,13 +104,13 @@ consulta tarda ~2 s.
 |---|---|---|
 | Total Auditorías | `COUNTROWS(Auditorias)` | nº de filas filtradas |
 | Nota Promedio de Calidad | `AVERAGE(Auditorias[Respuesta])` | media de las notas no nulas |
-| Agentes Auditados | `DISTINCTCOUNT(Auditorias[legajo])` | **sustituida** por «Total agentes» (ver 3) a petición del usuario |
+| Agentes Auditados | `DISTINCTCOUNT(Auditorias[legajo])` | **sustituida** por «Total agentes» (ver 3), a petición del usuario |
 | Auditorías de la Semana | del lunes de la semana de `MAX(Calendario[Fecha])` hasta esa fecha | igual |
 | Auditorías Semana Anterior | la anterior con `DATEADD(-7, DAY)` → lunes..(máx − 7) | igual |
 | Auditorías del Mes | `DATESMTD` → día 1 del mes de la fecha máxima hasta ella | igual |
 | Auditorías Mes Anterior | `DATESMTD` sobre `DATEADD(-1, MONTH)` | igual |
-| Var % vs período anterior (total, agentes) | mismo filtro de fechas desplazado `-1 MONTH` | igual |
-| Var pp nota | `(nota − nota período anterior) × 100` | igual, pero ver diferencias |
+| Var % vs período anterior (total) | mismo filtro de fechas desplazado `-1 MONTH` | **cambiada**: el mismo tiempo, justo antes (ver 2.5 y 3) |
+| Var pp nota | `(nota − nota período anterior) × 100` | `(nota − nota del mismo tiempo justo antes) × 100` (ver 2.5 y 3) |
 | Meta de Calidad | constante `0,5` («para la línea punteada del gráfico») | línea discontinua al 50 % en el gráfico de nota |
 
 `MAX(Calendario[Fecha])` es la última fecha del rango elegido en el filtro de fecha/mes (los
@@ -85,42 +122,38 @@ semana/mes/período anterior **anulan el filtro de Mes** y usan solo sus propias
 día), y si el rango incluye el último día de un mes, el resultado llega hasta el último día
 del mes anterior (30-09 → 31-08). El resultado se recorta al rango del calendario.
 
+Todo esto está en `Servicios/Tablero/CalculadoraTablero.cs` y `Periodos.cs`, con pruebas.
+
 ### 2.4 Páginas del informe
 
 1. **Menú** (portada, imagen de fondo con dos botones): «General» y «Formación y Calidad».
    ⚠️ En el PBI, el botón «Formación y Calidad» apunta a una página que no existe
-   (`7f694fdf5024230e8068`); en la web funciona.
+   (`7f694fdf5024230e8068`).
 2. **General** y 3. **Formación & Calidad**: mismo diseño (1672 × 941):
-   - Barra izquierda oscura: logo (vuelve al menú), «FILTROS» con botón de borrar filtros,
-     filtros: **Fecha** (rango), **Mes**, **Sector**, **Super**, **Team**, **Auditor**,
+   - Barra izquierda: logo (vuelve al menú), «FILTROS» con botón de borrar filtros, filtros
+     **Fecha** (rango), **Mes**, **Sector**, **Super**, **Team**, **Auditor**,
      **Cargo_Auditor**, **Base** (desplegables de selección múltiple), y la tabla
-     **Descargable** (detalle para exportar: Base, Fecha, Super, Team, Agente, Sector,
-     Auditor, Cargo, Respuesta).
+     **Descargable** (Base, Fecha, Super, Team, Agente, Sector, Auditor, Cargo, Respuesta).
    - Cabecera: «AUDITORÍAS | CONTROL Y CALIDAD» + nombre de la página, navegador de páginas
-     (General / Formación & Calidad) y selector Día / Semana / Mes.
-   - 5 tarjetas KPI (medida HTML `Tarjetas KPI`): Total auditorías, Auditorías de la
-     semana, Auditorías del mes, Nota promedio de calidad, Agentes auditados, cada una con
-     su variación (verde ▲ / rojo ▼).
-   - «Evolución de Auditorías» (columnas, conteo por Día/Semana/Mes).
-   - «Nota Promedio de Calidad» (línea suavizada con etiquetas).
-   - «Total Auditorías y Nota Promedio de Calidad por Sector» (barras horizontales ordenadas
-     por cantidad, la nota en el tooltip).
-   - «Top 10 Auditores» (Auditor, Cargo, Cantidad, Nota; top 10 por cantidad).
+     y selector Día / Semana / Mes.
+   - 5 tarjetas KPI (medida HTML `Tarjetas KPI`) con su variación (verde ▲ / rojo ▼).
+   - «Evolución de Auditorías» (columnas), «Nota Promedio de Calidad» (línea suavizada),
+     «Total Auditorías y Nota Promedio de Calidad por Sector» (barras), «Top 10 Auditores».
    - **Diferencias entre páginas**: Formación & Calidad tiene un filtro de página
      `Cargo_Auditor ∈ {Formador, Formador PP, Técnico de Calidad, Técnico de Calidad PP}` y
      arranca agrupando por **Mes**; General no filtra cargos y arranca por **Semana**.
-   - Interacción: al pulsar un auditor del top 10 se resalta su reparto en el gráfico de
-     sectores.
+   - Interacción: al pulsar un auditor del top 10 se resalta su reparto por sector.
 
 ### 2.5 Fallos o rarezas del PBI detectados (y qué hace la web)
 
 | PBI | Web |
 |---|---|
-| El botón del menú «Formación y Calidad» no navega (página inexistente). | Funciona. |
+| El botón del menú «Formación y Calidad» no navega (página inexistente). | Formación & Calidad se abre desde las pestañas del informe (la portada solo tiene «General», a petición del usuario). |
 | La página Formación & Calidad muestra el subtítulo «General» (usa la medida `Titulo Encabezado General`). | Muestra «Formación & Calidad». |
 | «Día» del eje X es `DAY()` (1–31): con varios meses junta el día 5 de julio con el 5 de agosto. | Agrupa por fecha real (dd/mm). |
 | `Semana` y `Mes` no llevan año: entre años distintos se mezclan. | Se agrupa por año + semana / año + mes (la etiqueta sigue siendo el nº de semana o el mes). |
-| Si el período anterior no tiene datos, la variación de nota sale como la nota entera en pp (blank = 0). | Muestra «sin datos del período anterior». |
+| El «período anterior» de Total y Nota es `DATEADD(-1, MONTH)` de las fechas elegidas: con más de un mes **se solapa** con ellas y es **más corto** (con todo el rango, 01/08–02/10 frente a 01/08–02/09 → +102 %, sin sentido; el usuario lo vio el 02-10-2026). | Se compara con **el mismo tiempo, justo antes** (`Periodos.PeriodoAnterior`); si no hay datos de todo ese período, «Sin período anterior con datos». |
+| Si el período anterior no tiene datos, la variación de nota sale como la nota entera en pp (blank = 0). | Muestra «Sin datos del período anterior». |
 | La tabla «Descargable» agrupa filas idénticas y suma su `Respuesta`. | Exporta una fila por auditoría. |
 | La medida `Meta de Calidad` existe pero ningún visual la usa. | Se dibuja como línea discontinua en el gráfico de nota. |
 
@@ -129,18 +162,24 @@ del mes anterior (30-09 → 31-08). El resultado se recorta al rango del calenda
 ## 3. Decisiones de la web
 
 - **Datos en memoria**: igual que el modo importación de Power BI. Al arrancar, cada
-  `Auditorias:MinutosRecarga` minutos (30) y al pulsar «Actualizar» se ejecuta la consulta y
-  se guardan todas las filas en memoria (~15.000, 2–3 s). Todos los cálculos se hacen en C#
-  sobre esa lista (cada página tarda < 150 ms). Si una recarga falla, se siguen sirviendo los
-  datos anteriores y se avisa en la página.
-- **Sin librerías de gráficos ni Bootstrap**: los gráficos se dibujan en el servidor (SVG
-  estirado al plano + textos en HTML encima, alto fijo), como en ranking-mvc. Se quitaron
-  `wwwroot/lib` (Bootstrap, jQuery) y la página Privacy de la plantilla.
+  `Auditorias:MinutosRecarga` minutos (30) y al pulsar «Actualizar» se ejecutan las consultas
+  y se guardan todas las filas en memoria (~15.000 auditorías + ~205.000 filas de nómina,
+  ~5 s en total, en segundo plano). Todos los cálculos se hacen en C# sobre esas listas (cada
+  página tarda < 150 ms). Si una recarga falla, se siguen sirviendo los datos anteriores y se
+  avisa en la página.
+- **Sin librerías de gráficos ni Bootstrap**: gráficas dibujadas en el servidor (SVG estirado
+  al plano + textos en HTML encima, alto fijo). Se quitaron `wwwroot/lib` (Bootstrap, jQuery)
+  y la página Privacy de la plantilla.
 - **Filtros**: formulario GET (la URL se puede compartir y el botón Atrás funciona). `site.js`
   lo envía por `fetch` con la cabecera `X-Parcial: 1`; el servidor devuelve solo el partial
-  `_Informe` y se sustituye `#informe`. Sin JavaScript también funciona (enlaces normales).
-  - Desplegables de selección múltiple, con buscador si hay más de 8 opciones y la cifra de
-    auditorías de cada opción. Se aplican al cerrarlos o con «Aplicar».
+  `_Informe` y se sustituye `#informe`. Sin JavaScript también funciona (enlaces normales y un
+  botón «Aplicar filtros» en `<noscript>`).
+  - **Se filtra al marcar** (pedido del usuario el 02-10-2026): cada casilla aplica el filtro
+    al momento y el desplegable **sigue abierto** tras recargar (mismo texto de búsqueda,
+    mismo desplazamiento y el foco en la casilla) para poder marcar más. Ya no hay botón
+    «Aplicar»; «Quitar selección (n)» aparece cuando hay algo marcado. Las fechas filtran al
+    cambiarlas. Un clic fuera o Escape cierran el desplegable.
+  - Buscador si hay más de 8 opciones; cada opción lleva su cifra de auditorías.
   - Las opciones se filtran entre sí, como los segmentadores del PBI (cada filtro muestra lo
     que queda con los demás); las marcadas se ven siempre, aunque queden a 0.
   - Valores vacíos = «(En blanco)», como en Power BI.
@@ -148,31 +187,50 @@ del mes anterior (30-09 → 31-08). El resultado se recorta al rango del calenda
     enlace guardado siga cogiendo los datos nuevos.
   - Al cambiar de página (General ↔ Formación) se conservan fecha y mes; el resto no (en el
     PBI los segmentadores no estaban sincronizados).
+  - **Los desplegables van por encima del contenido**: el panel de filtros es `position:
+    sticky` (crea su propia capa de apilamiento) y las tarjetas animadas crean las suyas; sin
+    `z-index` en el panel, los desplegables quedaban **detrás** de las tarjetas (lo vio el
+    usuario el 02-10-2026). Se arregló con `z-index: 20` en `.panel-filtros` (por debajo de la
+    cabecera, 50). En móvil el panel es `position: relative` con el mismo `z-index`.
+  - Si un desplegable no cabe debajo (los de «Más filtros»), `site.js` lo abre hacia arriba
+    (`.hacia-arriba`) y ajusta el alto de la lista al hueco que hay.
 - **Clic para filtrar**: pulsar una barra de sector o un auditor del top 10 añade (o quita)
   ese filtro; sustituye la interacción de resaltado del PBI.
-- **Descargable**: descarga un Excel (.xlsx, ClosedXML) con el detalle filtrado.
+- **Descargable**: botón «Descargar Excel» (.xlsx, ClosedXML) con el detalle filtrado.
 - **Tarjetas**: al pasar el ratón dicen qué fechas comparan.
+- **Período anterior de «Total auditorías» y de la nota** (lo eligió el usuario el 02-10-2026,
+  porque el +102 % del PBI no tenía lógica): **el mismo tiempo, justo antes**, en
+  `Periodos.PeriodoAnterior`:
+  - fechas que empiezan un día 1 y acaban a fin de mes, o en la última fecha con datos (mes en
+    curso) → los mismos meses de antes con el mismo corte de día: septiembre → agosto entero;
+    01–02/10 → 01–02/09; agosto + septiembre → junio + julio;
+  - cualquier otro rango → los mismos días justo antes: 21–27/09 → 14–20/09.
+  - Nunca se solapa con lo elegido. Si ese período empieza antes que los datos (con el rango
+    completo, que empieza el 01/08), no hay variación: «Sin período anterior con datos», y la
+    ficha dice qué período haría falta.
+  - «Auditorías de la semana» y «del mes» siguen las medidas del PBI (semana hasta la fecha
+    frente a la anterior; mes hasta la fecha frente al anterior), que sí tienen sentido.
 - **Tarjeta «Total agentes»** (02-10-2026, en lugar de «Agentes auditados»): agentes en nómina
   frente a los que tienen auditoría.
-  - Total = legajos distintos de `Consultas/Nomina.sql` (`Nomina_User_Avaya` + `NominaAntiguedad`,
-    la misma cadena que el CTE «Nomina» del PBI, con el cargo) en las fechas elegidas, con los
-    filtros de **sector, super y team** (los de auditor, cargo de auditor y base no aplican a la
-    nómina) y con cargo en `Auditorias:CargosAgente`: **Agente, Agente en Capacitacion y Aprendiz
-    Sena Etapa Productiva** (lo eligió el usuario; se compara sin mayúsculas).
+  - Total = legajos distintos de `Consultas/Nomina.sql` en las fechas elegidas, con los
+    filtros de **sector, super y team** (los de auditor, cargo de auditor y base no aplican a
+    la nómina) y con cargo en `Auditorias:CargosAgente`: **Agente, Agente en Capacitacion y
+    Aprendiz Sena Etapa Productiva** (lo eligió el usuario; se compara sin mayúsculas).
   - Auditados = de ese total, los que tienen al menos una auditoría con todos los filtros. Se
     pinta «1.487 auditados · 86,45 %» con una barra de cobertura (nunca pasa del 100 %).
-  - La nómina se lee en la misma carga que las auditorías, para su rango de fechas (unas
-    200.000 filas, ~2,5 s más). Si falla, la tarjeta sale «—» y el resto del informe sigue.
-  - Ojo: `Nomina_User_Avaya` tiene fechas futuras (planificadas); se recortan al calendario.
+  - Si la nómina no se puede leer, la tarjeta sale «—» con el motivo en la ficha y el resto
+    del informe sigue.
 - **Portada**: solo la tarjeta «General» (pedido del usuario el 02-10-2026); «Formación &
   Calidad» se abre desde las pestañas del informe.
+- **Top 10**: agrupa por auditor y cargo (como el PBI: un auditor con dos cargos sale en dos
+  filas); los auditores con menos de 20 auditorías van al final y en gris.
 - **Credenciales**: en `CDM Auditorias Calidad/.env` (no se versiona ni se publica; plantilla
   en `env.ejemplo`). Variables: `AUDITORIAS_DB_HOST`, `AUDITORIAS_DB_NAME` (REPORTING),
   `AUDITORIAS_DB_USER`, `AUDITORIAS_DB_PASSWORD`, `DB_TRUST_SERVER_CERTIFICATE=true`. Una
   variable de entorno con el mismo nombre tiene prioridad. **Se copiaron de la cuenta `DB_2`
-  del `.env` de producción de ranking-mvc** (es un login personal del usuario; ver pendientes).
+  del `.env` de producción de ranking-mvc** (es un login personal del usuario; ver 7).
 - **Sin inicio de sesión**: como el PBI, cualquiera que llegue a la URL ve los datos (hay
-  nombres de agentes y auditores). Ver pendientes.
+  nombres de agentes y auditores). Ver 7.
 
 ---
 
@@ -209,24 +267,26 @@ GAIA, copiada aquí tal cual). **Antes de tocar el aspecto, léela.** Lo que se 
   se abre solo si tiene algo marcado). Un desplegable con menos de dos opciones no se pinta
   (`GrupoFiltro.Visible`).
 - **Piezas con los nombres de la guía**: `.resumen` / `.resumen-dato` (tira de indicadores con
-  icono, filo de 3 px y realce radial; `.destacada` = la nota), `.tarjeta`, `.rejilla-2`,
-  `.crono-tarjeta` con `crono-linea principal` y `crono-area`, `.hbarras > .hbarra` con
-  `.hbarra-media` (la nota del sector, en azul, en pareja con la cantidad), `table.ranking[data-mapa]`
-  con `th[data-sentido]` y `td[data-valor]`, parciales `_PanelFiltros` y `_ErrorDatos`.
-  - En el top 10, los auditores con **menos de 20 auditorías** van al final y en gris (regla de la
-    guía para los rankings).
+  icono, filo de 3 px y realce radial; `.destacada` = la nota; `.resumen-cobertura` = la barra de
+  «Total agentes»), `.tarjeta`, `.rejilla-2`, `.crono-tarjeta` con `crono-linea principal` y
+  `crono-area`, `.hbarras > .hbarra` con `.hbarra-media` (la nota del sector, en azul, en pareja
+  con la cantidad), `table.ranking[data-mapa]` con `th[data-sentido]` y `td[data-valor]`,
+  parciales `_PanelFiltros` y `_ErrorDatos`.
 - **Fichas al pasar el ratón**: cada periodo de las gráficas lleva una banda invisible con un
   `<title>` «Etiqueta · Serie valor · …»; `site.js` lo convierte en ficha, con guía vertical y el
   resto de periodos desvanecido. (La guía habla de `graficas.js` de SOLARIS; aquí no existe y lo
   hace `site.js`.) También tienen ficha las tarjetas de indicador y las barras de sector.
 - **Movimiento**: 160/220/440/780 ms, 45 ms entre tarjetas hermanas, curva
-  `cubic-bezier(.22,.61,.36,1)`; las barras crecen con `scaleX`/`scaleY`; las cifras de la tira
-  cuentan desde cero; barra de carga naranja arriba al aplicar filtros. Con «reducir
-  movimiento» no se anima nada (CSS y JS).
+  `cubic-bezier(.22,.61,.36,1)`; las barras crecen con `scaleX`/`scaleY`; barra de carga
+  naranja arriba al aplicar filtros. Con «reducir movimiento» no se anima nada (CSS y JS).
+  - Las animaciones de entrada (tarjetas que aparecen, barras que crecen, cifras que cuentan
+    desde cero) **solo se ven al cargar la página**. Al filtrar, el contenido nuevo lleva la
+    clase `.actualizado` (sin animaciones de entrada) y las cifras pasan del valor anterior al
+    nuevo, para que marcar casillas seguidas no parpadee.
 - **Sin emojis ni iconos de color**: iconos de trazo en `Infraestructura/Iconos.cs` (también el
   logotipo); se quitaron el GIF y las tarjetas decorativas de la portada.
 - No se puso la marca SOLARIS (no hay logotipo ni se sabe si la web va dentro de esa
-  plataforma): ver pendientes.
+  plataforma): ver 7.
 
 ---
 
@@ -238,7 +298,7 @@ C:\Proyectos\CDM Auditorias Calidad\
 ├─ README.md                      ← presentación corta para GitHub
 ├─ docs\guia-de-estilos.md        ← guía de estilos SOLARIS · GAIA (referencia del aspecto)
 ├─ CDM Auditorias Calidad.sln     ← web + pruebas
-├─ publicar.cmd / arrancar.cmd    ← publicación local (ver 5)
+├─ publicar.cmd / arrancar.cmd    ← publicación en este equipo (ver 5)
 ├─ publicacion\                   ← (sin versionar) app publicada + .env de producción
 ├─ capturas\                      ← (sin versionar) capturas con datos reales
 ├─ Power bi\                      ← el PBIP original (no se toca)
@@ -252,23 +312,25 @@ C:\Proyectos\CDM Auditorias Calidad\
 │  ├─ Controllers\
 │  │  ├─ HomeController.cs        ← "/" portada (Menú) y "/error"
 │  │  └─ TableroController.cs     ← "/general", "/formacion", "/{pagina}/descargar", POST "/datos/recargar"
-│  ├─ Models\                     ← Auditoria (fila), InstantaneaAuditorias, TableroModelo, MenuModelo, CabeceraModelo
+│  ├─ Models\                     ← Auditoria y RegistroNomina (filas), InstantaneaAuditorias,
+│  │                                TableroModelo (+ TarjetaKpi, GrupoFiltro…), MenuModelo, CabeceraModelo
 │  ├─ Infraestructura\            ← Formato (es-ES, espacio fino), Iconos (trazo + logotipo), EscalaGrafico
 │  ├─ Servicios\
 │  │  ├─ Configuracion\           ← LectorDotEnv, DatosConexion, OpcionesAuditorias
-│  │  ├─ Datos\                   ← RepositorioAuditorias (SQL), AlmacenAuditorias (memoria), RecargaPeriodica
-│  │  ├─ Tablero\                 ← CalculadoraTablero (las medidas DAX), Periodos (fechas DAX),
+│  │  ├─ Datos\                   ← RepositorioAuditorias (SQL: auditorías y nómina), AlmacenAuditorias (memoria),
+│  │  │                             RecargaPeriodica
+│  │  ├─ Tablero\                 ← CalculadoraTablero (las medidas DAX y «Total agentes»), Periodos (fechas DAX),
 │  │  │                             FiltrosTablero (URL), PaginaTablero (General / Formación)
 │  │  └─ Exportacion\             ← ExportadorExcel
 │  ├─ Views\
 │  │  ├─ Shared\_Layout, _Cabecera ← documento base (data-marca, tema.js) y cabecera común
-│  │  ├─ Home\Index.cshtml        ← portada
+│  │  ├─ Home\Index.cshtml        ← portada (solo «General»)
 │  │  ├─ Tablero\Index            ← cabecera + _Informe
 │  │  ├─ Tablero\_Informe         ← lo que se sustituye al filtrar: pestañas, panel, tira, rejillas
 │  │  ├─ Tablero\_PanelFiltros, _Desplegable, _ErrorDatos
 │  │  └─ Tablero\Graficos\        ← _Columnas, _Linea, _Sectores (hbarras), _TopAuditores (ranking)
-│  └─ wwwroot\                    ← css\site.css (variables de la guía), js	ema.js, js\site.js, favicon.svg
-└─ CDM Auditorias Calidad.Tests\  ← xUnit: PeriodosTests, CalculadoraTableroTests (23 pruebas)
+│  └─ wwwroot\                    ← css\site.css (variables de la guía), js\tema.js, js\site.js, favicon.svg
+└─ CDM Auditorias Calidad.Tests\  ← xUnit: PeriodosTests, CalculadoraTableroTests (30 pruebas)
 ```
 
 Parámetros de la URL: `desde`, `hasta` (yyyy-MM-dd), `mes` (yyyy-MM), `sector`, `super`,
@@ -290,15 +352,14 @@ Formación), `CargosAgente` (quién cuenta como agente en «Total agentes»).
     `dotnet run --no-build --no-launch-profile`).
   - Las vistas Razor se compilan con el proyecto: tras cambiar un `.cshtml` hay que
     recompilar y reiniciar. CSS y JS se sirven directamente (basta recargar el navegador).
-  - Antes de compilar hay que parar la web en marcha: la DLL queda bloqueada.
+  - Antes de compilar hay que parar la web en marcha que use `bin\Debug`: la DLL queda bloqueada.
 - **Pruebas**: `dotnet test "CDM Auditorias Calidad.sln"` (con la web parada).
-- **Publicación para los compañeros** (todavía NO se ha arrancado en la red):
-  1. Cerrar la ventana «CDM Auditorias Calidad (5180)» si está abierta.
+- **Publicación para los compañeros** (en marcha desde el 02-10-2026, ver 7):
+  1. Cerrar la ventana «CDM Auditorias Calidad (5180)».
   2. `publicar.cmd` → compila en Release en `publicacion\app` y, si no existe, copia el `.env`
      del proyecto a `publicacion\.env`.
   3. `arrancar.cmd` → abre una ventana que sirve en `0.0.0.0:5180` →
-     `http://<IP del equipo>:5180` (el equipo del usuario es 10.148.223.143; ranking-mvc ya
-     usa el 5173).
+     `http://10.148.223.143:5180` (ranking-mvc ya usa el 5173).
   - Desde una consola, lanzar los `.cmd` con la ruta completa
     (`cmd /c "C:\Proyectos\CDM Auditorias Calidad\publicar.cmd"`); con el nombre solo, en este
     entorno, cmd no los encuentra. Doble clic también vale.
@@ -306,54 +367,62 @@ Formación), `CargosAgente` (quién cuenta como agente en «Total agentes»).
   `msedge --headless=new --force-prefers-reduced-motion --blink-settings=preferredColorScheme=1 --window-size=1680,1000 --screenshot=salida.png http://localhost:5158/general`
   (`preferredColorScheme=0` para el tema oscuro). Sin `--force-prefers-reduced-motion` la
   captura sale a mitad de las animaciones de entrada (y con `--virtual-time-budget` se cuelga).
-  No baja de ~500 px de ancho; para móvil, mejor el panel del navegador en modo móvil.
+  No baja de ~500 px de ancho; para móvil, mejor el panel del navegador en modo móvil. Si el
+  panel del navegador está oculto mide 0 px: darle tamaño (`resize_window`) antes de medir.
 - **GitHub**: repositorio privado `https://github.com/brianestivenreyjcol-rgb/CDMAuditorias`
-  (rama `main`). No se suben `.env`, `publicacion\`, `capturas\`, `bin`/`obj`/`.vs` ni la caché
-  del PBI (`.pbi/cache.abf`, que lleva datos). **Si el repo vuelve a ser público, quitar antes
-  lo interno** (IP de servidores en este MD, `env.ejemplo` y el PBIP).
+  (rama `main`; identidad de git configurada solo en este repositorio). No se suben `.env`,
+  `publicacion\`, `capturas\`, `bin`/`obj`/`.vs`, `*.user` ni la caché del PBI
+  (`.pbi/cache.abf`, que lleva datos). **Si el repo pasa a público, quitar antes lo interno**
+  (IP de servidores en este MD y en `env.ejemplo`, el PBIP y la consulta).
 
 ---
 
-## 6. Verificación hecha (01-10-2026)
+## 6. Verificación hecha
 
-- Cifras de las tarjetas cuadradas con SQL directo sobre la misma consulta (General, sin
-  filtros, datos 01-08 → 01-10): total 15.148 (▲106,0 % frente a 7.355 del 01-08 al 01-09),
-  semana 883 (28-09 → 01-10) frente a 1.017 (21-09 → 24-09) = ▼13,2 %, mes 28 frente a 166 =
-  ▼83,1 %, nota 50,0 % frente a 47,8 % = ▲2,2 pp, agentes 1.562 frente a 1.237 = ▲26,3 %.
+- **01-10-2026**: cifras de las tarjetas cuadradas con SQL directo sobre la misma consulta
+  (General, sin filtros, datos 01-08 → 01-10): total 15.148 (▲106,0 % frente a 7.355 del 01-08
+  al 01-09), semana 883 (28-09 → 01-10) frente a 1.017 (21-09 → 24-09) = ▼13,2 %, mes 28 frente
+  a 166 = ▼83,1 %, nota 50,0 % frente a 47,8 % = ▲2,2 pp.
 - Excel del sector «CO Atención Jazztel»: 1.549 filas = la barra del gráfico.
-- Interacción probada en el navegador: desplegable (marcar y cerrar), clic en sector, vista
-  Mes, Atrás, borrar filtros, «Actualizar» (recarga y conserva filtros). Sin errores de
-  consola. Sin desbordes a 375 px de ancho (móvil); se ve bien a 1366×768 y a 1680×1000.
-- Publicación probada en local (Production, puerto 5181 solo en localhost): lee
-  `publicacion\.env` y sirve los datos; luego se paró.
-- 23 pruebas unitarias en verde (fechas DAX, tarjetas, filtros en cascada, top 10, vistas,
-  detalle, URL).
-- **02-10-2026, tras aplicar la guía de estilos**: capturas en claro y oscuro (portada, General,
-  Formación a 1366 px); en el navegador: botón de tema (auto → claro → oscuro → auto), fichas
-  con guía vertical, tabla coloreada y ordenable, «Más filtros» con contador que se conserva al
-  filtrar; sin desbordes a 375 px (portada, General, Formación) y sin errores de consola.
-  Revisado que no hay colores escritos en las vistas, ni `<style>`/`<script>` en ellas, ni
-  emojis, ni negritas de más de 600.
+- Interacción en el navegador: clic en sector, vista Mes, Atrás, borrar filtros, «Actualizar»
+  (recarga y conserva filtros). Sin errores de consola.
+- Publicación probada en local (Production, puerto 5181 solo en localhost) y luego parada.
+- **02-10-2026, guía de estilos**: capturas en claro y oscuro (portada, General, Formación a
+  1366 px); botón de tema (auto → claro → oscuro → auto), fichas con guía vertical, tabla
+  coloreada y ordenable, «Más filtros» con contador; sin desbordes a 375 px (portada, General,
+  Formación) y sin errores de consola. Revisado que no hay colores escritos en las vistas, ni
+  `<style>`/`<script>` en ellas, ni emojis, ni negritas de más de 600.
 - **02-10-2026, «Total agentes»** cuadrado con SQL directo (General, sin filtros, 01-08 → 02-10):
-  1.720 agentes en nómina, 1.487 con auditoría (86,45 %). 26 pruebas en verde.
+  1.720 agentes en nómina, 1.487 con auditoría (86,45 %).
+- **02-10-2026, filtros**: a 1440 × 900, el desplegable de Mes queda por encima de las
+  tarjetas (medido con `elementFromPoint` en tres puntos que pisan el contenido) y el de Cargo
+  (en «Más filtros») se abre hacia arriba dentro de la pantalla. Marcar «Septiembre» filtra al
+  momento (15.340 → 7.933) con el desplegable abierto y el foco en la casilla; marcar otra da
+  «Varias selecciones (2)»; «Quitar selección» vuelve a todo; Escape cierra.
+- **02-10-2026, período anterior**: con `?mes=2026-09`, septiembre 7.933 frente a agosto 7.189 =
+  +10,35 % y nota 51,54 % frente a 48,30 % = +3,25 pp, igual que con SQL directo; sin filtros,
+  «Sin período anterior con datos».
+- 30 pruebas unitarias en verde (fechas DAX, período anterior, tarjetas, «Total agentes»,
+  filtros en cascada, top 10, vistas, detalle, URL).
 
 ---
 
 ## 7. Pendientes y decisiones abiertas
 
+- **Producción en la red (5180)**: el usuario la arrancó con `arrancar.cmd` el 02-10-2026 a las
+  06:03 (`http://10.148.223.143:5180`) con una versión **anterior** a la guía de estilos, a
+  «Total agentes», a la portada con solo «General» y al arreglo de los filtros. Para
+  actualizarla: cerrar su ventana «CDM Auditorias Calidad (5180)», `publicar.cmd` y otra vez
+  `arrancar.cmd`. **Hacerlo solo cuando el usuario lo diga.** Un `publicar.cmd` con la web en
+  marcha falla al copiar la DLL, pero antes deja copiados `appsettings.json`,
+  `Consultas/Nomina.sql` y el `.pdb` (la versión en marcha no los usa: comprobado que sigue
+  respondiendo).
 - **Credenciales personales**: la web usa el login de SQL del usuario (el de `DB_2` de
   ranking-mvc). Para entregarla, pedir una cuenta de servicio con SELECT en
   `Reporting.WO.AuditoriasWhatsapp/Jazztel/Orange`,
   `ModulosIceberg.Calidad.PlantillaCalidadUnificada` y
   `Planificacion.Nomina.(NominaAntiguedad, Nomina_User_Avaya, PD_Usuarios)`.
 - **Acceso**: no hay inicio de sesión. Decidir si hace falta (ranking-mvc tiene uno).
-- **Producción en la red (5180)**: el usuario la arrancó con `arrancar.cmd` el 02-10-2026 a las
-  06:03 (`http://10.148.223.143:5180`), con la versión **anterior** a la guía de estilos, a
-  «Total agentes» y a la portada con solo «General». Para actualizarla hay que cerrar su
-  ventana «CDM Auditorias Calidad (5180)», ejecutar `publicar.cmd` y volver a `arrancar.cmd`;
-  hacerlo solo cuando el usuario lo diga. Un `publicar.cmd` con la web en marcha falla al copiar
-  la DLL, pero antes deja copiados `appsettings.json`, `Consultas/Nomina.sql` y el `.pdb` (la
-  versión en marcha no los usa: comprobado que sigue respondiendo).
 - **SOLARIS**: la guía es de la plataforma SOLARIS · GAIA. Si esta web pasa a formar parte de
   ella, falta su logotipo (`_MarcaSolaris`) en la portada y quizá el login de SOLARIS.
 - **Histórico**: la consulta solo trae ICEBERG desde el día 1 de hace dos meses y las tablas
@@ -371,11 +440,18 @@ Formación), `CargosAgente` (quién cuenta como agente en «Total agentes»).
   la cuenta de DB_2 de ranking-mvc: lee las 4 tablas de origen y la consulta completa (~2 s).
 - **01-10-2026** — Web construida sobre la plantilla MVC del usuario: portada, General,
   Formación & Calidad, filtros, 4 gráficos, Excel, recarga periódica, pruebas, scripts de
-  publicación. Verificación de la sección 6. Pendiente: lo de la sección 7.
+  publicación.
 - **02-10-2026** — Aspecto rehecho con la guía de estilos SOLARIS · GAIA (sección 3 bis): tema
   claro/oscuro, cabecera de 72 px, pestañas, panel de 268 px con «Más filtros», tira de
   indicadores con icono, barras con la nota en pareja, tabla ranking ordenable con semáforo,
   fichas, animaciones y portada ejecutiva.
+- **02-10-2026** — Proyecto subido a GitHub (repositorio privado; el usuario lo pasó de público
+  a privado antes de subir).
 - **02-10-2026** — Portada solo con «General». Tarjeta «Agentes auditados» sustituida por
-  «Total agentes» (nómina frente a auditados, sección 3). Proyecto subido a GitHub
-  (repositorio privado).
+  «Total agentes» (nómina frente a auditados; nueva consulta `Nomina.sql`, sección 2.2 bis).
+- **02-10-2026** — El usuario arrancó producción en el 5180 (versión anterior; sin actualizar).
+- **02-10-2026** — Filtros: los desplegables quedaban detrás de las tarjetas (arreglado con
+  `z-index` en el panel pegajoso); ahora filtran al marcar y siguen abiertos; se abren hacia
+  arriba si no caben; sin animaciones de entrada al filtrar. Documentación repasada entera.
+- **02-10-2026** — La variación de «Total auditorías» y de la nota compara con el mismo tiempo
+  justo antes (el DATEADD -1 MONTH del PBI daba +102 % con el rango completo).

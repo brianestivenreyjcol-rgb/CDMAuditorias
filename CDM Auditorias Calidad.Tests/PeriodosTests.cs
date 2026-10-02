@@ -51,6 +51,27 @@ public class PeriodosTests
         Assert.Empty(Periodos.DesplazarDias([F(2026, 8, 3)], -7, F(2026, 8, 1), F(2026, 10, 1)));
     }
 
+    [Fact]
+    public void El_periodo_anterior_es_el_mismo_tiempo_justo_antes()
+    {
+        var ultima = F(2026, 10, 2);
+        // Un mes entero → el mes anterior entero.
+        var sep = Periodos.PeriodoAnterior(Dias(F(2026, 9, 1), F(2026, 9, 30)), ultima)!;
+        Assert.Equal((F(2026, 8, 1), F(2026, 8, 31), 31), (sep.Min, sep.Max, sep.Count));
+        // El mes en curso (hasta la última fecha con datos) → las mismas fechas del anterior.
+        var oct = Periodos.PeriodoAnterior(Dias(F(2026, 10, 1), ultima), ultima)!;
+        Assert.Equal((F(2026, 9, 1), F(2026, 9, 2)), (oct.Min, oct.Max));
+        // Dos meses → los dos de antes.
+        var dos = Periodos.PeriodoAnterior(Dias(F(2026, 8, 1), F(2026, 9, 30)), ultima)!;
+        Assert.Equal((F(2026, 6, 1), F(2026, 7, 31)), (dos.Min, dos.Max));
+        // Una semana → la semana de antes.
+        var semana = Periodos.PeriodoAnterior(Dias(F(2026, 9, 21), F(2026, 9, 27)), ultima)!;
+        Assert.Equal((F(2026, 9, 14), F(2026, 9, 20)), (semana.Min, semana.Max));
+        // Nunca se solapa con el periodo elegido.
+        Assert.True(semana.Max < F(2026, 9, 21));
+        Assert.Null(Periodos.PeriodoAnterior([], ultima));
+    }
+
     private static List<DateOnly> Dias(DateOnly desde, DateOnly hasta)
     {
         var l = new List<DateOnly>();
