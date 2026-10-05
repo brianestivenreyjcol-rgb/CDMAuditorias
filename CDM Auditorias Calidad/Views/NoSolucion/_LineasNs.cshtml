@@ -1,0 +1,71 @@
+@model GraficoSeries
+@* El % de no solución diario por marca con las piezas de la guía (crono-linea y punto): una línea por
+   marca (color fijo por marca, --serie), los tramos que tocan un día parcial con línea discontinua y,
+   por día, una banda con su <title> para la ficha («27 sep 2026 · YOIGO 19,60 % · …»). Mismo sistema
+   que las gráficas de Auditorías. *@
+@{
+    var n = Math.Max(1, Model.Etiquetas.Count);
+    var max = Model.Maximo;
+    var paso = max <= 20 ? 5 : max <= 50 ? 10 : 20;
+    double X(int i) => (i + 0.5) / n;
+    double Y(double v) => 1 - v / max;
+    string C(double fr) => Formato.Coord(fr * 1000);
+    string P(double fr) => Formato.Coord(fr * 100) + "%";
+    var pasoX = Math.Max(1, (int)Math.Ceiling(n / 12.0));
+    var conPuntos = n <= 45;
+}
+<figure class="grafica lineas-ns" role="img" aria-label="Porcentaje de no solución diario por marca">
+    <div class="plano">
+        <svg viewBox="0 0 1000 1000" preserveAspectRatio="none" aria-hidden="true">
+            @for (var v = 0.0; v <= max + paso / 2.0; v += paso)
+            {
+                <line class="rejilla-linea" x1="0" x2="1000" y1="@C(Y(v))" y2="@C(Y(v))" vector-effect="non-scaling-stroke" />
+            }
+            @foreach (var s in Model.Series)
+            {
+                var continuo = new System.Text.StringBuilder();
+                var discontinuo = new System.Text.StringBuilder();
+                for (var i = 0; i + 1 < s.Valores.Count; i++)
+                {
+                    if (s.Valores[i] is not { } a || s.Valores[i + 1] is not { } b) continue;
+                    var parcial = Model.Discontinuos.Contains(i) || Model.Discontinuos.Contains(i + 1);
+                    (parcial ? discontinuo : continuo).Append($"M{C(X(i))},{C(Y(a))} L{C(X(i + 1))},{C(Y(b))} ");
+                }
+                <g class="@s.Clase">
+                    <path class="crono-linea" d="@continuo" vector-effect="non-scaling-stroke" />
+                    @if (discontinuo.Length > 0)
+                    {
+                        <path class="crono-linea discontinua" d="@discontinuo" vector-effect="non-scaling-stroke" />
+                    }
+                </g>
+            }
+            @for (var i = 0; i < Model.Etiquetas.Count; i++)
+            {
+                var partes = Model.Series.Select(s => $"{s.Nombre} {FormatoNoSolucion.Pct(s.Valores.ElementAtOrDefault(i))}");
+                <rect class="banda" data-i="@i" data-x="@Formato.Coord(X(i))" x="@C((double)i / n)" y="0" width="@C(1.0 / n)" height="1000"><title>@Model.Detalles[i] · @string.Join(" · ", partes)</title></rect>
+            }
+        </svg>
+        @for (var v = 0.0; v <= max + paso / 2.0; v += paso)
+        {
+            <span class="eje-y" style="top:@P(Y(v))">@Formato.PorcentajeEntero(v)</span>
+        }
+        @if (conPuntos)
+        {
+            foreach (var s in Model.Series)
+            {
+                for (var i = 0; i < s.Valores.Count; i++)
+                {
+                    if (s.Valores[i] is not { } v) continue;
+                    <span class="punto @s.Clase" data-i="@i" style="left:@P(X(i));top:@P(Y(v))"></span>
+                }
+            }
+        }
+        @for (var i = 0; i < Model.Etiquetas.Count; i++)
+        {
+            if (i == Model.Etiquetas.Count - 1 || (i % pasoX == 0 && Model.Etiquetas.Count - 1 - i >= pasoX))
+            {
+                <span class="eje-x" style="left:@P(X(i))">@Model.Etiquetas[i]</span>
+            }
+        }
+    </div>
+</figure>

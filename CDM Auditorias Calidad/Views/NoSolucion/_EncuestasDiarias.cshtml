@@ -1,0 +1,47 @@
+@model RespuestaResumen
+@* Columnas con las encuestas recogidas cada día; los días parciales, en gris. Cada día lleva una
+   banda con su <title> para la ficha. *@
+@{
+    var serie = Model.Serie;
+    var n = Math.Max(1, serie.Count);
+    var (tope, paso) = EscalaGrafico.DesdeCero(serie.Select(x => (double)x.Encuestadas).DefaultIfEmpty(0).Max(), 3);
+    double X(int i) => (i + 0.5) / n;
+    double Y(double v) => 1 - v / tope;
+    var ancho = Math.Min(0.06, 0.8 / n);
+    string C(double fr) => Formato.Coord(fr * 1000);
+    string P(double fr) => Formato.Coord(fr * 100) + "%";
+    var pasoX = Math.Max(1, (int)Math.Ceiling(n / 12.0));
+}
+<figure class="grafica" role="img" aria-label="Encuestas recogidas cada día">
+    <div class="plano">
+        <svg viewBox="0 0 1000 1000" preserveAspectRatio="none" aria-hidden="true">
+            @for (var v = 0.0; v <= tope + paso / 2; v += paso)
+            {
+                <line class="rejilla-linea" x1="0" x2="1000" y1="@C(Y(v))" y2="@C(Y(v))" vector-effect="non-scaling-stroke" />
+            }
+            @for (var i = 0; i < serie.Count; i++)
+            {
+                var x = serie[i];
+                if (x.Encuestadas <= 0) continue;
+                var alto = Math.Max(0.004, 1 - Y(x.Encuestadas));
+                <rect class="columna columna-ns@(x.Parcial ? " parcial" : "")" data-i="@i" x="@C(X(i) - ancho / 2)" y="@C(1 - alto)" width="@C(ancho)" height="@C(alto)" />
+            }
+            @for (var i = 0; i < serie.Count; i++)
+            {
+                var x = serie[i];
+                <rect class="banda" data-i="@i" data-x="@Formato.Coord(X(i))" x="@C((double)i / n)" y="0" width="@C(1.0 / n)" height="1000"><title>@FormatoNoSolucion.FechaLarga(x.Dia)@(x.Parcial ? " (parcial)" : "") · Encuestadas @FormatoNoSolucion.Int(x.Encuestadas) · No solucionadas @FormatoNoSolucion.Int(x.Nosol) · Llamadas @FormatoNoSolucion.Int(x.Llamadas)</title></rect>
+            }
+        </svg>
+        @for (var v = 0.0; v <= tope + paso / 2; v += paso)
+        {
+            <span class="eje-y" style="top:@P(Y(v))">@FormatoNoSolucion.Int(v)</span>
+        }
+        @for (var i = 0; i < serie.Count; i++)
+        {
+            if (i == serie.Count - 1 || (i % pasoX == 0 && serie.Count - 1 - i >= pasoX))
+            {
+                <span class="eje-x" style="left:@P(X(i))">@FormatoNoSolucion.Fecha(serie[i].Dia)</span>
+            }
+        }
+    </div>
+</figure>

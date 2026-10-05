@@ -1,6 +1,7 @@
 using System.Globalization;
 using CDM_Auditorias_Calidad.Servicios.Configuracion;
 using CDM_Auditorias_Calidad.Servicios.Datos;
+using CDM_Auditorias_Calidad.Servicios.NoSolucion;
 
 // Números y fechas como en el Power BI (es-ES). Las coordenadas de los gráficos se
 // escriben siempre con cultura invariable (Formato.Coord).
@@ -14,6 +15,11 @@ builder.Services.Configure<OpcionesAuditorias>(builder.Configuration.GetSection(
 builder.Services.AddSingleton<RepositorioAuditorias>();
 builder.Services.AddSingleton<AlmacenAuditorias>();
 builder.Services.AddHostedService<RecargaPeriodica>();
+
+// CDM No solución (traído de ranking-mvc): BigQuery por ODBC, cubo de 90 días en disco.
+builder.Services.Configure<OpcionesNoSolucion>(builder.Configuration.GetSection(OpcionesNoSolucion.Seccion));
+builder.Services.AddSingleton<ServicioNoSolucion>();
+builder.Services.AddSingleton(sp => new ServicioCdm(sp.GetRequiredService<ServicioNoSolucion>()));
 
 var app = builder.Build();
 

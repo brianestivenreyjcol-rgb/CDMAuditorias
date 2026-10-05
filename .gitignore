@@ -16,3 +16,6 @@ capturas/
 
 # Ficheros de usuario de Visual Studio
 *.user
+
+# Caché de CDM No solución en desarrollo (unos 60 MB)
+**/App_Data/

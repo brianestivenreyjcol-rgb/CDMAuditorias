@@ -1,0 +1,10 @@
+@model PaginaNoSolucion
+@* La página entera de CDM No solución: el documento base y la cabecera común. Lo de dentro
+   (#informe) es _InformeNoSolucion, que es lo único que se pide al filtrar. *@
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "CDM No solución · " + PaginaNoSolucion.Texto(Model.Pestana);
+    var cabecera = new CabeceraModelo("CDM No solución", "Bogotá · Call · YOIGO, MASMOVIL, JAZZTEL y ORANGE");
+}
+<partial name="_Cabecera" model="cabecera" />
+@RenderBody()

@@ -10,7 +10,11 @@ pasado a ASP.NET Core MVC (.NET 8, C#, Razor), con sus mismas medidas y filtros.
   marcar, clic en un sector o un auditor para filtrar, y descarga del detalle en Excel.
 - Datos de SQL Server (la misma consulta del Power BI, en `CDM Auditorias Calidad/Consultas`),
   en memoria y recargados cada 30 minutos.
-- Aspecto según `docs/guia-de-estilos.md`, con tema claro y oscuro.
+- **CDM No solución** (`/nosolucion`, traído de ranking-mvc): la encuesta de solución de las
+  llamadas de Call Bogotá (YOIGO, MASMOVIL, JAZZTEL y ORANGE), con resumen, equipos, motivos y
+  sin acceso a internet, y exportación a CSV. Sale de BigQuery por ODBC (DSN `BQCOL`), en un cubo
+  de 90 días guardado en disco que se renueva cada 12 horas.
+- Aspecto según `docs/guia-de-estilos.md` (sección 9: lo propio de esta web), con tema claro y oscuro.
 
 ## Ponerlo en marcha
 

@@ -12,6 +12,8 @@
   <ItemGroup>
     <PackageReference Include="ClosedXML" Version="0.105.1" />
     <PackageReference Include="Microsoft.Data.SqlClient" Version="7.1.0" />
+    <!-- CDM No solución: BigQuery por ODBC (driver Simba, DSN BQCOL). -->
+    <PackageReference Include="System.Data.Odbc" Version="8.0.1" />
   </ItemGroup>
 
   <ItemGroup>
@@ -19,6 +21,11 @@
          de la aplicación (en desarrollo, la del proyecto). Always: que nunca quede una copia vieja. -->
     <None Remove="Consultas\**" />
     <Content Include="Consultas\**" CopyToOutputDirectory="Always" CopyToPublishDirectory="Always" />
+    <!-- Tabla de impedimentos de CDM No solución: fija, viaja con el código. -->
+    <Content Update="Datos\**" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <!-- La caché de No solución en desarrollo (unos 60 MB): ni se compila ni se publica. -->
+    <Content Remove="App_Data\**" />
+    <None Remove="App_Data\**" />
   </ItemGroup>
 
   <ItemGroup>

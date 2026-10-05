@@ -4,6 +4,9 @@ Guía de diseño para quien vaya a tocar las pantallas: tipo de letra, colores, 
 Verificada contra las hojas de estilo (`wwwroot/css`) el 02/10/2026. Si algo de aquí choca con el código, manda el código y
 hay que corregir este documento.
 
+> **CDM Auditorías Calidad** (05/10/2026): las secciones 1 a 8 son la guía de SOLARIS · GAIA tal cual. Cómo se aplica en
+> esta web (una sola hoja, `site.css`), qué se le añadió y las piezas de **CDM No solución** están en la **sección 9**.
+
 **Reglas de oro**
 1. Antes de crear un estilo, usar un **token** y una **pieza** que ya existan.
 2. **Nada de colores escritos a mano** en las vistas: todo color sale de una variable CSS.
@@ -161,3 +164,90 @@ desvanecido). Los textos SVG se emiten como `HtmlString` (Razor reserva `<text>`
 - Unificar fórmulas entre páginas «porque deberían ser iguales»: cada informe define sus porcentajes a su manera.
 - Poner `<style>` o `<script>` con lógica dentro de las vistas: las vistas solo llevan marcado.
 - Olvidar el modo oscuro: probar siempre claro y oscuro, y a 375 px de ancho.
+
+---
+
+## 9. CDM Auditorías Calidad (esta web)
+
+Cómo se aplica la guía en `C:\Proyectos\CDM Auditorias Calidad` (ASP.NET Core MVC, Razor). Tiene dos informes con el
+mismo aspecto: **Auditorías** (General y Formación & Calidad, el Power BI «CDM Auditorías Calidad») y **CDM No solución**
+(traído de ranking-mvc el 05/10/2026). Verificado contra `site.css` y `site.js` el 05/10/2026.
+
+### 9.1 Hojas, scripts e iconos
+
+| En SOLARIS | Aquí |
+|---|---|
+| `reporte.css`, `informe.css`, `portal.css`, `movimiento.css` | **una sola hoja**, `wwwroot/css/site.css`, con los nombres de variable de las pantallas de voz (`--acento`, `--texto`, `--superficie`, `--borde`, `--thead`…) |
+| `graficas.js`, `movimiento.js` | `wwwroot/js/site.js`: fichas, guía vertical, tablas que se ordenan, cifras que cuentan y filtros |
+| `tema.js` | igual (`wwwroot/js/tema.js`, en `<head>`); guarda la elección en `localStorage` con la clave `cdm-tema` |
+| `Service/IconosKpi.cs` | `Infraestructura/Iconos.cs`: iconos de trazo y el logotipo (marino con el visto bueno naranja) |
+| `_MarcaSolaris`, login, menú del usuario, «Salir» | no hay: la web no está dentro de SOLARIS ni tiene inicio de sesión. La cabecera lleva logotipo, título y botón de tema |
+
+- Marca: los dos informes van con `data-marca="orange"` (por defecto); la portada y la página de error, con
+  `data-marca="portada"` (marino y grises). Se elige con `ViewData["Marca"]`.
+- Cifras: `Formato` (Auditorías, notas en fracción 0–1) y `FormatoNoSolucion` (No solución, porcentajes ya en tanto por
+  cien). Los dos escriben dos decimales y `%` con espacio fino que no se parte (U+202F).
+- Capturas para revisar el aspecto: Edge sin ventana con `--force-prefers-reduced-motion` (si no, sale a mitad de las
+  animaciones) y `--blink-settings=preferredColorScheme=1` (claro) o `=0` (oscuro).
+
+### 9.2 Variables añadidas
+
+| Variable | Qué es |
+|---|---|
+| `--serie-3`, `--serie-4`, `--serie-5` | el verde, el rojo y el lila de las series de 2.2 (`--serie-1` y `--serie-2` ya existían) |
+| `--atencion` / `--atencion-texto` | tramo «atención» de No solución: ámbar `#c99400` para rellenos y `#8a6500` para texto; en oscuro, `#e9b44c` los dos |
+| `--serie` | color de una serie **por marca**, fijo (si se filtra una, las demás no cambian): lo ponen `.serie-orange` (naranja), `.serie-jazztel` (azul), `.serie-masmovil` (verde) y `.serie-yoigo` (lila) |
+| `--relleno` | color de una barra **por tono**: `.tono-critico` / `.relleno-malo` (rojo), `.tono-atencion` (ámbar), `.tono-bueno` (verde), `.tono-neutro` / `.relleno-tenue` (gris), `.relleno-proceso` (azul) y `.relleno-atencion` (naranja). `.hbarra-relleno` y `.hbarra-media-relleno` lo usan si está; si no, su color de siempre |
+| `--fraccion` | largo de una barra de `.hbarras.libre` (0–1) sobre el hueco que deja su cifra: la cifra nunca se sale |
+
+En las vistas solo van, en línea, posiciones y tamaños de gráficos (`left`, `top`, `width`, `--fraccion`), nunca colores.
+
+### 9.3 Piezas de Auditorías
+
+| Pieza | Dónde |
+|---|---|
+| Tira de 5 indicadores | `.resumen` / `.resumen-dato` (`.destacada` = la nota); `.resumen-cobertura` es la barra de «Total agentes» |
+| Gráficas por tiempo | `.crono-tarjeta`: columnas (`.columna`) y línea suavizada (`crono-linea principal`, `crono-area`, `.meta` discontinua al 50 %) |
+| Barras por sector | `.hbarras > .hbarra` con la nota en pareja (`.hbarra-media`); pulsar una barra filtra |
+| Top 10 | `table.ranking[data-mapa]` con `th[data-sentido]` y `td[data-valor]` |
+| Panel y desplegables | `_PanelFiltros`, `Shared/_Desplegable` (lo usan los dos informes), «Más filtros» con contador |
+| Pestañas | `.pestanas` (`.pestana`) y, a la derecha, `.pestanas-vista` con `.segmento` (Día / Semana / Mes) |
+| Portada | dos tarjetas en fila: **General** y **CDM No solución** (Formación & Calidad se abre desde las pestañas) |
+
+### 9.4 Piezas de CDM No solución
+
+Usa las de Auditorías (cabecera, pestañas, panel, `_Desplegable`, `.resumen`, `.tarjeta`, `.rejilla-2`, `.hbarras`,
+`.crono-linea`, `.punto`, `table.ranking`, `.aviso`) y añade solo lo que no existía:
+
+| Pieza | Clase | Notas |
+|---|---|---|
+| Barras sin alto fijo | `.hbarras.libre > .hbarra` | nombre con su detalle (`.sub-ns`), barra con su cifra y una nota en la tercera columna |
+| Líneas por marca | `.lineas-ns` con `crono-linea` y `.punto` dentro de `.serie-*` | los tramos que tocan un día parcial, `crono-linea discontinua` |
+| Pastilla de tasa | `.chip` + `.chip-critico` / `.chip-atencion` / `.chip-bueno` | la tasa y su desvío frente a la media, con el semáforo pastel |
+| Filas que se despliegan | `.filas-ns > details.desplegable-ns > summary.fila-ns` | columnas con `.cols-n3`, `.cols-averia` o `.cols-impedimento`; cabecera `.fila-ns-cabecera` con los colores de `--thead`; cuerpo `.cuerpo-ns` |
+| Llamadas de ejemplo | `.muestras-ns` / `.muestra-ns` | filo de 3 px del acento; «Copiar ID» con `[data-copiar]` |
+| Atajos de fecha | `.atajos-ns` / `.atajo` (`.activo`) | Todo el periodo, 7 días, 30 días, último mes cerrado |
+| Mientras se traen los datos | `.preparando-ns` con `.girando` y `[data-recargar-en]` | la página se vuelve a pedir sola cada 10 s |
+| Textos | `.nota-ns` (explicación bajo un título), `.pie-ns` (pie con la fuente), `.estado-ns` (fecha de los datos junto a las pestañas), `.puesto-ns`, `.sub-ns` | |
+| Aviso informativo | `.aviso.aviso-info` | el `.aviso` normal es ámbar; este va sobre la superficie |
+
+### 9.5 Reglas aprendidas en esta web
+
+- **El panel de filtros pegajoso necesita `z-index`** (20, por debajo de la cabecera, 50): sin él, sus desplegables quedan
+  detrás de las tarjetas animadas.
+- **`label.opcion[hidden] { display: none }`**: el buscador oculta opciones con `[hidden]` y el `display: flex` de la
+  opción lo anulaba.
+- **Filtros al marcar**: cada casilla filtra y el desplegable sigue abierto (mismo texto de búsqueda, desplazamiento y
+  foco). Si no cabe debajo, se abre hacia arriba (`.hacia-arriba`).
+- **Al filtrar no se repiten las animaciones de entrada**: el contenido nuevo lleva `.actualizado` y las cifras pasan del
+  valor anterior al nuevo.
+- **Fechas en la URL**: las que coinciden con el rango por defecto no se escriben, para que un enlace guardado siga al último
+  día con datos. En Auditorías el rango por defecto es el calendario entero; en No solución, los últimos 30 días
+  (`data-defecto` en cada fecha y `data-fechas-juntas` en el formulario).
+- **Eje X**: la última etiqueta siempre se escribe; las intermedias, solo si no la pisan.
+- **Barras con cifra al lado**: el largo sale de `--fraccion` sobre el hueco libre, no de un porcentaje fijo; si no, en
+  tarjetas estrechas la cifra pisa la nota.
+- **No solución**: las diferencias entre dos porcentajes se escriben con `%` y signo («+0,65 %»), porque son una resta, no una
+  variación relativa. Más es peor: la variación que sube va en rojo (`.peor`) y la que baja en verde (`.mejor`).
+- **Panel de No solución**: fechas con atajos, Sector, Supervisor, Team leader, Agente y Marca, todo a la vista (no hay
+  «Más filtros»); supervisor, TL y agente se encadenan.

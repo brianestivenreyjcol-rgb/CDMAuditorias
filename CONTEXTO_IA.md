@@ -7,10 +7,11 @@
 
 ---
 
-## 0. Resumen rápido (estado al 02-10-2026)
+## 0. Resumen rápido (estado al 05-10-2026)
 
 - **Qué es**: el Power BI «CDM Auditorías Calidad» pasado a una web ASP.NET Core MVC (.NET 8,
-  Razor), con sus páginas General y Formación & Calidad, sus medidas y sus filtros.
+  Razor), con sus páginas General y Formación & Calidad, sus medidas y sus filtros. Desde el
+  05-10-2026 lleva además **CDM No solución** (`/nosolucion`), traído de ranking-mvc (sección 3 ter).
 - **Dónde**: `C:\Proyectos\CDM Auditorias Calidad\` (solución `CDM Auditorias Calidad.sln`).
   En GitHub: repositorio **privado** `brianestivenreyjcol-rgb/CDMAuditorias`, rama `main`.
 - **Aspecto**: sigue `docs/guia-de-estilos.md` (guía SOLARIS · GAIA que dio el usuario).
@@ -22,11 +23,13 @@
     ventana de `arrancar.cmd` antes de F5, y al revés). Ya no se usan el 5157 ni el 5158.
 - **Datos**: SQL Server `10.148.226.40\REPORTING` con la misma consulta del PBI
   (`Consultas/Auditorias.sql`), más la nómina (`Consultas/Nomina.sql`). Todo en memoria,
-  recarga cada 30 min.
+  recarga cada 30 min. **No solución** sale de **BigQuery** por ODBC (DSN `BQCOL`): un cubo de 90
+  días guardado en disco que se renueva solo cada 12 h.
 - **Ventana de datos**: 3 meses atrás + el mes en curso (hoy, julio a octubre). ICEBERG ya trae
   julio; las tablas WEB empiezan el 01/08 y el usuario **avisará** cuando el origen traiga 4 meses.
-- **Pendiente principal**: cuenta de servicio para SQL, decidir si hace falta inicio de sesión,
-  y julio de WEB cuando avise el usuario (sección 7).
+- **Pendiente principal**: **publicar No solución en el 5180** (probado en una copia temporal; el
+  usuario decide cuándo), cuenta de servicio para SQL, decidir si hace falta inicio de sesión, y
+  julio de WEB cuando avise el usuario (sección 7).
 
 ---
 
@@ -42,7 +45,9 @@ llamadas/chats del call center), manteniendo sus pantallas, filtros y cálculos.
 - Web: `CDM Auditorias Calidad\` (lo creó el usuario con la plantilla MVC de Visual Studio).
 - Mismo estilo de trabajo que su otro proyecto, `C:\Proyectos\ranking-mvc` (MVC + Razor, sin
   API JSON, acceso a datos en `Servicios/`). De allí se reutilizaron ideas (lector de `.env`,
-  gráficas SVG con textos en HTML), no código compartido.
+  gráficas SVG con textos en HTML) y, el 05-10-2026, se **copió** el motor de CDM No solución
+  (sección 3 ter): es una copia, no código compartido, así que un arreglo en un proyecto no
+  llega solo al otro.
 
 ---
 
@@ -158,7 +163,7 @@ Todo esto está en `Servicios/Tablero/CalculadoraTablero.cs` y `Periodos.cs`, co
 
 | PBI | Web |
 |---|---|
-| El botón del menú «Formación y Calidad» no navega (página inexistente). | Formación & Calidad se abre desde las pestañas del informe (la portada solo tiene «General», a petición del usuario). |
+| El botón del menú «Formación y Calidad» no navega (página inexistente). | Formación & Calidad se abre desde las pestañas del informe (en la portada no tiene tarjeta, a petición del usuario). |
 | La página Formación & Calidad muestra el subtítulo «General» (usa la medida `Titulo Encabezado General`). | Muestra «Formación & Calidad». |
 | «Día» del eje X es `DAY()` (1–31): con varios meses junta el día 5 de julio con el 5 de agosto. | Agrupa por fecha real (dd/mm). |
 | `Semana` y `Mes` no llevan año: entre años distintos se mezclan. | Se agrupa por año + semana / año + mes (la etiqueta sigue siendo el nº de semana o el mes). |
@@ -235,7 +240,8 @@ Todo esto está en `Servicios/Tablero/CalculadoraTablero.cs` y `Periodos.cs`, co
     pinta «1.487 auditados · 86,45 %» con una barra de cobertura (nunca pasa del 100 %).
   - Si la nómina no se puede leer, la tarjeta sale «—» con el motivo en la ficha y el resto
     del informe sigue.
-- **Portada**: solo la tarjeta «General» (pedido del usuario el 02-10-2026); «Formación &
+- **Portada**: la tarjeta «General» (el 02-10-2026 el usuario pidió quitar la de Formación) y, desde
+  el 05-10-2026, «CDM No solución»; «Formación &
   Calidad» se abre desde las pestañas del informe.
 - **Top 10**: agrupa por auditor y cargo (como el PBI: un auditor con dos cargos sale en dos
   filas); los auditores con menos de 20 auditorías van al final y en gris.
@@ -252,7 +258,9 @@ Todo esto está en `Servicios/Tablero/CalculadoraTablero.cs` y `Periodos.cs`, co
 ## 3 bis. Estilo: guía SOLARIS · GAIA (desde el 02-10-2026)
 
 El usuario pidió seguir **`docs/guia-de-estilos.md`** (guía de diseño de su plataforma SOLARIS ·
-GAIA, copiada aquí tal cual). **Antes de tocar el aspecto, léela.** Lo que se aplicó:
+GAIA; las secciones 1–8 son las suyas tal cual y la **sección 9**, añadida el 05-10-2026, recoge cómo
+se aplica en esta web, las variables añadidas y las piezas de Auditorías y de No solución: es lo
+primero que hay que mirar). **Antes de tocar el aspecto, léela.** Lo que se aplicó:
 
 - **Letra**: Segoe UI Variable Text (`--font-ui`) y Display (`--font-titulo`, solo en el título
   de la cabecera y en las cifras grandes); no se carga ninguna fuente. Negrita 600 en titulares
@@ -305,6 +313,81 @@ GAIA, copiada aquí tal cual). **Antes de tocar el aspecto, léela.** Lo que se 
 
 ---
 
+## 3 ter. CDM No solución (desde el 05-10-2026)
+
+El usuario pidió el 05-10-2026 «implementar lo de No solución del otro proyecto» aquí. Es la
+pantalla `/cdm` de ranking-mvc (en producción allí, en el 5173), traída a `/nosolucion` con el
+aspecto de este proyecto. **Allí sigue existiendo**: son dos copias independientes.
+
+**Qué mide**: la encuesta de solución de las llamadas de Call Bogotá.
+`% no solución = no solucionadas ÷ (solucionadas + no solucionadas)`, sobre llamadas
+**entrantes encuestadas**. Universo: `channel = Call`; YOIGO y MASMOVIL en
+`serviceProviderLocation = JAZZBOG`, JAZZTEL y ORANGE en `JZZ_BOGOTA`. El equipo sale de cruzar
+`primaryAgentId` con la nómina (`NominaBogota`): por `DataOrb` en YOIGO/MASMOVIL y por la
+extensión `Avaya` en JAZZTEL/ORANGE (la ficha «Cruce con nómina» debe rondar el 99,9 %; por
+debajo del 99 % la llave estaría mal). Más detalle de negocio, en la bóveda de ranking-mvc:
+`ranking-mvc\Documentacion\Negocio\Fuentes\CDM No solución.md`.
+
+**De dónde sale**: BigQuery por ODBC (driver Simba, **DSN de usuario `BQCOL`**, con la cuenta de
+Google del usuario), tablas `mo-vendor-management-reporting.JZZBOGOTA.ALL_dataorb_to_mo_insight_all_data_flattened_GAMMA`
+y `…JZZBOGOTA.NominaBogota`. Se traen **90 días** hasta ayer en dos tramos de 45 (con 90 de golpe
+el driver fallaba), se agregan en un **cubo** y se guardan en disco (~60 MB):
+
+- Desarrollo: `CDM Auditorias Calidad\App_Data\cache_nosolucion.json` (ni se versiona ni se publica).
+- Producción: `publicacion\datos\cache_nosolucion.json` (fuera de `publicacion\app`, para que
+  `publicar.cmd` no la borre). Lo fija `appsettings.Production.json`.
+- **Ninguna petición espera a BigQuery**: sin cubo, la página enseña «Preparando los datos» y se
+  vuelve a pedir sola cada 10 s (la primera descarga tarda ~1 min). Con un cubo de más de 12 h, se
+  sirve el que hay y se renueva en segundo plano. «Actualizar ahora» lo fuerza (como mucho una vez
+  cada 30 s; aquí no hay inicio de sesión, así que lo puede pulsar cualquiera).
+- **El driver no admite dos consultas a la vez** en el mismo proceso: todas pasan por un turno
+  único (`FuenteBigQuery.Turno`), con timeout y tres reintentos.
+- Los últimos 5 días son **provisionales** (las encuestas llegan tarde) y un día cuya extracción
+  no llega al 80 % de la mediana de su día de la semana es **parcial** (línea discontinua).
+- `Datos\impedimentos_tabla.json`: tabla fija de etiquetas de impedimento → categorías (la
+  «aprendida del informe del 10/09»); viaja con el código.
+
+**Pestañas** (todas con el mismo panel de filtros: fechas con atajos —todo, 7 días, 30 días, último
+mes cerrado; **por defecto, los últimos 30 días**—, Sector (cola de entrada), Supervisor, Team
+leader, Agente y Marca, en cascada; supervisor, TL y agente se encadenan):
+
+- **Resumen**: 5 indicadores (no solución con su variación frente a los mismos días previos,
+  no solucionadas, encuestadas con cobertura, llamadas entrantes, cruce con nómina), evolución
+  diaria del % por marca (color fijo por marca), encuestas por día, los días que peor cerraron y
+  «qué queda fuera de la cifra».
+- **Equipos**: ranking por % de supervisores, TL o agentes (suelo de encuestas prorrateado al
+  rango), buscador, orden por columna **en el servidor** (para que el CSV salga igual que la
+  tabla), desvío frente a la media y aviso si la cobertura es desigual.
+- **Motivos**: áreas N2 en barras (por no solucionadas en absoluto) y las 25 tipologías N3; cada
+  una se despliega con 10 llamadas de ejemplo (texto e ID con «Copiar ID») y su CSV.
+- **Sin acceso a internet**: indicadores, atención frente a proceso, la rúbrica ítem a ítem,
+  los impedimentos (desplegables con reparto por marca y servicio y llamadas de ejemplo) y las
+  averías N4 › N5.
+- **CSV**: todas las no solucionadas con los filtros (`/nosolucion/csv`, opcionalmente de una
+  tipología `n3` o un impedimento `bit`), la tabla de equipos y las tipologías.
+
+**Qué se trajo y qué se rehízo**:
+
+- **Tal cual** (solo cambia el espacio de nombres): `Servicios/NoSolucion/` (`FuenteBigQuery`,
+  `CacheNoSolucion`, `Cubo`, `Ensamblador`, `Agregados`, `FiltrosCdm`, `ServicioCdm`) y
+  `Servicios/Comun/` (`FormatoPython`, `ExportacionCsv`, `Errores`), con sus pruebas
+  (`NoSolucionTests.cs` contra la salida del Python de referencia en `Fixtures/nosolucion_python.json`,
+  y las del servicio de pantallas de `CdmTests.cs`).
+- **Adaptado**: `ServicioNoSolucion` lee `OpcionesNoSolucion` (sección `NoSolucion` de
+  appsettings; en ranking-mvc eran las variables `NOSOL_*` del `.env`) y resuelve las rutas
+  respecto a la carpeta de la aplicación.
+- **Rehecho con el estilo de aquí**: controlador `NoSolucionController`, modelos
+  `Models/NoSolucion` y vistas `Views/NoSolucion`. Usa las piezas de Auditorías (cabecera,
+  pestañas, `_Desplegable` —movido a `Views/Shared`—, tira de indicadores, tarjetas, `.hbarras`,
+  `crono-linea`, `table.ranking`, filtros que se aplican al marcar con recarga parcial) y solo
+  añade lo que no existía (pastillas de tasa, filas que se despliegan, llamadas de ejemplo,
+  atajos de fecha, «preparando»). Todo está en la **sección 9 de `docs/guia-de-estilos.md`**.
+- **Quitado** respecto a ranking-mvc: el permiso `ver_nosolucion`, el botón solo para admin y el
+  recuerdo de filtros en la sesión (aquí no hay inicio de sesión; los filtros van en la URL).
+- **Portada**: segunda tarjeta, «CDM No solución», junto a «General».
+
+---
+
 ## 4. Estructura del proyecto
 
 ```
@@ -324,28 +407,39 @@ C:\Proyectos\CDM Auditorias Calidad\
 │  ├─ .env / env.ejemplo          ← credenciales SQL (el .env no se versiona)
 │  ├─ Consultas\Auditorias.sql    ← la consulta del PBI, copiada tal cual (sin ORDER BY)
 │  ├─ Consultas\Nomina.sql        ← nómina por día con cargo (tarjeta «Total agentes»)
+│  ├─ Datos\impedimentos_tabla.json ← No solución: etiquetas de impedimento → categorías (fija)
+│  ├─ App_Data\                   ← (sin versionar) caché de No solución en desarrollo (~60 MB)
 │  ├─ Controllers\
 │  │  ├─ HomeController.cs        ← "/" portada (Menú) y "/error"
-│  │  └─ TableroController.cs     ← "/general", "/formacion", "/{pagina}/descargar", POST "/datos/recargar"
+│  │  ├─ TableroController.cs     ← "/general", "/formacion", "/{pagina}/descargar", POST "/datos/recargar"
+│  │  └─ NoSolucionController.cs  ← "/nosolucion" (+ /equipos, /motivos, /internet), los CSV y POST "/nosolucion/actualizar"
 │  ├─ Models\                     ← Auditoria y RegistroNomina (filas), InstantaneaAuditorias,
 │  │                                TableroModelo (+ TarjetaKpi, GrupoFiltro…), MenuModelo, CabeceraModelo
+│  │  └─ NoSolucion\              ← PaginaNoSolucion (+ una por pestaña), FormatoNoSolucion
 │  ├─ Infraestructura\            ← Formato (es-ES, espacio fino), Iconos (trazo + logotipo), EscalaGrafico
 │  ├─ Servicios\
-│  │  ├─ Configuracion\           ← LectorDotEnv, DatosConexion, OpcionesAuditorias
+│  │  ├─ Configuracion\           ← LectorDotEnv, DatosConexion, OpcionesAuditorias, OpcionesNoSolucion
 │  │  ├─ Datos\                   ← RepositorioAuditorias (SQL: auditorías y nómina), AlmacenAuditorias (memoria),
 │  │  │                             RecargaPeriodica
 │  │  ├─ Tablero\                 ← CalculadoraTablero (las medidas DAX y «Total agentes»), Periodos (fechas DAX),
 │  │  │                             FiltrosTablero (URL), PaginaTablero (General / Formación)
-│  │  └─ Exportacion\             ← ExportadorExcel
+│  │  ├─ Exportacion\             ← ExportadorExcel
+│  │  ├─ NoSolucion\              ← (de ranking-mvc) FuenteBigQuery, CacheNoSolucion, Cubo, Ensamblador,
+│  │  │                             Agregados, FiltrosCdm, ServicioCdm, ServicioNoSolucion
+│  │  └─ Comun\                   ← (de ranking-mvc) FormatoPython, ExportacionCsv, Errores
 │  ├─ Views\
 │  │  ├─ Shared\_Layout, _Cabecera ← documento base (data-marca, tema.js) y cabecera común
 │  │  ├─ Home\Index.cshtml        ← portada (solo «General»)
 │  │  ├─ Tablero\Index            ← cabecera + _Informe
 │  │  ├─ Tablero\_Informe         ← lo que se sustituye al filtrar: pestañas, panel, tira, rejillas
-│  │  ├─ Tablero\_PanelFiltros, _Desplegable, _ErrorDatos
-│  │  └─ Tablero\Graficos\        ← _Columnas, _Linea, _Sectores (hbarras), _TopAuditores (ranking)
+│  │  ├─ Tablero\_PanelFiltros, _ErrorDatos (_Desplegable está en Shared: lo usan los dos informes)
+│  │  ├─ Tablero\Graficos\        ← _Columnas, _Linea, _Sectores (hbarras), _TopAuditores (ranking)
+│  │  └─ NoSolucion\              ← _LayoutNoSolucion, _InformeNoSolucion (#informe), _PanelNoSolucion,
+│  │                                Resumen, Equipos, Motivos, Internet, _LineasNs, _EncuestasDiarias,
+│  │                                _BarrasNs (hbarras), _MuestrasNs
 │  └─ wwwroot\                    ← css\site.css (variables de la guía), js\tema.js, js\site.js, favicon.svg
-└─ CDM Auditorias Calidad.Tests\  ← xUnit: PeriodosTests, CalculadoraTableroTests (30 pruebas)
+└─ CDM Auditorias Calidad.Tests\  ← xUnit: PeriodosTests, CalculadoraTableroTests, NoSolucionTests y
+                                    CdmTests (de ranking-mvc, con Fixtures\nosolucion_python.json); 240 casos
 ```
 
 Parámetros de la URL: `desde`, `hasta` (yyyy-MM-dd), `mes` (yyyy-MM), `sector`, `super`,
@@ -354,6 +448,13 @@ Parámetros de la URL: `desde`, `hasta` (yyyy-MM-dd), `mes` (yyyy-MM), `sector`,
 `OpcionesAuditorias` (appsettings → `Auditorias`): `RutaEnv`, `MinutosRecarga` (30),
 `SegundosConsulta` (300), `MetaCalidad` (0,5), `CargosFormacion` (filtro de la página
 Formación), `CargosAgente` (quién cuenta como agente en «Total agentes»).
+
+`OpcionesNoSolucion` (appsettings → `NoSolucion`): `Odbc` (`DSN=BQCOL;`), `RutaCache`
+(`App_Data\cache_nosolucion.json`; en producción `..\datos\cache_nosolucion.json`), `Ventana` (90),
+`DiasProvisionales` (5), `Tramo` (45), `RefrescoHoras` (12), `RutaTablaImpedimentos`.
+
+Parámetros de `/nosolucion…`: `desde`, `hasta`, `servicio`, `supervisor`, `tl`, `agente`, `marca`
+(repetibles); en Equipos, además, `nivel` (`supervisor` / `tl` / `agente`), `orden`, `dir` y `q`.
 
 ---
 
@@ -370,6 +471,10 @@ Formación), `CargosAgente` (quién cuenta como agente en «Total agentes»).
   - Las vistas Razor se compilan con el proyecto: tras cambiar un `.cshtml` hay que
     recompilar y reiniciar. CSS y JS se sirven directamente (basta recargar el navegador).
   - Antes de compilar hay que parar la web en marcha que use `bin\Debug`: la DLL queda bloqueada.
+- **No solución necesita el DSN de ODBC `BQCOL`** (driver Simba de BigQuery, DSN de usuario, con
+  la cuenta de Google del usuario): el mismo que usa ranking-mvc. Si falta, la página se queda en
+  «Preparando los datos» y enseña el error del último intento. La primera vez (sin caché) tarda
+  ~1 min en traer los datos.
 - **Pruebas**: `dotnet test "CDM Auditorias Calidad.sln"` (con la web parada).
 - **Publicación** (la del 5180, en marcha con la versión actual desde el 02-10-2026):
   1. Cerrar la ventana «CDM Auditorias Calidad (5180)».
@@ -421,10 +526,34 @@ Formación), `CargosAgente` (quién cuenta como agente en «Total agentes»).
   «Sin período anterior con datos».
 - 30 pruebas unitarias en verde (fechas DAX, período anterior, tarjetas, «Total agentes»,
   filtros en cascada, top 10, vistas, detalle, URL).
+- **05-10-2026, CDM No solución** (copia temporal en el 5190, ya parada; producción sin tocar):
+  - El cubo se trajo de BigQuery desde esta web (dos tramos, ~1 min, 60 MB) y la página pasó sola de
+    «Preparando los datos» al informe.
+  - Últimos 30 días (05-09 → 04-10): 15,00 % de no solución, 15.612 no solucionadas de 104.060
+    encuestadas, 364.793 llamadas, cruce con nómina 99,98 %. El CSV general trae 15.612 filas, igual
+    que la tarjeta; el de un impedimento y los de equipos y tipologías también descargan.
+  - Marcar «YOIGO» en Marca filtra al momento (sinAccesoInternet: 6.018 → 1.679 encuestadas) con el
+    desplegable abierto; el buscador de Equipos y las filas desplegables funcionan.
+  - Capturas en claro y oscuro de las 4 pestañas y la portada; sin desbordes a 375 px; sin errores de
+    consola. El informe General de Auditorías sigue igual (se tocaron piezas compartidas).
+  - «Copiar ID» no se pudo pulsar con un clic real (el panel del navegador no pintaba); usa lo mismo
+    que ranking-mvc (portapapeles y, por HTTP con IP, `execCommand('copy')`).
+  - 240 pruebas en verde (las de Auditorías y las de No solución traídas de ranking-mvc, que
+    comparan con la salida del Python de referencia).
 
 ---
 
 ## 7. Pendientes y decisiones abiertas
+
+- **Publicar CDM No solución en el 5180** (05-10-2026): probado solo en una copia temporal. Para
+  pasarlo: cerrar la ventana «CDM Auditorias Calidad (5180)», `publicar.cmd`, `arrancar.cmd`. La
+  primera vez la página dirá «Preparando los datos» ~1 min (no hay caché en `publicacion\datos`;
+  se puede copiar la de `App_Data` para que entre al instante). Lo decide el usuario.
+- **No solución depende del DSN `BQCOL` de usuario** (la cuenta de Google del usuario), igual que
+  en ranking-mvc. En la torre nueva hay que volver a crearlo. Para entregar la web haría falta una
+  cuenta de servicio de BigQuery.
+- **Dos copias de No solución** (aquí y en ranking-mvc): un arreglo en una no llega a la otra. Si
+  ranking-mvc deja de usarse, esta pasa a ser la única.
 
 - **Producción (5180)**: al día con la versión actual desde el 02-10-2026 (el usuario pidió una
   sola dirección que funcione: `http://localhost:5180/general`). Para los próximos cambios:
@@ -498,3 +627,11 @@ Formación), `CargosAgente` (quién cuenta como agente en «Total agentes»).
 - **02-10-2026** — Una sola dirección: el 5180 (también el perfil de Visual Studio); producción
   publicada con la versión actual y comprobada (`localhost` y la IP del equipo, julio en el
   filtro: 5.530 auditorías, todas ICEBERG; datos del 01/07 al 02/10, 20.874 auditorías).
+- **05-10-2026** — **CDM No solución** traído de ranking-mvc a `/nosolucion` (sección 3 ter): motor de
+  BigQuery, caché y cálculos copiados con sus pruebas; controlador, modelos y vistas rehechos con las
+  piezas de este proyecto; tarjeta en la portada. Probado en una copia temporal (5190) con datos
+  reales; producción (5180) sin tocar, a la espera del usuario.
+- **05-10-2026** — `docs/guia-de-estilos.md` actualizada (el usuario la volvió a pasar, idéntica): las
+  secciones 1–8 siguen siendo las de SOLARIS y la nueva sección 9 recoge cómo se aplica aquí, las
+  variables añadidas y las piezas de Auditorías y de No solución. La misma copia quedó en su carpeta
+  de Descargas.

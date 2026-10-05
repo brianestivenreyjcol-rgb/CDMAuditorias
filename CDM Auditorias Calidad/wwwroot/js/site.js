@@ -11,6 +11,9 @@
 //   semáforo según th[data-sentido] (1 más es mejor, -1 más es peor, 0 sin color).
 // - Cifras de la tira de indicadores: cuentan desde cero al cargar la página y, al filtrar,
 //   pasan del valor anterior al nuevo (las animaciones de entrada solo se ven al cargar).
+// - CDM No solución (/nosolucion) usa todo lo anterior y además: el buscador de Equipos
+//   (form[data-parcial]), «Copiar ID» de las llamadas de ejemplo ([data-copiar]) y, mientras se
+//   traen los datos de BigQuery, la recarga sola de la página ([data-recargar-en]).
 // Con «reducir movimiento» no se anima nada.
 (() => {
   'use strict';
@@ -70,13 +73,21 @@
   function urlDe(form) {
     // Las fechas que coinciden con el borde del calendario no se envían: así la URL sigue
     // sirviendo cuando lleguen datos nuevos (el rango se amplía solo, como en el PBI).
+    // En No solución el rango por defecto no es el calendario entero sino los últimos 30 días
+    // (data-defecto), y la fecha inicial depende de la final: con data-fechas-juntas solo se
+    // quitan si las dos son las de por defecto.
+    const desde = form.querySelector('input[name=desde]');
+    const hasta = form.querySelector('input[name=hasta]');
     const bordes = {
-      desde: form.querySelector('input[name=desde]')?.min,
-      hasta: form.querySelector('input[name=hasta]')?.max,
+      desde: desde?.dataset.defecto ?? desde?.min,
+      hasta: hasta?.dataset.defecto ?? hasta?.max,
     };
+    if (form.hasAttribute('data-fechas-juntas') && !(desde?.value === bordes.desde && hasta?.value === bordes.hasta)) {
+      bordes.desde = bordes.hasta = undefined;
+    }
     const p = new URLSearchParams();
     for (const [clave, valor] of new FormData(form)) {
-      if (valor === '' || (clave in bordes && valor === bordes[clave])) continue;
+      if (valor === '' || (bordes[clave] !== undefined && valor === bordes[clave])) continue;
       p.append(clave, valor);
     }
     const q = p.toString();
@@ -185,6 +196,12 @@
       return;
     }
 
+    const copiar = e.target.closest('[data-copiar]');
+    if (copiar) {
+      copiarTexto(copiar);
+      return;
+    }
+
     // Clic fuera: cierra los desplegables abiertos.
     document.querySelectorAll('details.multi[open]').forEach(d => { if (!d.contains(e.target)) d.open = false; });
   });
@@ -202,10 +219,51 @@
 
   document.addEventListener('submit', e => {
     const form = e.target;
+    // Formularios GET sueltos que solo cambian #informe (el buscador de Equipos).
+    if (form.matches('form[data-parcial]')) {
+      e.preventDefault();
+      cargar(urlDe(form));
+      return;
+    }
     if (!form.matches('[data-tablero-filtros]')) return;
     e.preventDefault();
     enviar(form, form.querySelector('details.multi[open]'));
   });
+
+  /** «Copiar ID»: al portapapeles, y si el navegador no deja (http sin localhost), a la antigua. */
+  async function copiarTexto(boton) {
+    const texto = boton.dataset.copiar;
+    let hecho = false;
+    try {
+      await navigator.clipboard.writeText(texto);
+      hecho = true;
+    } catch {
+      const area = document.createElement('textarea');
+      area.value = texto;
+      area.setAttribute('readonly', '');
+      area.style.position = 'fixed';
+      area.style.opacity = '0';
+      document.body.appendChild(area);
+      area.select();
+      try { hecho = document.execCommand('copy'); } catch { hecho = false; }
+      area.remove();
+    }
+    const original = boton.dataset.textoOriginal ?? boton.innerHTML;
+    boton.dataset.textoOriginal = original;
+    boton.textContent = hecho ? 'Copiado' : 'Selecciónalo a mano';
+    clearTimeout(boton._temporizador);
+    boton._temporizador = setTimeout(() => { boton.innerHTML = original; }, 1600);
+  }
+
+  // Mientras No solución prepara los datos, la página se vuelve a pedir sola cada pocos segundos.
+  let recarga = null;
+  function programarRecarga(contenedor) {
+    clearTimeout(recarga);
+    const aviso = contenedor.querySelector('[data-recargar-en]');
+    if (!aviso) return;
+    const segundos = Number(aviso.dataset.recargarEn) || 10;
+    recarga = setTimeout(() => cargar(location.href, { empujar: false }), segundos * 1000);
+  }
 
   document.addEventListener('change', e => {
     const campo = e.target;
@@ -437,6 +495,7 @@
     prepararFichas(contenedor);
     contenedor.querySelectorAll('table.ranking[data-mapa]').forEach(colorearTabla);
     contarCifras(contenedor, cifrasAntes);
+    programarRecarga(contenedor);
   }
 
   preparar(document);
