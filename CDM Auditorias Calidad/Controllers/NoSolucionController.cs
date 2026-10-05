@@ -83,6 +83,11 @@ public sealed class NoSolucionController : Controller
     public IActionResult CsvEquipos([FromQuery] PeticionCdm filtros, string? nivel, string? orden, string? dir, string? q)
         => Descargar(() => _cdm.CsvEquipos(filtros, nivel, orden, dir, q));
 
+    /// <summary>Cada no solucionada de sinAccesoInternet con su causa (atención o proceso), en CSV; opcionalmente de una causa.</summary>
+    [HttpGet("internet/causas/csv")]
+    public IActionResult CsvCausas([FromQuery] PeticionCdm filtros, string? causa)
+        => Descargar(() => _cdm.CsvCausas(filtros, causa));
+
     /// <summary>Las tipologías N3 de Motivos, en CSV.</summary>
     [HttpGet("motivos/csv")]
     public IActionResult CsvTipologias([FromQuery] PeticionCdm filtros)

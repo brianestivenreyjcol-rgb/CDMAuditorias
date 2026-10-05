@@ -230,6 +230,9 @@ Usa las de Auditorías (cabecera, pestañas, panel, `_Desplegable`, `.resumen`, 
 | Mientras se traen los datos | `.preparando-ns` con `.girando` y `[data-recargar-en]` | la página se vuelve a pedir sola cada 10 s |
 | Textos | `.nota-ns` (explicación bajo un título), `.pie-ns` (pie con la fuente), `.estado-ns` (fecha de los datos junto a las pestañas), `.puesto-ns`, `.sub-ns` | |
 | Aviso informativo | `.aviso.aviso-info` | el `.aviso` normal es ámbar; este va sobre la superficie |
+| Reparto en una línea | `.veredicto-ns` con `span.relleno-*` | cuadradito del color de su `--relleno` y la cifra en negrita (la causa de la no solución) |
+| Comprobaciones | `ul.comprobaciones-ns` con `FormatoNoSolucion.ChipComprobacion` | pastilla «Correcto» (verde), «Revisar» (ámbar) o «Nota» (sin color) y el texto al lado |
+| Texto largo bajo un nombre | `.sub-ns.envuelve` | el `.sub-ns` normal corta con «…»; este ocupa varias líneas |
 
 ### 9.5 Reglas aprendidas en esta web
 

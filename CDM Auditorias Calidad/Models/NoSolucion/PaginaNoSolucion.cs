@@ -246,6 +246,20 @@ public sealed class PaginaInternetNoSolucion : PaginaNoSolucion
 
     public override PestanaNoSolucion Pestana => PestanaNoSolucion.Internet;
 
+    /// <summary>El CSV de cada no solucionada con su causa; con <paramref name="causa"/>, solo las de esa causa.</summary>
+    public string UrlCsvCausas(string? causa = null)
+        => FiltrosCdm.Url(RutaBase + "/internet/causas/csv",
+            (Filtros?.Parametros() ?? []).Concat(causa is null ? [] : [new KeyValuePair<string, string>("causa", causa)]));
+
+    /// <summary>Clase de color de cada causa (atención en naranja, proceso en azul, como los impedimentos).</summary>
+    public static string ClaseCausa(string clave) => clave switch
+    {
+        CausaNoSolucion.Proceso => "relleno-proceso",
+        CausaNoSolucion.ProcesoYAtencion => "relleno-malo",
+        CausaNoSolucion.Atencion => "relleno-atencion",
+        _ => "relleno-tenue",
+    };
+
     /// <summary>Clase de color de cada cuadrante atención/proceso.</summary>
     public static string ClaseCuadrante(string clave) => clave switch
     {

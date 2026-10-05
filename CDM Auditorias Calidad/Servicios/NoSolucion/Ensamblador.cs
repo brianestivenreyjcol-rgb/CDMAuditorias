@@ -25,10 +25,13 @@ public sealed record FilaBase(
 /// Una llamada de sinAccesoInternet, con su equipo:
 /// <c>[b, s, u, t, a, n4, n5, res, ticket, escbo, rell, evento, cierre, etiquetas, rubrica]</c>.
 /// </summary>
+/// <param name="Id">El <c>conversationId</c> (v3): cruza con las no solucionadas y sirve para contar repetidas.</param>
+/// <param name="Llamada">El <c>externalConversationId</c> sin el sufijo <c>_N</c> (v3): la llamada física,
+/// que puede tener varios tramos si se transfirió.</param>
 public sealed record FilaInternet(
     string B, string S, string U, string T, string A, string N4, string N5,
     int Res, int Ticket, int Escbo, int Rell, string Evento, string Cierre,
-    List<string> Etiquetas, List<int> Rubrica);
+    List<string> Etiquetas, List<int> Rubrica, string Id = "", string Llamada = "");
 
 /// <summary>
 /// Una llamada entrante no solucionada, con su id y su texto:
@@ -59,7 +62,8 @@ public static class Ensamblador
     /// (<see cref="FuenteBigQuery.Firma"/>): un cubo guardado con otro
     /// formato no se reutiliza, se reconstruye.
     /// </summary>
-    public const int VersionCubo = 2;
+    /// <remarks>v3 (05-10-2026): añade <c>ver</c>, <c>dup</c> y <c>causas</c> (ver <see cref="Cubo"/>).</remarks>
+    public const int VersionCubo = 3;
 
     /// <summary>Rúbrica, en el orden de las columnas de la consulta: siete ítems y dos circulares.</summary>
     public const int ItemsRubrica = 7;
@@ -238,13 +242,15 @@ public static class Ensamblador
         const string abrupto = "abruptlyEnded";
 
         var nuevas = new HashSet<string>();
+        var porPalabras = new HashSet<string>();
 
         int Mascara(IReadOnlyList<string> etiquetas)
         {
             // 1) conjunto de etiquetas ya visto: su máscara exacta
             var clave = string.Join("||", etiquetas.Distinct().OrderBy(e => e, TextoPython));
             if (conjuntosImped.TryGetValue(clave, out var exacta)) return exacta;
-            // 2) conjunto nuevo: unión de lo que aporta cada etiqueta
+            // 2) conjunto nuevo: unión de lo que aporta cada etiqueta. Una etiqueta que la tabla no
+            // conoce va por palabras clave (ClasificadorEtiquetas, v3; en el Python iba siempre a «Otro»).
             var m = 0;
             foreach (var e in etiquetas)
             {
@@ -252,7 +258,9 @@ public static class Ensamblador
                 else
                 {
                     nuevas.Add(e);
-                    m |= BitOtro;
+                    var bit = ClasificadorEtiquetas.Bit(e);
+                    if (bit != BitOtro) porPalabras.Add(e);
+                    m |= bit;
                 }
             }
             return m;
@@ -308,6 +316,9 @@ public static class Ensamblador
             var imp = new Dictionary<(int, int, int, int, int), int>();
             var rub = new Dictionary<(int, int, int, int, int, int), int>();
             var cuad = new Dictionary<(int, int, int, int, int, int), int>();
+            var ver = new Dictionary<(int, int, int, int, int, int), int>();
+            var causas = new Dictionary<string, int[]>();
+            var dup = new Dictionary<int, (long Filas, HashSet<string> Conv, HashSet<string> Llam, long FilasNosol, HashSet<string> ConvNosol, HashSet<string> LlamNosol)>();
             foreach (var r in d.Internet)
             {
                 var (bi, si, ai) = (ix["b"][r.B], ix["s"][r.S], ix["a"][r.A]);
@@ -339,9 +350,32 @@ public static class Ensamblador
                     var kr = (bi, si, ai, it, r.Rubrica[it], r.Res);
                     rub[kr] = rub.GetValueOrDefault(kr) + 1;
                 }
-                var aten = r.Cierre == abrupto || (m & MaskAten) != 0 || Fallos(r.Rubrica) > umbral;
+                var fallos = Fallos(r.Rubrica);
+                var aten = r.Cierre == abrupto || (m & MaskAten) != 0 || fallos > umbral;
                 var kc = (bi, si, ai, aten ? 1 : 0, (m & MaskProc) != 0 ? 1 : 0, r.Res);
                 cuad[kc] = cuad.GetValueOrDefault(kc) + 1;
+
+                // v3: la combinación exacta de impedimentos y señales (para la causa única de cada
+                // llamada), las señales de cada no solucionada por su id y el control de repetidas.
+                var senales = (r.Cierre == abrupto ? CausaNoSolucion.SenalCierreAbrupto : 0)
+                              | (fallos > umbral ? CausaNoSolucion.SenalRubrica : 0);
+                var kv = (bi, si, ai, m, senales, r.Res);
+                ver[kv] = ver.GetValueOrDefault(kv) + 1;
+                if (r.Res == 2 && r.Id.Length > 0) causas[r.Id] = new[] { senales, fallos };
+                if (!dup.TryGetValue(bi, out var dp))
+                {
+                    dp = (0, new HashSet<string>(), new HashSet<string>(), 0, new HashSet<string>(), new HashSet<string>());
+                }
+                dp.Filas++;
+                dp.Conv.Add(r.Id);
+                dp.Llam.Add(r.Llamada.Length > 0 ? r.Llamada : r.Id);
+                if (r.Res == 2)
+                {
+                    dp.FilasNosol++;
+                    dp.ConvNosol.Add(r.Id);
+                    dp.LlamNosol.Add(r.Llamada.Length > 0 ? r.Llamada : r.Id);
+                }
+                dup[bi] = dp;
             }
 
             // Las no solucionadas, una por fila, con su máscara de
@@ -372,6 +406,14 @@ public static class Ensamblador
                 Rub = rub.Select(p => new[] { p.Key.Item1, p.Key.Item2, p.Key.Item3, p.Key.Item4, p.Key.Item5, p.Key.Item6, p.Value }).OrderBy(f => f, EnterosPython).ToList(),
                 Cuad = cuad.Select(p => new[] { p.Key.Item1, p.Key.Item2, p.Key.Item3, p.Key.Item4, p.Key.Item5, p.Key.Item6, p.Value }).OrderBy(f => f, EnterosPython).ToList(),
                 Nos = nos.OrderBy(f => f.Id, TextoPython).ThenBy(f => f.IdExterno, TextoPython).ToList(),
+                Ver = ver.Select(p => new[] { p.Key.Item1, p.Key.Item2, p.Key.Item3, p.Key.Item4, p.Key.Item5, p.Key.Item6, p.Value }).OrderBy(f => f, EnterosPython).ToList(),
+                // Sin ids (datos de antes de v3) no se puede contar repetidas: nulo, y la vista no lo enseña.
+                Dup = d.Internet.Any(r => r.Id.Length == 0) ? null : dup.OrderBy(p => p.Key).Select(p => new long[]
+                {
+                    p.Key, p.Value.Filas, p.Value.Conv.Count, p.Value.Llam.Count,
+                    p.Value.FilasNosol, p.Value.ConvNosol.Count, p.Value.LlamNosol.Count,
+                }).ToList(),
+                Causas = causas,
             };
         }
 
@@ -417,6 +459,7 @@ public static class Ensamblador
             UmbralAtencion = umbral,
             UmbralBase = sol.Count,
             EtiquetasNuevas = nuevas.Count,
+            EtiquetasPorPalabras = porPalabras.Count,
             Cuadre = sEq.ToList(),
         };
 

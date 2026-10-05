@@ -594,7 +594,86 @@ public static class Agregados
         var nombre = bit != 0 ? cats[bit].Nom : "Sin ningún impedimento";
         var todas = Llamadas(sel, n3, bit);
         return new RespuestaMuestrasImpedimento(bit, nombre, todas.Count,
-            Elegir(todas).Select(x => ComoMuestra(sel.Meta, x.Dia, x.Fila)).ToList());
+            Elegir(todas).Select(x => ConCausa(sel, x.Dia, x.Fila, ComoMuestra(sel.Meta, x.Dia, x.Fila))).ToList());
+    }
+
+    /// <summary>La muestra con el nombre de su causa, si es de sinAccesoInternet y el cubo la sabe (v3).</summary>
+    private static Muestra ConCausa(Seleccion sel, string dia, FilaNos r, Muestra m)
+        => CausaDe(sel, dia, r) is { } c ? m with { Causa = CausaNoSolucion.Nombre(c.Clave) } : m;
+
+    /// <summary>La causa de una no solucionada de sinAccesoInternet, con sus señales y fallos; nulo si no se sabe.</summary>
+    private static (string Clave, int Senales, int Fallos)? CausaDe(Seleccion sel, string dia, FilaNos r)
+    {
+        if (sel.Meta.D("n3")[r.N3] != TipologiaInternet) return null;
+        var doc = sel.Docs.FirstOrDefault(d => d.D == dia);
+        if (doc?.Causas is null || !doc.Causas.TryGetValue(r.Id, out var c)) return null;
+        return (CausaNoSolucion.Clave(r.Mascara, c[0]), c[0], c[1]);
+    }
+
+    /// <summary>Las no solucionadas de sinAccesoInternet de una causa (o de todas), con su día.</summary>
+    private static List<(string Dia, FilaNos Fila, (string Clave, int Senales, int Fallos) Causa)> LlamadasCausa(Seleccion sel, string? clave)
+    {
+        if (clave is not null && CausaNoSolucion.Todas.All(c => c.Clave != clave))
+        {
+            throw new FiltroInvalido($"causa desconocida: {FormatoPython.Repr(clave)}");
+        }
+        var salida = new List<(string, FilaNos, (string, int, int))>();
+        foreach (var (dia, r) in Llamadas(sel, TipologiaInternet))
+        {
+            if (CausaDe(sel, dia, r) is not { } c) continue;
+            if (clave is null || c.Clave == clave) salida.Add((dia, r, c));
+        }
+        return salida;
+    }
+
+    /// <summary>Diez llamadas de ejemplo de una causa de no solución de sinAccesoInternet (cubo v3).</summary>
+    public static RespuestaMuestras MuestrasCausa(Cubo cubo, string clave, Filtros f)
+    {
+        var sel = new Seleccion(cubo, f);
+        var todas = LlamadasCausa(sel, clave).Select(x => (x.Dia, x.Fila)).ToList();
+        return new RespuestaMuestras(clave, todas.Count,
+            Elegir(todas).Select(x => ConCausa(sel, x.Dia, x.Fila, ComoMuestra(sel.Meta, x.Dia, x.Fila))).ToList());
+    }
+
+    /// <summary>Columnas del CSV de causas.</summary>
+    public static readonly string[] CabCausas =
+    {
+        "id_llamada", "fecha", "marca", "sector", "supervisor", "team_leader", "agente",
+        "causa", "senales_de_atencion", "impedimentos_de_proceso", "otros_impedimentos", "averia_n4", "resumen",
+    };
+
+    /// <summary>
+    /// (nombre, texto) del CSV con cada no solucionada de sinAccesoInternet y su causa: atención,
+    /// proceso, las dos, cliente o sin causa, con las señales que la deciden.
+    /// </summary>
+    public static (string Nombre, string Texto) CsvCausas(Cubo cubo, Filtros f, string? clave = null)
+    {
+        var sel = new Seleccion(cubo, f);
+        var meta = sel.Meta;
+        var cats = meta.ImpedCats ?? new List<CategoriaImpedimento>();
+        var umbral = meta.UmbralAtencion ?? 0;
+        var sb = new StringBuilder(CsvBom);
+        sb.Append(string.Join(CsvSep, CabCausas.Select(CsvEscapa))).Append(CsvEol);
+        var llamadas = LlamadasCausa(sel, clave);
+        var causaDe = new Dictionary<(string, string), (string Clave, int Senales, int Fallos)>();
+        foreach (var x in llamadas) causaDe[(x.Dia, x.Fila.Id)] = x.Causa;
+        foreach (var (dia, r) in Ordenar(llamadas.Select(x => (x.Dia, x.Fila)).ToList()))
+        {
+            var c = causaDe[(dia, r.Id)];
+            var (u, t) = (meta.Amap[r.A][0], meta.Amap[r.A][1]);
+            var proceso = cats.Where(x => (r.Mascara & x.Bit) != 0 && (x.Bit & Ensamblador.MaskProc) != 0).Select(x => x.Nom);
+            var otros = cats.Where(x => (r.Mascara & x.Bit) != 0 && (x.Bit & Ensamblador.MaskProc) == 0 && x.Bit != Ensamblador.MaskAten).Select(x => x.Nom);
+            var valores = new[]
+            {
+                r.Id, dia, meta.D("b")[r.B], meta.D("s")[r.S], meta.D("u")[u], meta.D("t")[t], meta.D("a")[r.A],
+                CausaNoSolucion.Nombre(c.Clave), string.Join(" / ", CausaNoSolucion.Senales(r.Mascara, c.Senales, c.Fallos, umbral)),
+                string.Join(" / ", proceso), string.Join(" / ", otros), r.N4, r.Texto,
+            };
+            sb.Append(string.Join(CsvSep, valores.Select(CsvEscapa))).Append(CsvEol);
+        }
+        var acotado = sel.HayFiltro || clave is not null;
+        var nombre = $"nosolucion_internet_causas_{sel.Fechas[0].Replace("-", "")}-{sel.Fechas[^1].Replace("-", "")}{(acotado ? "_filtrado" : "")}.csv";
+        return (nombre, sb.ToString());
     }
 
     // =====================================================================
@@ -746,12 +825,16 @@ public static class Agregados
 
         long[] Im(int bit) => im.GetValueOrDefault(bit) ?? new long[2];
 
+        var ext = ExtensionInternet(sel);
+
         var impedimentos = (meta.ImpedCats ?? new List<CategoriaImpedimento>())
             .Where(c => Im(c.Bit)[0] > 0)
             .Select(c => new Impedimento(
                 c.Nom, c.Tipo, c.Bit, Im(c.Bit)[0], Im(c.Bit)[1], Pct(Im(c.Bit)[1], Im(c.Bit)[0]),
                 Repartir(c.Bit, porMarca, ordenMarca, meta.D("b")),
-                Repartir(c.Bit, porServicio, ordenServicio, meta.D("s"))))
+                Repartir(c.Bit, porServicio, ordenServicio, meta.D("s")),
+                ext is null ? null : ext.SoloEste.GetValueOrDefault(c.Bit),
+                ext?.Acompanan.GetValueOrDefault(c.Bit)))
             .OrderByDescending(x => x.Nosol)
             .ToList();
 
@@ -807,7 +890,112 @@ public static class Agregados
             impedimentos,
             Im(0)[0],
             rubrica,
-            averias);
+            averias,
+            ext?.Causas,
+            ext is null ? null : ext.Cuadre with { SumaFilas = impedimentos.Sum(x => x.Nosol) },
+            Repetidas(sel));
+    }
+
+    /// <summary>Lo que se calcula con el corte <c>ver</c> (cubo v3); nulo con un cubo anterior.</summary>
+    private sealed record Extension(
+        List<CausaInternet> Causas, CuadreImpedimentos Cuadre,
+        Dictionary<int, long> SoloEste, Dictionary<int, List<Conteo>> Acompanan);
+
+    /// <summary>
+    /// La causa única de cada no solucionada de sinAccesoInternet, el cuadre de llamadas distintas
+    /// de «Qué frena el proceso» y, por impedimento, cuántas lo traen solo a él y con qué otros viene.
+    /// </summary>
+    private static Extension? ExtensionInternet(Seleccion sel)
+    {
+        if (sel.Docs.All(d => d.Ver is null)) return null;
+        var meta = sel.Meta;
+        var cats = meta.ImpedCats ?? new List<CategoriaImpedimento>();
+        var nombre = cats.ToDictionary(c => c.Bit, c => c.Nom);
+
+        var porCausa = CausaNoSolucion.Todas.ToDictionary(c => c.Clave, _ => new long[2]);
+        var detalle = CausaNoSolucion.Todas.ToDictionary(c => c.Clave, _ => new Dictionary<(string Nombre, string Grupo), long>());
+        var soloEste = new Dictionary<int, long>();
+        var juntos = new Dictionary<(int, int), long>();
+        long nosol = 0, conImp = 0, sinImp = 0, conVarios = 0;
+
+        void Sumar(string causa, string razon, string grupo, long n)
+        {
+            var d = detalle[causa];
+            d[(razon, grupo)] = d.GetValueOrDefault((razon, grupo)) + n;
+        }
+
+        // ver: [b, s, a, mascara, senales, res, n]
+        foreach (var r in sel.Filas("ver"))
+        {
+            var (m, senales, res, n) = (r[3], r[4], r[5], (long)r[6]);
+            var causa = CausaNoSolucion.Clave(m, senales);
+            porCausa[causa][0] += n;
+            if (res != 2) continue;
+            porCausa[causa][1] += n;
+            nosol += n;
+
+            var bits = cats.Where(c => (m & c.Bit) != 0).Select(c => c.Bit).ToList();
+            if (bits.Count == 0) sinImp += n; else conImp += n;
+            if (bits.Count > 1) conVarios += n;
+            if (bits.Count == 1) soloEste[bits[0]] = soloEste.GetValueOrDefault(bits[0]) + n;
+            foreach (var a in bits)
+            {
+                foreach (var b in bits)
+                {
+                    if (a != b) juntos[(a, b)] = juntos.GetValueOrDefault((a, b)) + n;
+                }
+            }
+
+            // Las razones dentro de cada causa (una llamada puede tener varias).
+            if (causa is CausaNoSolucion.Proceso or CausaNoSolucion.ProcesoYAtencion)
+            {
+                foreach (var b in bits.Where(b => (b & Ensamblador.MaskProc) != 0)) Sumar(causa, nombre[b], "proceso", n);
+            }
+            if (causa is CausaNoSolucion.Atencion or CausaNoSolucion.ProcesoYAtencion)
+            {
+                if ((senales & CausaNoSolucion.SenalCierreAbrupto) != 0) Sumar(causa, "Cierre abrupto de la llamada", "atencion", n);
+                if ((m & Ensamblador.MaskAten) != 0) Sumar(causa, "Impedimento atribuido al agente", "atencion", n);
+                if ((senales & CausaNoSolucion.SenalRubrica) != 0) Sumar(causa, "Rúbrica peor que la mediana de las solucionadas", "atencion", n);
+            }
+            if (causa == CausaNoSolucion.Cliente)
+            {
+                foreach (var b in bits.Where(b => (b & CausaNoSolucion.MaskCliente) != 0)) Sumar(causa, nombre[b], "otro", n);
+            }
+            if (causa == CausaNoSolucion.SinCausa)
+            {
+                if (bits.Count == 0) Sumar(causa, "Ningún impedimento", "otro", n);
+                foreach (var b in bits) Sumar(causa, nombre[b], "otro", n);
+            }
+        }
+
+        var causas = CausaNoSolucion.Todas
+            .Select(c => new CausaInternet(
+                c.Clave, c.Nombre, c.Explicacion, porCausa[c.Clave][0], porCausa[c.Clave][1],
+                Pct(porCausa[c.Clave][1], nosol),
+                detalle[c.Clave].OrderByDescending(p => p.Value)
+                    .Select(p => new Conteo(p.Key.Nombre, p.Value, p.Key.Grupo)).ToList()))
+            .ToList();
+        var acompanan = cats.ToDictionary(
+            c => c.Bit,
+            c => juntos.Where(p => p.Key.Item1 == c.Bit).OrderByDescending(p => p.Value).Take(3)
+                       .Select(p => new Conteo(nombre[p.Key.Item2], p.Value)).ToList());
+        return new Extension(causas, new CuadreImpedimentos(nosol, conImp, sinImp, conVarios, 0), soloEste, acompanan);
+    }
+
+    /// <summary>Registros frente a conversaciones y llamadas distintas, con el filtro de marca (cubo v3).</summary>
+    private static ControlRepetidas? Repetidas(Seleccion sel)
+    {
+        if (sel.Docs.Count == 0 || sel.Docs.Any(d => d.Dup is null)) return null;
+        var t = new long[6];
+        foreach (var d in sel.Docs)
+        {
+            foreach (var r in d.Dup!)
+            {
+                if (sel.B is not null && !sel.B.Contains((int)r[0])) continue;
+                for (var j = 0; j < 6; j++) t[j] += r[1 + j];
+            }
+        }
+        return new ControlRepetidas(t[0], t[1], t[2], t[3], t[4], t[5]);
     }
 
     private static void Acumular(
@@ -833,7 +1021,7 @@ public static class Agregados
             m.DiaMin, m.DiaMax, m.Ventana, m.Dias.Count, m.DiasParciales,
             m.DiasProvisionales ?? new List<string>(),
             m.Origen ?? "informe", m.EtiquetasNuevas, m.Generado, m.Proyecto, m.Fuente,
-            m.Cruce, m.D("b"), m.D("s"), m.Suelo);
+            m.Cruce, m.D("b"), m.D("s"), m.Suelo, m.EtiquetasPorPalabras);
     }
 }
 
@@ -969,7 +1157,8 @@ public sealed record Muestra(
     [property: JsonPropertyName("texto")] string Texto,
     [property: JsonPropertyName("conversacion")] string Conversacion,
     [property: JsonPropertyName("averia")] string? Averia,
-    [property: JsonPropertyName("impedimentos")] List<string> Impedimentos);
+    [property: JsonPropertyName("impedimentos")] List<string> Impedimentos,
+    [property: JsonPropertyName("causa"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? Causa = null);
 
 public sealed record RespuestaMuestras(
     [property: JsonPropertyName("n3")] string N3,
@@ -1030,7 +1219,9 @@ public sealed record Impedimento(
     [property: JsonPropertyName("nosol")] long Nosol,
     [property: JsonPropertyName("pct")] double? Pct,
     [property: JsonPropertyName("por_marca")] List<Reparto> PorMarca,
-    [property: JsonPropertyName("por_servicio")] List<Reparto> PorServicio);
+    [property: JsonPropertyName("por_servicio")] List<Reparto> PorServicio,
+    [property: JsonPropertyName("solo_este"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] long? SoloEste = null,
+    [property: JsonPropertyName("acompanan"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] List<Conteo>? Acompanan = null);
 
 public sealed record ItemRubrica(
     [property: JsonPropertyName("nombre")] string Nombre,
@@ -1062,7 +1253,53 @@ public sealed record RespuestaInternet(
     [property: JsonPropertyName("impedimentos")] List<Impedimento> Impedimentos,
     [property: JsonPropertyName("sin_impedimento")] long SinImpedimento,
     [property: JsonPropertyName("rubrica")] List<ItemRubrica> Rubrica,
-    [property: JsonPropertyName("averias")] List<Averia> Averias);
+    [property: JsonPropertyName("averias")] List<Averia> Averias,
+    [property: JsonPropertyName("causas"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] List<CausaInternet>? Causas = null,
+    [property: JsonPropertyName("cuadre_impedimentos"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] CuadreImpedimentos? CuadreImpedimentos = null,
+    [property: JsonPropertyName("repetidas"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] ControlRepetidas? Repetidas = null);
+
+// =========================================================================
+// Extensiones de esta web (cubo v3): no existen en el Python de referencia
+// =========================================================================
+
+/// <summary>Un nombre con su cifra; <c>Grupo</c> dice si es una razón de proceso, de atención u otra.</summary>
+public sealed record Conteo(
+    [property: JsonPropertyName("nombre")] string Nombre,
+    [property: JsonPropertyName("n")] long N,
+    [property: JsonPropertyName("grupo"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? Grupo = null);
+
+/// <summary>
+/// Una causa de no solución de sinAccesoInternet (<see cref="CausaNoSolucion"/>): cada llamada no
+/// solucionada está en una sola. <c>Detalle</c> son sus razones, que sí se pueden repetir.
+/// </summary>
+public sealed record CausaInternet(
+    [property: JsonPropertyName("clave")] string Clave,
+    [property: JsonPropertyName("nombre")] string Nombre,
+    [property: JsonPropertyName("explicacion")] string Explicacion,
+    [property: JsonPropertyName("llamadas")] long Llamadas,
+    [property: JsonPropertyName("nosol")] long Nosol,
+    [property: JsonPropertyName("peso")] double? Peso,
+    [property: JsonPropertyName("detalle")] List<Conteo> Detalle);
+
+/// <summary>
+/// Cuadre de «Qué frena el proceso»: las filas cuentan una llamada en cada categoría que trae,
+/// así que su suma pasa del número de llamadas.
+/// </summary>
+public sealed record CuadreImpedimentos(
+    [property: JsonPropertyName("nosol")] long Nosol,
+    [property: JsonPropertyName("con_impedimento")] long ConImpedimento,
+    [property: JsonPropertyName("sin_impedimento")] long SinImpedimento,
+    [property: JsonPropertyName("con_varios")] long ConVarios,
+    [property: JsonPropertyName("suma_filas")] long SumaFilas);
+
+/// <summary>Registros de sinAccesoInternet frente a conversaciones y llamadas físicas distintas.</summary>
+public sealed record ControlRepetidas(
+    [property: JsonPropertyName("registros")] long Registros,
+    [property: JsonPropertyName("conversaciones")] long Conversaciones,
+    [property: JsonPropertyName("llamadas")] long Llamadas,
+    [property: JsonPropertyName("registros_nosol")] long RegistrosNosol,
+    [property: JsonPropertyName("conversaciones_nosol")] long ConversacionesNosol,
+    [property: JsonPropertyName("llamadas_nosol")] long LlamadasNosol);
 
 public sealed record MetaPublica(
     [property: JsonPropertyName("dia_min")] string? DiaMin,
@@ -1079,4 +1316,5 @@ public sealed record MetaPublica(
     [property: JsonPropertyName("cruce_nomina")] double? CruceNomina,
     [property: JsonPropertyName("marcas")] List<string> Marcas,
     [property: JsonPropertyName("servicios")] List<string> Servicios,
-    [property: JsonPropertyName("suelo")] Dictionary<string, int>? Suelo);
+    [property: JsonPropertyName("suelo")] Dictionary<string, int>? Suelo,
+    [property: JsonPropertyName("etiquetas_por_palabras"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] int? EtiquetasPorPalabras = null);

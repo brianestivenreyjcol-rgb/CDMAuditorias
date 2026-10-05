@@ -155,7 +155,27 @@ public sealed class NoSolucionTests
         var cubo = Ensamblador.Ensamblar(
             DocsDeLaFixture(), Tabla("tabla"),
             Fixture.Value.GetProperty("dias_provisionales").GetInt32(), Tabla("conjuntos"));
-        IgualQuePython(Fixture.Value.GetProperty("cubo"), cubo, "cubo");
+        IgualQuePython(Fixture.Value.GetProperty("cubo"), SinExtensiones(cubo), "cubo");
+    }
+
+    /// <summary>
+    /// El cubo sin lo que añadió esta web en la v3 (los cortes ver, dup y causas, el número de versión
+    /// y el recuento de etiquetas clasificadas por palabras), que el Python de referencia no tiene: lo demás
+    /// tiene que salir igual (la fixture no trae etiquetas que las palabras clave reconozcan).
+    /// </summary>
+    private static JsonNode SinExtensiones(Cubo cubo)
+    {
+        var nodo = JsonNode.Parse(JsonSerializer.Serialize(cubo))!;
+        nodo["meta"]!["version_cubo"] = 2;
+        nodo["meta"]!.AsObject().Remove("etiquetas_por_palabras");
+        foreach (var (_, dia) in nodo["dias"]!.AsObject())
+        {
+            var o = dia!.AsObject();
+            o.Remove("ver");
+            o.Remove("dup");
+            o.Remove("causas");
+        }
+        return nodo;
     }
 
     [Fact]
@@ -351,7 +371,7 @@ public sealed class NoSolucionTests
         Assert.Equal(2, tramos.Count);
         Assert.Equal(("2026-06-30", "2026-08-13"), tramos[0]);
         Assert.Equal(("2026-08-14", "2026-09-27"), tramos[1]);
-        Assert.Equal("ventana-unica-90-v2-ygmm-jzor", fuente.Firma());
+        Assert.Equal("ventana-unica-90-v3-ygmm-jzor", fuente.Firma());
     }
 
     [Fact]

@@ -27,9 +27,10 @@
   días guardado en disco que se renueva solo cada 12 h.
 - **Ventana de datos**: 3 meses atrás + el mes en curso (hoy, julio a octubre). ICEBERG ya trae
   julio; las tablas WEB empiezan el 01/08 y el usuario **avisará** cuando el origen traiga 4 meses.
-- **Pendiente principal**: **publicar No solución en el 5180** (probado en una copia temporal; el
-  usuario decide cuándo), cuenta de servicio para SQL, decidir si hace falta inicio de sesión, y
-  julio de WEB cuando avise el usuario (sección 7).
+- **Pendiente principal**: **publicar en el 5180 la causa de cada no solución** (atención o proceso,
+  sección 3 ter): el usuario publicó la primera versión de No solución el 05-10-2026 a las 12:43 y
+  lo de después está probado solo en una copia temporal. Cuenta de servicio para SQL, decidir si hace
+  falta inicio de sesión, y julio de WEB cuando avise el usuario (sección 7).
 
 ---
 
@@ -386,6 +387,47 @@ leader, Agente y Marca, en cascada; supervisor, TL y agente se encadenan):
   recuerdo de filtros en la sesión (aquí no hay inicio de sesión; los filtros van en la URL).
 - **Portada**: segunda tarjeta, «CDM No solución», junto a «General».
 
+### ¿Atención o proceso? Y las llamadas repetidas (05-10-2026, tarde)
+
+El usuario pidió, «en base al contexto» de su bóveda `C:\Proyectos\Soporte YGMM` (el proceso de
+soporte técnico de YGMM: Schaman, escalados, envío de técnico, cierre y encuesta…), que la pestaña
+**Sin acceso a internet** diga si cada no solución fue de **atención** o de **proceso**, y que se
+valide si había **llamadas duplicadas** en «Qué frena el proceso».
+
+- **Duplicadas: no hay.** Comprobado en BigQuery (05-09 → 04-10): 20.589 registros = 20.589
+  `conversationId` distintos; las 1.638 no solucionadas son 1.638 llamadas distintas. 277
+  conversaciones son tramos de una llamada transferida (mismo `externalConversationId` con `_1`,
+  `_2`…): se cuentan aparte porque cada tramo tiene su agente y su encuesta. Lo que «inflaba» la tabla
+  es que **casi todas las no solucionadas traen 2 o 3 impedimentos** y cuentan en cada fila (las filas
+  suman 3.631 con 1.598 llamadas). La página lo dice ahora: tarjeta **«¿Hay llamadas repetidas?»**
+  (calculada en cada carga, con el filtro de marca), y en «Qué frena» el número de llamadas distintas
+  y, por fila, cuántas traen **solo ese** impedimento y con cuáles viene.
+- **Una sola causa por llamada** (`Servicios/NoSolucion/CausaNoSolucion.cs`, reglas documentadas allí):
+  *Proceso* (impedimento de proceso y atención correcta), *Proceso, con fallos de atención* (las dos:
+  revisar si el escalado o el técnico eran evitables; en la bóveda, «Escalados de Voz»: el 90 % de los
+  escalados a N2 eran errores de N1), *Atención* (sin impedimento de proceso y con cierre abrupto,
+  impedimento del agente o rúbrica peor que la mediana de las solucionadas), *Cliente* y *Sin causa*.
+  Son los mismos cuadrantes de antes con nombres de soporte, más la separación cliente / sin causa,
+  cada uno desplegable con sus razones, 10 llamadas de ejemplo y su CSV. CSV nuevo con **cada llamada
+  y su causa** y las señales que la deciden: `/nosolucion/internet/causas/csv` (`?causa=` opcional).
+- **Etiquetas nuevas por palabras clave** (`ClasificadorEtiquetas.cs`): las etiquetas de impedimento
+  las redacta la IA de DataOrb y salen nuevas; la tabla del 10/09 no conocía las de 596 de las 1.638
+  no solucionadas y todas iban a «Otro». Ahora una etiqueta **que no está en la tabla** pasa por reglas
+  de palabras clave (orden y excepciones revisados contra las etiquetas reales de 90 días: «tienda» no
+  es técnico, «dependiente» no es «pendiente», la falta de permisos del agente es proceso, no atención…);
+  si ninguna encaja, sigue en «Otro». La tabla manda siempre sobre las palabras.
+- **Resultado** (05-09 → 04-10): proceso 904 (55,19 %), proceso con fallos de atención 494 (30,16 %),
+  atención 140 (8,55 %), cliente 34, sin causa 66. En las dos causas con atención, la señal que más pesa
+  es la rúbrica (85 %): ojo, la mediana de ítems fallados de las solucionadas es **1 de 7**, así que
+  basta con fallar 2 para contar como «atención». Si al usuario le parece estricto, el umbral está en
+  `Ensamblador` (mediana) y se puede subir.
+- **Cubo v3**: tres cortes nuevos por día (`ver`, `dup`, `causas`) y la consulta de internet trae
+  `conversationId` y la llamada física. La firma cambia (`…-v3-…`), así que al publicar **el cubo se
+  vuelve a traer de BigQuery** (~1 min de «Preparando los datos»). Las pruebas que comparan con el
+  Python de referencia dejan fuera solo lo nuevo; lo nuevo tiene sus pruebas (`CausaNoSolucionTests`).
+- Ojo: la API de Storage de BigQuery dio una vez «failed to connect to all addresses» (red); la página
+  reintenta sola y a la segunda trajo los datos.
+
 ---
 
 ## 4. Estructura del proyecto
@@ -425,7 +467,8 @@ C:\Proyectos\CDM Auditorias Calidad\
 │  │  │                             FiltrosTablero (URL), PaginaTablero (General / Formación)
 │  │  ├─ Exportacion\             ← ExportadorExcel
 │  │  ├─ NoSolucion\              ← (de ranking-mvc) FuenteBigQuery, CacheNoSolucion, Cubo, Ensamblador,
-│  │  │                             Agregados, FiltrosCdm, ServicioCdm, ServicioNoSolucion
+│  │  │                             Agregados, FiltrosCdm, ServicioCdm, ServicioNoSolucion; (de aquí)
+│  │  │                             CausaNoSolucion (atención o proceso), ClasificadorEtiquetas
 │  │  └─ Comun\                   ← (de ranking-mvc) FormatoPython, ExportacionCsv, Errores
 │  ├─ Views\
 │  │  ├─ Shared\_Layout, _Cabecera ← documento base (data-marca, tema.js) y cabecera común
@@ -439,7 +482,8 @@ C:\Proyectos\CDM Auditorias Calidad\
 │  │                                _BarrasNs (hbarras), _MuestrasNs
 │  └─ wwwroot\                    ← css\site.css (variables de la guía), js\tema.js, js\site.js, favicon.svg
 └─ CDM Auditorias Calidad.Tests\  ← xUnit: PeriodosTests, CalculadoraTableroTests, NoSolucionTests y
-                                    CdmTests (de ranking-mvc, con Fixtures\nosolucion_python.json); 240 casos
+                                    CdmTests (de ranking-mvc, con Fixtures\nosolucion_python.json) y
+                                    CausaNoSolucionTests (causa, repetidas, palabras clave); 290 casos
 ```
 
 Parámetros de la URL: `desde`, `hasta` (yyyy-MM-dd), `mes` (yyyy-MM), `sector`, `super`,
@@ -545,10 +589,14 @@ Parámetros de `/nosolucion…`: `desde`, `hasta`, `servicio`, `supervisor`, `tl
 
 ## 7. Pendientes y decisiones abiertas
 
-- **Publicar CDM No solución en el 5180** (05-10-2026): probado solo en una copia temporal. Para
-  pasarlo: cerrar la ventana «CDM Auditorias Calidad (5180)», `publicar.cmd`, `arrancar.cmd`. La
-  primera vez la página dirá «Preparando los datos» ~1 min (no hay caché en `publicacion\datos`;
-  se puede copiar la de `App_Data` para que entre al instante). Lo decide el usuario.
+- **Publicar la causa de cada no solución** (05-10-2026, tarde): el 5180 sirve la primera versión de
+  No solución (publicada por el usuario a las 12:43). Al publicar, el cubo pasa a v3 y se vuelve a
+  traer (~1 min). Revisar con el usuario el umbral de la rúbrica (1 de 7) y, de vez en cuando, las
+  etiquetas que siguen en «Otro» (`ClasificadorEtiquetas`).
+
+- **CDM No solución en el 5180**: el usuario publicó la primera versión el 05-10-2026 a las 12:43
+  (caché en `publicacion\datos`). Para lo siguiente: cerrar la ventana «CDM Auditorias Calidad (5180)»,
+  `publicar.cmd`, `arrancar.cmd`.
 - **No solución depende del DSN `BQCOL` de usuario** (la cuenta de Google del usuario), igual que
   en ranking-mvc. En la torre nueva hay que volver a crearlo. Para entregar la web haría falta una
   cuenta de servicio de BigQuery.
@@ -635,3 +683,8 @@ Parámetros de `/nosolucion…`: `desde`, `hasta`, `servicio`, `supervisor`, `tl
   secciones 1–8 siguen siendo las de SOLARIS y la nueva sección 9 recoge cómo se aplica aquí, las
   variables añadidas y las piezas de Auditorías y de No solución. La misma copia quedó en su carpeta
   de Descargas.
+- **05-10-2026** — Sin acceso a internet: **una causa por llamada** (atención, proceso, las dos, cliente,
+  sin causa) con las reglas del proceso de soporte de YGMM, CSV de cada llamada con su causa, tarjeta
+  «¿Hay llamadas repetidas?» (no hay: lo que sumaba de más eran llamadas con varios impedimentos) y
+  etiquetas nuevas de DataOrb clasificadas por palabras clave. Cubo v3. 290 pruebas. Probado en el 5190
+  con datos reales; sin publicar.

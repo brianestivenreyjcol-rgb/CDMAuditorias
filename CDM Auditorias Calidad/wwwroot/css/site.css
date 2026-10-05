@@ -587,6 +587,18 @@ table.ranking { width: 100%; table-layout: fixed; border-collapse: separate; bor
 .desgloses-ns { margin-bottom: 12px; }
 .desglose-ns-titulo { margin-bottom: 6px; font-size: 11.5px; letter-spacing: .04em; text-transform: uppercase; color: var(--texto-tenue); }
 
+/* Causa de la no solución (sinAccesoInternet): reparto en una línea y comprobaciones de repetidas. */
+.veredicto-ns { display: flex; flex-wrap: wrap; gap: 6px 18px; margin: 0 0 12px; font-size: 13px; color: var(--texto-suave); }
+.veredicto-ns > span { display: inline-flex; align-items: center; gap: 6px; }
+.veredicto-ns i { width: 10px; height: 10px; border-radius: 3px; background: var(--relleno, var(--texto-tenue)); }
+.veredicto-ns b { color: var(--texto); font-weight: 600; font-variant-numeric: tabular-nums; }
+.sub-ns.envuelve { white-space: normal; overflow: visible; max-width: 60ch; }
+.comprobaciones-ns { margin: 0; padding: 0; list-style: none; display: grid; gap: 10px; font-size: 13px; color: var(--texto-suave); }
+.comprobaciones-ns li { display: grid; grid-template-columns: 86px minmax(0, 1fr); gap: 10px; align-items: start; }
+.comprobaciones-ns .chip { justify-content: center; }
+.comprobaciones-ns b { color: var(--texto); font-weight: 600; }
+.muestra-ns-causa b { color: var(--texto-suave); font-weight: 600; }
+
 /* Llamadas de ejemplo. */
 .muestras-ns { display: grid; gap: 8px; }
 .muestras-ns-cabecera { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }

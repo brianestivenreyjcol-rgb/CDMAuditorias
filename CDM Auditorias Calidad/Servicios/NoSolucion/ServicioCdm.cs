@@ -103,7 +103,10 @@ public sealed record VistaCdm<T>(T? Datos, string? Aviso) where T : class;
 public sealed record MotivosCdm(RespuestaMotivos Motivos, IReadOnlyDictionary<string, RespuestaMuestras> Muestras);
 
 /// <summary>Sin acceso a internet con las llamadas de ejemplo de cada impedimento.</summary>
-public sealed record InternetCdm(RespuestaInternet Internet, IReadOnlyDictionary<int, RespuestaMuestrasImpedimento> Muestras);
+/// <param name="MuestrasCausa">Llamadas de ejemplo de cada causa de no solución (cubo v3; vacío si el cubo no la sabe).</param>
+public sealed record InternetCdm(
+    RespuestaInternet Internet, IReadOnlyDictionary<int, RespuestaMuestrasImpedimento> Muestras,
+    IReadOnlyDictionary<string, RespuestaMuestras> MuestrasCausa);
 
 /// <summary>Una fila de la tabla de equipos, con su puesto en el ranking por % y su tono de desvío.</summary>
 public sealed record FilaEquipoCdm(int Puesto, FilaEquipo Fila, string Detalle, string? Tono);
@@ -374,7 +377,14 @@ public sealed class ServicioCdm
                 (cubo, f) => Agregados.MuestrasImpedimento(cubo, bit, f, Agregados.TipologiaInternet));
             if (m.Datos is not null) muestras[bit] = m.Datos;
         }
-        return new VistaCdm<InternetCdm>(new InternetCdm(vista.Datos, muestras), null);
+        var porCausa = new Dictionary<string, RespuestaMuestras>();
+        foreach (var clave in (vista.Datos.Causas ?? new List<CausaInternet>()).Where(c => c.Nosol > 0).Select(c => c.Clave))
+        {
+            var m = Vista(ctx, new object?[] { "muestras-causa", clave },
+                (cubo, f) => Agregados.MuestrasCausa(cubo, clave, f));
+            if (m.Datos is not null) porCausa[clave] = m.Datos;
+        }
+        return new VistaCdm<InternetCdm>(new InternetCdm(vista.Datos, muestras, porCausa), null);
     }
 
     // ------------------------------------------------------------------
@@ -440,6 +450,28 @@ public sealed class ServicioCdm
         });
         var plural = n switch { "tl" => "team_leaders", "agente" => "agentes", _ => "supervisores" };
         return new FicheroCsv($"nosolucion_{plural}_{RangoNombre(ctx.Filtros!)}.csv", ExportacionCsv.Bytes(cabecera, filas));
+    }
+
+    /// <summary>
+    /// Cada no solucionada de sinAccesoInternet con su causa (atención, proceso, las dos, cliente o
+    /// sin causa) y las señales que la deciden; opcionalmente, solo las de una causa.
+    /// </summary>
+    public FicheroCsv? CsvCausas(PeticionCdm peticion, string? causa)
+    {
+        if (causa is { Length: > 40 }) throw new PeticionInvalida("Causa no válida.");
+        var ctx = Contexto(peticion);
+        if (ctx.Preparando) return null;
+        if (!ctx.Listo) throw new PeticionInvalida("Todavía no hay días con datos.");
+        try
+        {
+            var (cubo, _) = _origen.Actual();
+            var (nombre, texto) = Agregados.CsvCausas(cubo, ctx.Filtros!.ParaAgregados(), string.IsNullOrEmpty(causa) ? null : causa);
+            return new FicheroCsv(nombre, Encoding.UTF8.GetBytes(texto));
+        }
+        catch (FiltroInvalido ex)
+        {
+            throw new PeticionInvalida(ex.Message);
+        }
     }
 
     /// <summary>Las 25 tipologías N3 de Motivos en CSV para Excel.</summary>

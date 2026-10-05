@@ -4,8 +4,8 @@ using System.Text.Json.Serialization;
 namespace CDM_Auditorias_Calidad.Servicios.NoSolucion;
 
 /// <summary>
-/// El cubo de No solución (formato v2): un documento por día con siete
-/// cortes. Es el contenido de <c>cache_nosolucion.json</c>, el fichero que
+/// El cubo de No solución (formato v3): un documento por día con siete
+/// cortes, más tres de esta web (v3). Es el contenido de <c>cache_nosolucion.json</c>, el fichero que
 /// comparten los dos backends.
 /// </summary>
 /// <remarks>
@@ -21,7 +21,16 @@ namespace CDM_Auditorias_Calidad.Servicios.NoSolucion;
 /// rub  [b, s, a, item, valor, res,                            n]
 /// cuad [b, s, a, aten, proc, res,                             n]
 /// nos  [b, s, a, n2, n3, mascara, id, id_externo, n4, texto]
+/// ver  [b, s, a, mascara, senales, res,                       n]   (v3, solo esta web)
+/// dup  [b, filas, conversaciones, llamadas, filas_nosol, conversaciones_nosol, llamadas_nosol]   (v3)
+/// causas { conversationId: [senales, fallos] }                       (v3)
 /// </code>
+/// <para>
+/// <c>ver</c>, <c>dup</c> y <c>causas</c> no existen en el Python de referencia: los añadió esta
+/// web el 05-10-2026 para decir si cada no solución de sinAccesoInternet fue de atención o de
+/// proceso (<see cref="CausaNoSolucion"/>) y para comprobar que no hay llamadas repetidas. En
+/// un cubo v2 vienen nulos y las vistas los omiten.
+/// </para>
 /// <para>
 /// <c>nos</c> son todas las llamadas entrantes no solucionadas, una por fila,
 /// con su id y el resumen: de ahí salen los ejemplos y el CSV.
@@ -69,6 +78,10 @@ public sealed class MetaCubo
     [JsonPropertyName("umbral_atencion")] public int? UmbralAtencion { get; set; }
     [JsonPropertyName("umbral_base")] public int? UmbralBase { get; set; }
     [JsonPropertyName("etiquetas_nuevas")] public int? EtiquetasNuevas { get; set; }
+
+    /// <summary>De las nuevas, cuántas se clasificaron por palabras clave en vez de ir a «Otro» (v3).</summary>
+    [JsonPropertyName("etiquetas_por_palabras"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public int? EtiquetasPorPalabras { get; set; }
     [JsonPropertyName("cuadre")] public List<long>? Cuadre { get; set; }
     [JsonExtensionData] public Dictionary<string, JsonElement>? Extra { get; set; }
 
@@ -103,6 +116,18 @@ public sealed class DocDia
     /// <summary>Las no solucionadas del día, una a una, ordenadas por (id, id_externo).</summary>
     [JsonPropertyName("nos")] public List<FilaNos> Nos { get; set; } = new();
 
+    /// <summary>sinAccesoInternet por combinación exacta de impedimentos y señales de atención (v3).</summary>
+    [JsonPropertyName("ver"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public List<int[]>? Ver { get; set; }
+
+    /// <summary>Registros de sinAccesoInternet frente a conversaciones y llamadas distintas, por marca (v3).</summary>
+    [JsonPropertyName("dup"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public List<long[]>? Dup { get; set; }
+
+    /// <summary>Señales de atención y ítems fallados de cada no solucionada de sinAccesoInternet, por conversationId (v3).</summary>
+    [JsonPropertyName("causas"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public Dictionary<string, int[]>? Causas { get; set; }
+
     [JsonExtensionData] public Dictionary<string, JsonElement>? Extra { get; set; }
 
     /// <summary>Un corte de enteros por nombre, como <c>doc.get(campo) or ()</c>.</summary>
@@ -114,6 +139,7 @@ public sealed class DocDia
         "imp" => Imp,
         "rub" => Rub,
         "cuad" => Cuad,
+        "ver" => Ver ?? new List<int[]>(),
         _ => throw new ArgumentException("Corte desconocido: " + campo, nameof(campo)),
     };
 }

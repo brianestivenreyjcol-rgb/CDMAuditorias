@@ -291,7 +291,11 @@ public sealed class FuenteBigQuery : IFuenteNoSolucion
 
     /// <summary>
     /// Una fila por llamada de sinAccesoInternet con su equipo, avería,
-    /// señales, impedimentos y rúbrica. Sin textos.
+    /// señales, impedimentos y rúbrica. Sin textos. Desde la v3 del cubo lleva
+    /// además el <c>conversationId</c> y la llamada física (el
+    /// <c>externalConversationId</c> sin su sufijo <c>_N</c>, que numera los tramos
+    /// de una llamada transferida), para la causa de cada no solucionada y el
+    /// control de repetidas.
     /// </summary>
     public static string SqlInternet(string desde, string hasta)
     {
@@ -319,7 +323,9 @@ public sealed class FuenteBigQuery : IFuenteNoSolucion
                IFNULL(u.tasks_EventCheck_rating, 'NA') AS evento,
                IFNULL(u.tasks_CompletionCheck_rating, 'NA') AS cierre,
                ARRAY_TO_STRING(u.resolution_resolutionImpediments_resolutionImpedimentsTopicGroup, '||') AS impedimentos,
-               {{rubrica}}
+               {{rubrica}},
+               IFNULL(CAST(u.conversationId AS STRING), '') AS conversacion,
+               IFNULL(REGEXP_REPLACE(CAST(u.externalConversationId AS STRING), r'_\d+$', ''), '') AS llamada
         FROM u
         {{CruceNomina}}
         """;
@@ -484,7 +490,8 @@ public sealed class FuenteBigQuery : IFuenteNoSolucion
                 Etiquetas(Texto(r, "impedimentos")),
                 Enumerable.Range(0, ColumnasRubrica.Length)
                     .Select(i => ValorRubrica.GetValueOrDefault(Texto(r, "r" + i.ToString(CultureInfo.InvariantCulture)), -1))
-                    .ToList()));
+                    .ToList(),
+                Texto(r, "conversacion"), Texto(r, "llamada")));
         }
         foreach (var r in llamadas)
         {

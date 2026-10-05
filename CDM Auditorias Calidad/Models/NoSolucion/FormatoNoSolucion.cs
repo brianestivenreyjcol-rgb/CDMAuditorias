@@ -47,6 +47,17 @@ public static class FormatoNoSolucion
     }
 
     /// <summary>
+    /// Pastilla de una comprobación: «Correcto» (verde), «Revisar» (ámbar) o, con nulo, «Nota»
+    /// (sin color: es una explicación, no un control).
+    /// </summary>
+    public static IHtmlContent ChipComprobacion(bool? correcto) => correcto switch
+    {
+        true => new HtmlString("<span class=\"chip chip-bueno\">Correcto</span>"),
+        false => new HtmlString("<span class=\"chip chip-atencion\">Revisar</span>"),
+        null => new HtmlString("<span class=\"chip\">Nota</span>"),
+    };
+
+    /// <summary>
     /// La tasa y su desvío frente a la media en una pastilla del color de su tramo
     /// (<see cref="ServicioCdm.Tono"/>: +6 % crítico, +2,5 % atención, −2,5 % bueno), con el
     /// texto siempre visible.
