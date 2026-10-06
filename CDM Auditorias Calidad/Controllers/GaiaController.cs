@@ -1,0 +1,222 @@
+using System.Globalization;
+using CDM_Auditorias_Calidad.Models.Gaia;
+using CDM_Auditorias_Calidad.Servicios.Comun;
+using CDM_Auditorias_Calidad.Servicios.Gaia;
+using Microsoft.AspNetCore.Mvc;
+
+namespace CDM_Auditorias_Calidad.Controllers;
+
+/// <summary>
+/// GAIA Formación (port del PBI <c>GAIA Formación.pbip</c>): llamadas de los agentes en formación en
+/// sus días de preconexión y aseguramiento, según el Excel de nómina de la carpeta compartida.
+/// </summary>
+/// <remarks>
+/// Como en No solución, con la cabecera <c>X-Parcial: 1</c> (la manda site.js) cada pestaña
+/// devuelve solo <c>#informe</c>. Cada visita mira, ya servida la página, si el Excel cambió.
+/// </remarks>
+[Route(PaginaGaia.RutaBase)]
+public sealed class GaiaController : Controller
+{
+    private const string ClaveActualizacion = "GaiaActualizar";
+
+    private readonly ServicioGaia _gaia;
+
+    public GaiaController(ServicioGaia gaia) => _gaia = gaia;
+
+    [HttpGet("")]
+    public IActionResult Resumen([FromQuery] PeticionGaia filtros, string? kpi)
+    {
+        var (datos, f) = Resolver(filtros);
+        if (f is null) return Pagina("Resumen", new PaginaResumenGaia { Datos = datos, Cargando = _gaia.Cargando, Error = _gaia.UltimoError });
+
+        var agentesNomina = datos!.Agentes.Count(a => EntraEnNomina(a, f.Peticion));
+        return Pagina("Resumen", new PaginaResumenGaia
+        {
+            Datos = datos, Filtros = f, Cargando = _gaia.Cargando, Error = _gaia.UltimoError,
+            Actualizacion = TempData[ClaveActualizacion] as string,
+            Total = CalculadoraGaia.Calcular(f.Llamadas),
+            Kpi = CalculadoraGaia.Kpi(kpi),
+            PorEtapa = CalculadoraGaia.PorEtapa(f.Llamadas),
+            PorDia = CalculadoraGaia.PorDia(f.Llamadas),
+            PorMarca = CalculadoraGaia.Agrupar(f.Llamadas, l => l.Marca),
+            AgentesConLlamadas = f.Llamadas.Select(l => l.IdAgente).Distinct().Count(),
+            AgentesEnNomina = agentesNomina,
+        });
+    }
+
+    [HttpGet("ranking")]
+    public IActionResult Ranking([FromQuery] PeticionGaia filtros, string? orden, string? dir, string? q)
+    {
+        var (datos, f) = Resolver(filtros);
+        if (f is null) return Pagina("Ranking", new PaginaRankingGaia { Datos = datos, Cargando = _gaia.Cargando, Error = _gaia.UltimoError });
+
+        var clave = orden is "llamadas" or "agente" ? orden : CalculadoraGaia.Kpi(orden).Clave;
+        var desc = dir != "asc";
+        IEnumerable<FilaAgenteGaia> filas = CalculadoraGaia.PorAgente(f.Llamadas);
+        if (!string.IsNullOrWhiteSpace(q))
+        {
+            filas = filas.Where(r => r.Agente.Contains(q.Trim(), StringComparison.CurrentCultureIgnoreCase));
+        }
+        filas = clave switch
+        {
+            "agente" => desc ? filas.OrderByDescending(r => r.Agente) : filas.OrderBy(r => r.Agente),
+            "llamadas" => desc ? filas.OrderByDescending(r => r.Indicadores.Llamadas) : filas.OrderBy(r => r.Indicadores.Llamadas),
+            _ => Ordenar(filas, CalculadoraGaia.Kpi(clave).Valor, desc),
+        };
+
+        return Pagina("Ranking", new PaginaRankingGaia
+        {
+            Datos = datos, Filtros = f, Cargando = _gaia.Cargando, Error = _gaia.UltimoError,
+            Actualizacion = TempData[ClaveActualizacion] as string,
+            Total = CalculadoraGaia.Calcular(f.Llamadas),
+            Filas = filas.ToList(), Orden = clave, Descendente = desc, Busqueda = q?.Trim(),
+        });
+    }
+
+    [HttpGet("estilo")]
+    public IActionResult Estilo([FromQuery] PeticionGaia filtros)
+    {
+        var (datos, f) = Resolver(filtros);
+        if (f is null) return Pagina("Estilo", new PaginaEstiloGaia { Datos = datos, Cargando = _gaia.Cargando, Error = _gaia.UltimoError });
+
+        var etapas = CalculadoraGaia.PorEtapa(f.Llamadas);
+        var matriz = f.Llamadas.GroupBy(l => l.IdAgente).ToDictionary(
+            g => g.Key,
+            g => (IReadOnlyDictionary<string, double?>)g.GroupBy(l => l.TipoConexion)
+                 .ToDictionary(e => e.Key, e => CalculadoraGaia.Estilo(e).Adherencia));
+
+        return Pagina("Estilo", new PaginaEstiloGaia
+        {
+            Datos = datos, Filtros = f, Cargando = _gaia.Cargando, Error = _gaia.UltimoError,
+            Actualizacion = TempData[ClaveActualizacion] as string,
+            Total = CalculadoraGaia.Calcular(f.Llamadas),
+            PorEtapa = etapas,
+            PorDia = CalculadoraGaia.PorDia(f.Llamadas),
+            Agentes = Ordenar(CalculadoraGaia.PorAgente(f.Llamadas), i => i.Adherencia, descendente: false).ToList(),
+            MatrizEtapas = matriz,
+            Etapas = etapas.Select(e => e.Clave).ToList(),
+        });
+    }
+
+    [HttpGet("llamadas")]
+    public IActionResult Llamadas([FromQuery] PeticionGaia filtros, string? q, int pagina = 1)
+    {
+        var (datos, f) = Resolver(filtros);
+        if (f is null) return Pagina("Llamadas", new PaginaLlamadasGaia { Datos = datos, Cargando = _gaia.Cargando, Error = _gaia.UltimoError });
+
+        var filas = Buscar(f.Llamadas, q).OrderByDescending(l => l.FechaHora).ToList();
+        var paginas = Math.Max(1, (filas.Count + PaginaLlamadasGaia.PorPagina - 1) / PaginaLlamadasGaia.PorPagina);
+        pagina = Math.Clamp(pagina, 1, paginas);
+        return Pagina("Llamadas", new PaginaLlamadasGaia
+        {
+            Datos = datos, Filtros = f, Cargando = _gaia.Cargando, Error = _gaia.UltimoError,
+            Actualizacion = TempData[ClaveActualizacion] as string,
+            Total = CalculadoraGaia.Calcular(f.Llamadas),
+            Filas = filas.Skip((pagina - 1) * PaginaLlamadasGaia.PorPagina).Take(PaginaLlamadasGaia.PorPagina).ToList(),
+            TotalFilas = filas.Count, Pagina = pagina, Busqueda = q?.Trim(),
+        });
+    }
+
+    /// <summary>Todas las llamadas con los filtros, en CSV para Excel.</summary>
+    [HttpGet("llamadas/csv")]
+    public IActionResult Csv([FromQuery] PeticionGaia filtros, string? q)
+    {
+        var (_, f) = Resolver(filtros);
+        if (f is null) return LocalRedirect(PaginaGaia.RutaBase);
+        var filas = Buscar(f.Llamadas, q).OrderBy(l => l.FechaHora);
+        var bytes = ExportacionCsv.Generar(filas, ColumnasCsv);
+        Response.Headers.CacheControl = "private, no-store";
+        return File(bytes, ExportacionCsv.TipoContenido, $"gaia_llamadas_{f.Desde:yyyyMMdd}_{f.Hasta:yyyyMMdd}.csv");
+    }
+
+    /// <summary>Vuelve a leer el Excel y a traer las llamadas de BigQuery. Como mucho una vez cada 30 s.</summary>
+    [HttpPost("actualizar")]
+    [ValidateAntiForgeryToken]
+    public IActionResult Actualizar(string? volver)
+    {
+        TempData[ClaveActualizacion] = _gaia.PedirActualizacion() ? "en-curso" : "ya-en-curso";
+        var destino = !string.IsNullOrEmpty(volver) && Url.IsLocalUrl(volver)
+                      && volver.StartsWith(PaginaGaia.RutaBase, StringComparison.OrdinalIgnoreCase)
+            ? volver : PaginaGaia.RutaBase;
+        return LocalRedirect(destino);
+    }
+
+    // ------------------------------------------------------------------
+
+    private (DatosGaia? Datos, FiltrosResueltosGaia? Filtros) Resolver(PeticionGaia p)
+    {
+        _gaia.Revisar();
+        var datos = _gaia.Actual;
+        return datos is null ? (null, null) : (datos, FiltrosGaia.Resolver(datos.Llamadas, p));
+    }
+
+    private IActionResult Pagina(string vista, PaginaGaia modelo)
+    {
+        ViewData["Parcial"] = Request.Headers["X-Parcial"] == "1";
+        return View(vista, modelo);
+    }
+
+    /// <summary>Si un agente del Excel entra en los filtros de nómina (sector, oleada, formador, supervisor, agente).</summary>
+    private static bool EntraEnNomina(AgenteGaia a, PeticionGaia p)
+        => (p.Sector.Count == 0 || p.Sector.Contains(a.Sector))
+           && (p.Oleada.Count == 0 || p.Oleada.Contains(a.Oleada))
+           && (p.Formador.Count == 0 || p.Formador.Contains(a.Formador))
+           && (p.Supervisor.Count == 0 || p.Supervisor.Contains(a.Supervisor))
+           && (p.Agente.Count == 0 || p.Agente.Contains(a.Id));
+
+    /// <summary>Ordena por un KPI con los vacíos siempre al final.</summary>
+    private static IEnumerable<FilaAgenteGaia> Ordenar(IEnumerable<FilaAgenteGaia> filas, Func<IndicadoresGaia, double?> valor, bool descendente)
+    {
+        var conValor = filas.Where(r => valor(r.Indicadores) is not null);
+        var ordenadas = descendente ? conValor.OrderByDescending(r => valor(r.Indicadores)) : conValor.OrderBy(r => valor(r.Indicadores));
+        return ordenadas.ThenByDescending(r => r.Indicadores.Llamadas).Concat(filas.Where(r => valor(r.Indicadores) is null));
+    }
+
+    private static IEnumerable<LlamadaGaia> Buscar(IEnumerable<LlamadaGaia> ll, string? q)
+    {
+        if (string.IsNullOrWhiteSpace(q)) return ll;
+        var t = q.Trim();
+        return ll.Where(l => l.IdConversacion.Contains(t, StringComparison.OrdinalIgnoreCase)
+                             || l.IdExterno.Contains(t, StringComparison.OrdinalIgnoreCase)
+                             || l.IdCliente.Contains(t, StringComparison.OrdinalIgnoreCase)
+                             || l.Agente.Contains(t, StringComparison.CurrentCultureIgnoreCase));
+    }
+
+    private static string Num(double? v) => v is { } d ? d.ToString("0.##", CultureInfo.GetCultureInfo("es-ES")) : "";
+    private static string Si(bool? v) => v switch { true => "Sí", false => "No", _ => "" };
+
+    private static readonly IReadOnlyList<ColumnaCsv<LlamadaGaia>> ColumnasCsv =
+    [
+        new("Fecha", l => l.FechaHora.ToString("dd/MM/yyyy HH:mm", CultureInfo.InvariantCulture)),
+        new("Id conversación", l => l.IdConversacion),
+        new("Id externo", l => l.IdExterno),
+        new("Marca", l => l.Marca),
+        new("Agente", l => l.Agente),
+        new("Id agente", l => l.IdAgente),
+        new("Sector", l => l.Sector),
+        new("Oleada", l => l.Oleada),
+        new("Tipo de conexión", l => l.TipoConexion),
+        new("Formador", l => l.Formador),
+        new("Supervisor", l => l.Supervisor),
+        new("Duración (s)", l => Num(l.DuracionSegundos)),
+        new("Silencio (s)", l => Num(l.TiempoNoHablado)),
+        new("Rellamada 72 h", l => l.Rellamada72h?.ToString()),
+        new("Encuesta solución", l => l.EncuestaSolucion?.ToString()),
+        new("Transferencia", l => l.Transferencia?.ToString()),
+        new("Riesgo churn", l => l.RiesgoChurn),
+        new("Motivo 1", l => l.Motivo1),
+        new("Motivo 2", l => l.Motivo2),
+        new("Motivo 3", l => l.Motivo3),
+        new("Sentimiento inicial", l => l.SentimientoInicial),
+        new("Sentimiento final", l => l.SentimientoFinal),
+        new("Saludo", l => l.CalificacionSaludo),
+        new("Lenguaje claro", l => l.CalificacionLenguajeClaro),
+        new("Solucionó", l => l.CalificacionSolucion),
+        new("Resumió", l => l.CalificacionResumen),
+        new("Confirmó solución", l => l.CalificacionConfirmacion),
+        new("Despedida", l => l.CalificacionCierre),
+        new("Intento de venta", l => Si(l.IntentoVenta)),
+        new("Venta", l => Si(l.TieneVenta)),
+        new("Resumen del contacto", l => l.ResumenContacto),
+    ];
+}

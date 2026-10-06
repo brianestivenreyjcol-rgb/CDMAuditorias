@@ -627,29 +627,122 @@ table.ranking { width: 100%; table-layout: fixed; border-collapse: separate; bor
 .muestra-ns-id .enlace { display: inline-flex; align-items: center; gap: 4px; font-size: 11.5px; }
 
 /* =========================================================================================
+   5 ter. GAIA Formación (/gaia): mismas piezas que Auditorías y No solución; esto es lo que no existía
+   ========================================================================================= */
+
+/* Tira de indicadores: la segunda fila (del 6.º al 10.º) entra con su escalón, y la de criterios del estilo
+   va de cuatro en cuatro y sin icono. */
+.resumen-dato:nth-child(n+6) { animation-delay: calc(var(--mov-escalon) * 5); }
+.resumen.en-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.resumen-dato.sin-icono { grid-template-areas: "titulo titulo" "cifra cifra" "variacion variacion"; }
+
+/* Marca (punto con su color fijo), cabeceras sin orden, total y celdas frente al total. */
+.marca-punto { display: inline-block; width: 8px; height: 8px; margin-right: 6px; border-radius: 50%; background: var(--serie, var(--texto-tenue)); }
+.ranking .cab-columna { display: block; padding: 8px 10px; }
+.ranking tr.total td { background: var(--superficie-2); font-weight: 600; }
+/* Tinte suave frente al total del filtro: el semáforo pastel a media intensidad. */
+.mejor-total { background: color-mix(in srgb, var(--mapa-verde) 55%, transparent); }
+.peor-total { background: color-mix(in srgb, var(--mapa-rojo) 55%, transparent); }
+.muestra-tinte { display: inline-block; padding: 0 7px; border-radius: 4px; color: var(--texto); }
+.muestra-tinte.mapa-verde { background: var(--mapa-verde); color: var(--mapa-tinta); }
+.muestra-tinte.mapa-ambar { background: var(--mapa-ambar); color: var(--mapa-tinta); }
+.muestra-tinte.mapa-rojo { background: var(--mapa-rojo); color: var(--mapa-tinta); }
+.tabla-ranking-gaia { min-width: 860px; }
+.tabla-marcas-gaia { min-width: 640px; }
+.tabla-ranking-gaia td, .tabla-matriz-gaia td { height: 44px; }
+.tabla-ranking-gaia td .sub-ns, .tabla-matriz-gaia td .sub-ns { margin-left: 0; }
+.tabla-matriz-gaia { min-width: 920px; }
+.tabla-matriz-gaia th:first-child { width: 220px; }
+.tabla-matriz-gaia th { z-index: 2; }
+.tabla-matriz-gaia th:first-child, .tabla-matriz-gaia td:first-child { position: sticky; left: 0; }
+.tabla-matriz-gaia th:first-child { z-index: 3; }
+.tabla-matriz-gaia td:first-child { z-index: 1; background: var(--superficie); }
+.tabla-matriz-gaia tbody tr:hover td:first-child { background-color: var(--superficie); }
+
+/* Indicador de las gráficas: desplegable de enlaces (cada uno recarga la pestaña con ?kpi=). */
+.barra-kpi { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; margin-bottom: 16px; }
+.barra-kpi .campo-titulo { margin: 0; }
+.barra-kpi details.multi { width: 260px; }
+.barra-kpi .nota-ns { margin: 0; flex: 1 1 280px; }
+a.opcion-enlace { display: block; padding: 6px 8px; border-radius: 6px; font-size: 13px; text-decoration: none; }
+a.opcion-enlace:hover { background: var(--superficie-2); }
+a.opcion-enlace.activa { background: var(--acento-suave); font-weight: 600; }
+
+/* Gráficas: la línea diaria sin eje X (lo lleva el volumen de debajo), el volumen bajo y el color por umbral. */
+.grafica.sin-eje-x { height: 226px; padding-bottom: 10px; }
+.grafica.corta { height: 128px; padding-top: 14px; }
+.columna-umbral { fill: var(--relleno, var(--serie-1)); }
+.columna-volumen { fill: var(--serie-2); }
+.valor.debajo { transform: translate(-50%, 8px); }
+
+/* Adherencia: cifra grande y barra con los umbrales del PBI (40 % y 70 %). */
+.adherencia-gaia-cifra { display: flex; align-items: center; gap: 14px; margin: 6px 0 20px; }
+.adherencia-cifra { font-family: var(--font-titulo); font-size: 52px; font-weight: 600; line-height: 1; font-variant-numeric: tabular-nums; }
+.medidor { position: relative; margin-bottom: 4px; padding-bottom: 24px; }
+.medidor-pista { display: block; height: 16px; border-radius: 8px; background: var(--superficie-2); overflow: hidden; }
+.medidor-relleno {
+  display: block; height: 100%; width: calc(var(--fraccion, 0) * 100%); background: var(--relleno, var(--serie-1));
+  transform-origin: left center; animation: crecer-x var(--mov-crecer) var(--mov-curva) both;
+}
+.medidor-marca { position: absolute; top: 0; width: 2px; height: 16px; margin-left: -1px; background: var(--superficie); }
+.medidor-marca b { position: absolute; top: 20px; left: 50%; transform: translateX(-50%); font-size: 11px; font-weight: 500; color: var(--texto-tenue); font-variant-numeric: tabular-nums; }
+.leyenda-umbrales { margin: 4px 0 10px; }
+
+/* Aviso plegable (los del Excel de nómina): discreto, cerrado por defecto. */
+.aviso-plegable { margin-bottom: 16px; border: 1px solid var(--borde); border-radius: var(--radio-sm); background: var(--superficie); }
+.aviso-plegable > summary { list-style: none; display: flex; align-items: center; gap: 8px; padding: 8px 14px; cursor: pointer; font-size: 12.5px; color: var(--texto-suave); }
+.aviso-plegable > summary::-webkit-details-marker { display: none; }
+.aviso-plegable > summary .icono { font-size: 16px; }
+.aviso-plegable > summary .chevron { margin-left: auto; }
+.aviso-plegable .lista-ns { padding: 2px 18px 12px 34px; font-size: 12.5px; }
+
+/* Llamadas: fila con el ancho mínimo del tablero (la marca y la etapa van bajo el nombre del agente). */
+.cols-llamada { grid-template-columns: 100px minmax(0, 1.4fr) 62px 74px 92px 86px minmax(0, 1fr); }
+.celda-doble { min-width: 0; }
+.celda-doble .recorta { font-weight: 500; }
+.recorta { display: block; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.buscar-ns-campo.ancho { width: min(480px, 100%); }
+.detalle-gaia { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px 28px; }
+.detalle-gaia h3 { margin: 0 0 6px; font-size: 11.5px; letter-spacing: .04em; text-transform: uppercase; color: var(--texto-tenue); }
+.detalle-gaia-columna { min-width: 0; }
+.detalle-gaia-columna > * + h3 { margin-top: 14px; }
+.texto-largo { font-size: 13px; line-height: 1.5; white-space: pre-line; overflow-wrap: anywhere; }
+.calificaciones-gaia { margin: 0; padding: 0; list-style: none; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px 16px; font-size: 13px; }
+.calificaciones-gaia li { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.datos-gaia { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 14px; margin: 0; font-size: 13px; }
+.datos-gaia dt { color: var(--texto-suave); }
+.datos-gaia dd { margin: 0; overflow-wrap: anywhere; }
+.detalle-gaia-ids { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 6px 28px; padding-top: 12px; border-top: 1px solid var(--borde); }
+.paginacion { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; margin-top: 14px; }
+.paginacion .pestanas-vista { margin-left: 0; flex-wrap: wrap; max-width: 100%; border-radius: 20px; }
+.paginacion-texto { font-size: 12.5px; color: var(--texto-tenue); font-variant-numeric: tabular-nums; }
+.segmento.desactivado { opacity: .45; cursor: default; }
+
+/* =========================================================================================
    6. Portada (estilo ejecutivo)
    ========================================================================================= */
 
-.portada { max-width: 1040px; margin: 0 auto; padding: 56px 24px 40px; }
+.portada { max-width: 1320px; margin: 0 auto; padding: 56px 24px 40px; }
 .portada-encabezado { text-align: center; margin-bottom: 36px; animation: aparecer var(--mov-aparicion) var(--mov-curva) both; }
 .portada-titulo { font-family: var(--font-titulo); font-size: 40px; line-height: 1.1; letter-spacing: -.01em; }
 .portada-lema { max-width: 560px; margin: 10px auto 0; font-size: 16px; color: var(--texto-suave); }
-/* Tarjetas grandes en fila y centradas (General y CDM No solución); por debajo de 1.100 px, una por fila. */
+/* Tarjetas grandes en fila y centradas (General, CDM No solución y GAIA Formación); por debajo de 1.100 px, una por fila. */
 .portada-tarjetas { display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; }
 .portada-tarjeta {
-  flex: 0 1 480px; display: flex; flex-direction: column; gap: 10px; min-height: 220px; padding: 26px;
+  flex: 0 1 410px; display: flex; flex-direction: column; gap: 10px; min-height: 220px; padding: 26px;
   background: var(--superficie); border: 1px solid var(--borde); border-radius: var(--radio); color: inherit; text-decoration: none;
   transition: border-color var(--mov-hover) var(--mov-curva), transform var(--mov-hover) var(--mov-curva);
   animation: aparecer var(--mov-aparicion) var(--mov-curva) both;
 }
 .portada-tarjeta:nth-child(2) { animation-delay: var(--mov-escalon); }
+.portada-tarjeta:nth-child(3) { animation-delay: calc(var(--mov-escalon) * 2); }
 .portada-tarjeta:hover { border-color: var(--acento); transform: translateY(-2px); }
 .portada-tarjeta:active { transform: translateY(0); transition-duration: var(--mov-clic); }
 .portada-tarjeta-icono { width: 48px; height: 48px; display: grid; place-items: center; margin-bottom: 6px; border-radius: 12px; background: var(--acento-suave); color: var(--acento); font-size: 24px; }
 .portada-tarjeta strong { font-family: var(--font-titulo); font-size: 21px; font-weight: 600; }
 .portada-tarjeta-texto { color: var(--texto-suave); }
 .portada-tarjeta-ir { display: inline-flex; align-items: center; gap: 4px; margin-top: auto; padding-top: 8px; color: var(--acento); font-weight: 600; }
-.portada-ventajas { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); margin: 28px 0 0; padding: 18px 0; list-style: none; border: 1px solid var(--borde); border-radius: var(--radio); background: var(--superficie); }
+.portada-ventajas { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); max-width: 1040px; margin: 28px auto 0; padding: 18px 0; list-style: none; border: 1px solid var(--borde); border-radius: var(--radio); background: var(--superficie); }
 .portada-ventajas li { display: flex; align-items: center; gap: 12px; padding: 0 20px; }
 .portada-ventajas li + li { border-left: 1px solid var(--borde); }
 .portada-ventajas .icono { font-size: 22px; color: var(--texto-suave); }
@@ -691,11 +784,17 @@ table.ranking { width: 100%; table-layout: fixed; border-collapse: separate; bor
   .cols-impedimento .hbarra-media-valor { text-align: left; }
   .filas-ns { overflow-x: auto; }
   .filas-ns > * { min-width: 600px; }
+  /* GAIA: las filas de llamadas hacen scroll; el detalle desplegado cabe en la pantalla. */
+  .filas-ns.filas-llamadas > * { min-width: 0; }
+  .filas-llamadas > .fila-ns-cabecera, .filas-llamadas > details > summary { min-width: 760px; }
+  .resumen.en-4, .detalle-gaia, .calificaciones-gaia { grid-template-columns: minmax(0, 1fr); }
+  .barra-kpi details.multi { width: 100%; }
+  .adherencia-cifra { font-size: 42px; }
   .filas-ns > .desplegable-ns:has(.cols-impedimento) { min-width: 0; }
 }
 
 /* Al filtrar (recarga parcial) no se repiten las animaciones de entrada: solo al cargar la página. */
-.actualizado :is(.resumen-dato, .tarjeta, .columna, .hbarra-relleno, .hbarra-media-relleno, .resumen-cobertura-relleno, .desplegable) { animation: none; }
+.actualizado :is(.resumen-dato, .tarjeta, .columna, .hbarra-relleno, .hbarra-media-relleno, .resumen-cobertura-relleno, .medidor-relleno, .desplegable) { animation: none; }
 
 /* Con «reducir movimiento» no se anima nada. */
 @media (prefers-reduced-motion: reduce) {

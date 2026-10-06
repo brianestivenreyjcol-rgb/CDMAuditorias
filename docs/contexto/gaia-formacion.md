@@ -89,13 +89,51 @@ fechas a mano que no se ha vuelto a pegar desde junio.
 Filtros comunes: Fecha, Marca, Sector, Oleada, Formador, Supervisor, Agente y Tipo de conexión
 (Preconexión 1-3, Aseguramiento 1-6).
 
-## 6. Decisiones que tiene que tomar el usuario
+## 6. Decisiones del usuario (06-10-2026)
 
-1. **Filtro exacto** (cada agente en sus días; recomendado) **o el cruce del PBI** (sección 3, punto 1).
-2. ¿Se **corrige** Abruptas (campo real), las encuestas (sin lista de fechas) y los denominadores
-   de transferencia y rellamada 24 h, o se replica el PBI tal cual para cuadrar primero?
-3. Dirección y nombre: propuesta `/gaia` («GAIA Formación») con su tarjeta en la portada.
-4. Orden de páginas (propuesta en la sección 5).
+1. **Filtro exacto**: cada agente solo en sus días del Excel (no el cruce del PBI).
+2. **Corregir los fallos** del PBI:
+   - % Transferencia = Transferencia 1 / Transferencia 0 o 1.
+   - % Rellamada 24 h = rellamada 72 h oficial (`enh_Redial_72h` = 1) cuya siguiente llamada llega en
+     ≤ 24 h (`enh_minutos_posterior_callid` ≤ 1440), sobre la base de la de 72 h. No se usan solo los
+     minutos: daban 3.653 rellamadas «de 72 h» frente a 2.365 oficiales.
+   - Encuestas: sin lista de fechas fija (salen de los días del Excel), dentro de la consulta principal.
+   - **Abruptas / llamadas cortadas: no se pueden corregir.** El campo `interactionFlags_abruptlyEnded`
+     no existe ni en la GAMMA de JZZBOGOTA ni en la de smartops_prod (comprobado en
+     INFORMATION_SCHEMA). La web no enseña esos KPI.
+3. Dirección **`/gaia`**, con tarjeta en la portada.
+4. Las pantallas las hace el agente `frontend-solaris` (pedido del usuario).
+
+**Ojo con «envío de encuestas»**: la tabla del IVR solo marca como pedidas unas 400 de las ~8.100
+llamadas de YOIGO y MASMOVIL, aunque 3.600 tienen respuesta en `enh_Resolution_request`. Es el
+método del PBI; el número es bajo por la fuente, no por la web.
+
+## 6 bis. Lo construido (fases 1 y 2)
+
+- `Consultas/GaiaLlamadas.sql` (marcador `{{PARES}}` una sola vez; textos de resumen recortados a 600)
+  y `Consultas/GaiaActualizacion.sql`. Se lanzan por tandas de 60 agentes (`Gaia:AgentesPorConsulta`):
+  con todos de golpe el driver se cortaba («Failure when receiving data from the peer»).
+- `Servicios/Gaia/`: `NominaGaia.cs` (lector del Excel, ClosedXML, solo la hoja Oleadas, abierto en
+  modo compartido), `FuenteGaia.cs` (consulta + conversión), `TraduccionesGaia.cs`, `CalculadoraGaia.cs`
+  (medidas), `FiltrosGaia.cs` (desplegables en cascada, mismo `GrupoFiltro` que el resto),
+  `ServicioGaia.cs` (caché `App_Data/cache_gaia.json` — en producción `publicacion\datos` —, recarga en
+  segundo plano y `RevisionGaia`, que cada 5 min mira la fecha del Excel).
+- Se recarga cuando cambia la fecha de modificación del Excel, cada 12 h y con «Actualizar»; tras un
+  fallo no reintenta solo en 15 min.
+- `Controllers/GaiaController.cs` y `Models/Gaia/PaginaGaia.cs`: Resumen, Ranking, Estilo, Llamadas y
+  CSV. Pruebas: `GaiaTests.cs` (15).
+- Primera carga real (06-10-2026 10:36): 13.529 llamadas, 356 agentes, 2.408 días; caché de 40 MB;
+  unos 40 s con las tandas. `talkRatio` viene en escala 0–100 (mediana 49), como supone «Escuchó».
+
+## 6 ter. Vistas (06-10-2026, agente frontend-solaris)
+
+- `Views/Gaia/`: `_LayoutGaia`, `_InformeGaia` (pestañas, avisos, preparando), `_PanelGaia` (filtros y pie con el estado de los
+  datos), `Resumen`, `Ranking`, `Estilo`, `Llamadas` y las gráficas `_ColumnasEtapaGaia`, `_LineaDiaGaia`, `_VolumenDiaGaia`.
+  Ayudantes de presentación en `Views/Gaia/AyudasGaia.cs` (etiquetas de etapa y motivo, Sí/No/N/A, m:ss, clases de umbral).
+- Piezas y clases nuevas: sección 9.6 de `docs/guia-de-estilos.md`. Tarjeta «GAIA Formación» en la portada.
+- Los motivos llegan sin traducir en camelCase con «Or» (`incidenciaOrReclamación`); la vista los pasa a «Incidencia o
+  reclamación». Obstáculos de DataOrb como «String», «Not applicable» o «NA» no se enseñan.
+- Las filas de la pestaña Llamadas pesan unos 8 KB (resúmenes dentro): la página de 100 llamadas es de unos 870 KB.
 
 ## 7. Plan de trabajo
 

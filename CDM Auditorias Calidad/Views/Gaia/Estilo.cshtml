@@ -1,0 +1,160 @@
+@model PaginaEstiloGaia
+@* Estilo: la adherencia al estilo de atención y sus criterios. Arriba la nota con su barra de umbrales (≤ 40 %
+   baja, ≤ 70 % media, más alta: PaginaEstiloGaia.UmbralBajo y UmbralMedio) y la adherencia por etapa; después
+   los ocho criterios, la evolución por día y la matriz de cada agente por etapa de formación (de peor a mejor
+   adherencia, con el color del umbral). *@
+@{
+    Layout = "_InformeGaia";
+}
+@if (!Model.Preparando)
+{
+    var t = Model.Total!;
+    var e = t.Estilo;
+    var tono = TonoAdherencia(e.Adherencia);
+    var nivel = e.Adherencia is not { } a ? "Sin dato" : a <= PaginaEstiloGaia.UmbralBajo ? "Baja" : a <= PaginaEstiloGaia.UmbralMedio ? "Media" : "Alta";
+    var chipNivel = tono switch { "tono-critico" => "chip-critico", "tono-atencion" => "chip-atencion", "tono-bueno" => "chip-bueno", _ => "" };
+    var bajo = PaginaEstiloGaia.UmbralBajo;
+    var medio = PaginaEstiloGaia.UmbralMedio;
+    // nombre, valor, peso en la nota (nulo: sin peso) y qué mide
+    var criterios = new (string Nombre, double? Valor, double? Peso, string Ayuda)[]
+    {
+        ("Saludo", e.Saludo, CalculadoraGaia.PesoSaludo, "El agente saluda y se presenta."),
+        ("Soy claro y fiable", e.SoyClaro, CalculadoraGaia.PesoSoyClaro, "Lenguaje claro y que da confianza."),
+        ("Solucionó", e.Soluciono, CalculadoraGaia.PesoSoluciono, "Resuelve lo que el cliente pedía."),
+        ("Resumió", e.Resumo, CalculadoraGaia.PesoResumo, "Resume lo hablado antes de cerrar."),
+        ("Confirmó solución", e.ConfirmoSolucion, CalculadoraGaia.PesoConfirmo, "Confirma con el cliente que queda resuelto."),
+        ("Despedida", e.Despedida, CalculadoraGaia.PesoDespedida, "Cierra la llamada con una despedida correcta."),
+        ("Escuchó", e.Escucho, null, "Habla menos del 80 % de la llamada, no se pisan 10 veces o más y reconoce al cliente. Lo que no tiene dato no penaliza."),
+        ("Buscó información", e.BuscoInformacion, null, "El silencio no pasa de la mitad de la duración de la llamada."),
+    };
+    var enEtapa = Model.PorEtapa;
+    double? media = e.Adherencia;
+    var sinPeso = "sin peso en la nota";
+    Func<IndicadoresGaia, double?> adherencia = i => i.Adherencia;
+    var umbrales = new[] { bajo, medio };
+
+    if (t.Llamadas == 0)
+    {
+        <p class="vacio">Ninguna llamada cumple estos filtros.</p>
+    }
+    else
+    {
+        <div class="rejilla-2">
+            <section class="tarjeta adherencia-gaia">
+                <header class="tarjeta-cabecera">
+                    <h2>Adherencia al estilo</h2>
+                    <span class="tarjeta-nota">@Formato.Entero(t.Llamadas) llamadas</span>
+                </header>
+                <div class="adherencia-gaia-cifra">
+                    <span class="adherencia-cifra">@Formato.Porcentaje(e.Adherencia)</span>
+                    <span class="chip @chipNivel">@nivel</span>
+                </div>
+                <div class="medidor" role="meter" aria-label="Adherencia al estilo" aria-valuemin="0" aria-valuemax="100" aria-valuenow="@Math.Round((e.Adherencia ?? 0) * 100)">
+                    <span class="medidor-pista"><span class="medidor-relleno @tono" style="--fraccion:@Formato.Coord(Math.Clamp(e.Adherencia ?? 0, 0, 1))"></span></span>
+                    <span class="medidor-marca" style="left:@P(bajo)"><b>@Formato.PorcentajeEntero(bajo * 100)</b></span>
+                    <span class="medidor-marca" style="left:@P(medio)"><b>@Formato.PorcentajeEntero(medio * 100)</b></span>
+                </div>
+                <div class="leyenda-ns leyenda-umbrales">
+                    <span class="tono-critico"><i></i>baja, hasta @Formato.PorcentajeEntero(bajo * 100)</span>
+                    <span class="tono-atencion"><i></i>media, hasta @Formato.PorcentajeEntero(medio * 100)</span>
+                    <span class="tono-bueno"><i></i>alta, por encima</span>
+                </div>
+                <p class="nota-ns">@CalculadoraGaia.Kpis[0].Ayuda Cada criterio es «sí» sobre «sí + no» de las llamadas que lo tienen calificado.</p>
+            </section>
+            <section class="tarjeta">
+                <header class="tarjeta-cabecera">
+                    <h2>Adherencia por etapa</h2>
+                    <span class="tarjeta-nota">de la preconexión al aseguramiento</span>
+                </header>
+                @await Html.PartialAsync("_ColumnasEtapaGaia", (enEtapa, adherencia, "Adherencia", media, true))
+            </section>
+        </div>
+
+        <section class="resumen en-4" aria-label="Criterios del estilo">
+            @foreach (var c in criterios)
+            {
+                <div class="resumen-dato sin-icono" title="@c.Ayuda">
+                    <span class="resumen-titulo">@c.Nombre</span>
+                    <span class="resumen-cifra" data-contar="@Formato.Crudo(c.Valor)" data-formato="porcentaje">@Formato.Porcentaje(c.Valor)</span>
+                    <span class="resumen-cobertura">
+                        <span class="resumen-cobertura-pista" aria-hidden="true">
+                            <span class="resumen-cobertura-relleno" style="width:@(Formato.Coord(Math.Clamp(c.Valor ?? 0, 0, 1) * 100))%"></span>
+                        </span>
+                        <span class="resumen-cobertura-texto">@(c.Peso is { } peso ? "peso " + Formato.PorcentajeEntero(peso * 100) + " de la nota" : sinPeso)</span>
+                    </span>
+                </div>
+            }
+        </section>
+
+        <section class="tarjeta">
+            <header class="tarjeta-cabecera">
+                <h2>Adherencia por día</h2>
+                <span class="tarjeta-nota">y llamadas de cada día</span>
+            </header>
+            <div class="leyenda-ns">
+                <span class="serie-orange"><i></i>Adherencia</span>
+                <span><i class="discontinua"></i>@Formato.PorcentajeEntero(bajo * 100) y @Formato.PorcentajeEntero(medio * 100), los umbrales</span>
+                @if (media is not null)
+                {
+                    <span><i class="discontinua"></i>media @Formato.Porcentaje(media)</span>
+                }
+            </div>
+            @await Html.PartialAsync("_LineaDiaGaia", (Model.PorDia, adherencia, "Adherencia", media, umbrales))
+            @await Html.PartialAsync("_VolumenDiaGaia", Model.PorDia)
+            <p class="nota-ns">Un día con menos de @MinLlamadasFiable llamadas puede salir en un extremo, pero no cuenta como máximo ni como mínimo.</p>
+        </section>
+
+        <section class="tarjeta">
+            <header class="tarjeta-cabecera">
+                <h2>Cada agente en cada etapa</h2>
+                <span class="tarjeta-nota">adherencia, de peor a mejor</span>
+            </header>
+            <p class="nota-ns">
+                Los agentes que más ayuda necesitan, arriba. Las celdas vacías son etapas sin llamadas. Color:
+                <span class="muestra-tinte mapa-rojo">hasta @Formato.PorcentajeEntero(bajo * 100)</span>
+                <span class="muestra-tinte mapa-ambar">hasta @Formato.PorcentajeEntero(medio * 100)</span>
+                <span class="muestra-tinte mapa-verde">por encima</span>
+            </p>
+            <div class="tabla-contenedor alta">
+                <table class="ranking tabla-matriz-gaia">
+                    <thead>
+                        <tr>
+                            <th scope="col"><span class="cab-columna">Agente</span></th>
+                            <th scope="col" class="num"><span class="cab-columna">Llamadas</span></th>
+                            <th scope="col" class="num"><span class="cab-columna">Adherencia</span></th>
+                            @foreach (var etapa in Model.Etapas)
+                            {
+                                <th scope="col" class="num" title="@EtapaLegible(etapa)"><span class="cab-columna">@EtapaCorta(etapa)</span></th>
+                            }
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var fila in Model.Agentes)
+                        {
+                            Model.MatrizEtapas.TryGetValue(fila.IdAgente, out var porEtapa);
+                            <tr>
+                                <td title="@fila.Agente · @fila.Sector · oleada @fila.Oleada">
+                                    @fila.Agente
+                                    <span class="sub-ns">@fila.Sector · oleada @fila.Oleada</span>
+                                </td>
+                                <td class="num">@Formato.Entero(fila.Indicadores.Llamadas)</td>
+                                <td class="num @MapaAdherencia(fila.Indicadores.Adherencia)">@Formato.Porcentaje(fila.Indicadores.Adherencia)</td>
+                                @foreach (var etapa in Model.Etapas)
+                                {
+                                    if (porEtapa is not null && porEtapa.TryGetValue(etapa, out var v))
+                                    {
+                                        <td class="num @MapaAdherencia(v)">@Formato.Porcentaje(v)</td>
+                                    }
+                                    else
+                                    {
+                                        <td class="num"></td>
+                                    }
+                                }
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    }
+}

@@ -1,0 +1,10 @@
+@model PaginaGaia
+@* La página entera de GAIA Formación: el documento base y la cabecera común. Lo de dentro (#informe)
+   es _InformeGaia, que es lo único que se pide al filtrar. *@
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "GAIA Formación · " + PaginaGaia.Titulo(Model.Pestana);
+    var cabecera = new CabeceraModelo("GAIA Formación", "Agentes en formación · preconexión y aseguramiento");
+}
+<partial name="_Cabecera" model="cabecera" />
+@RenderBody()

@@ -69,3 +69,9 @@
   migración a una vista nueva: `docs/contexto/gaia-formacion.md`. Lo importante: el filtro del PBI
   (todas las fechas × todos los ID del Excel) trae 110.718 llamadas; el exacto (cada agente en sus
   días) 13.461. Abruptas siempre 0, encuestas con fechas fijas hasta junio. Sin código todavía.
+- **06-10-2026** — **GAIA Formación, fases 1 y 2** (pedido del usuario: filtro exacto, corregir los fallos,
+  `/gaia`, pantallas con el agente frontend-solaris). La web lee el Excel de nómina de la compartida
+  (solo la hoja Oleadas) y trae de BigQuery las llamadas de cada agente en sus días (13.529 de 356
+  agentes); se recarga sola al cambiar el Excel. Corregidos transferencia, rellamada 24 h (con el dato
+  de origen) y encuestas sin fechas fijas; «abruptas» no existe en DataOrb y se quita. Consulta por
+  tandas de 60 agentes (el driver se cortaba). 15 pruebas nuevas (305 en verde). Sin publicar.

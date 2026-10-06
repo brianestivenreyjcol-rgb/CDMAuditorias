@@ -212,7 +212,7 @@ En las vistas solo van, en línea, posiciones y tamaños de gráficos (`left`, `
 | Top 10 | `table.ranking[data-mapa]` con `th[data-sentido]` y `td[data-valor]` |
 | Panel y desplegables | `_PanelFiltros`, `Shared/_Desplegable` (lo usan los dos informes), «Más filtros» con contador |
 | Pestañas | `.pestanas` (`.pestana`) y, a la derecha, `.pestanas-vista` con `.segmento` (Día / Semana / Mes) |
-| Portada | dos tarjetas en fila: **General** y **CDM No solución** (Formación & Calidad se abre desde las pestañas) |
+| Portada | tres tarjetas en fila: **General**, **CDM No solución** y **GAIA Formación** (Formación & Calidad se abre desde las pestañas) |
 
 ### 9.4 Piezas de CDM No solución
 
@@ -255,3 +255,38 @@ Usa las de Auditorías (cabecera, pestañas, panel, `_Desplegable`, `.resumen`, 
   variación relativa. Más es peor: la variación que sube va en rojo (`.peor`) y la que baja en verde (`.mejor`).
 - **Panel de No solución**: fechas con atajos, Sector, Supervisor, Team leader, Agente y Marca, todo a la vista (no hay
   «Más filtros»); supervisor, TL y agente se encadenan.
+
+
+### 9.6 Piezas de GAIA Formación (`/gaia`, 06-10-2026)
+
+Mismas cabecera, pestañas, panel, `_Desplegable`, `.resumen`, `.tarjeta`, `.rejilla-2`, `.crono-linea`, `table.ranking`,
+`.filas-ns` (filas que se despliegan), `.chip`, `.aviso` y `.preparando-ns` que Auditorías y No solución. Vistas en
+`Views/Gaia/` (`_LayoutGaia`, `_InformeGaia`, `_PanelGaia`, una por pestaña y tres gráficas parciales). Los formatos y las
+clases de color de los umbrales están en `Views/Gaia/AyudasGaia.cs` (`@functions` no funciona en `_ViewImports`; se importa
+allí con `@using static`). Lo nuevo:
+
+| Pieza | Clase | Notas |
+|---|---|---|
+| Tira de 10 indicadores | `.resumen` con 10 `.resumen-dato` | dos filas de cinco; el 6.º al 10.º entran con su escalón |
+| Tira de criterios | `.resumen.en-4` + `.resumen-dato.sin-icono` | cuatro por fila, sin icono, con `.resumen-cobertura` como barra y el peso en la nota |
+| Selector de indicador | `.barra-kpi` con `details.multi` y `a.opcion-enlace` (`.activa`) | cada enlace es `data-parcial` y recarga con `?kpi=`; no hace falta JS nuevo |
+| Columnas por etapa | `_ColumnasEtapaGaia` (`.grafica.con-meta`) | media discontinua con su cifra, máximo y mínimo; con `PorUmbral`, `.columna-umbral` + `.tono-*` |
+| Línea diaria + volumen | `_LineaDiaGaia` (`.grafica.lineas-ns.sin-eje-x`) y `_VolumenDiaGaia` (`.grafica.corta`, `.columna-volumen`) | comparten posiciones; el eje X va en el volumen; máximo y mínimo solo de días con 10 llamadas o más (`MinLlamadasFiable`); `.valor.debajo` pone el mínimo bajo su punto |
+| Barra de adherencia | `.medidor` (`.medidor-pista`, `.medidor-relleno` con `--fraccion` y `.tono-*`, `.medidor-marca` en el 40 % y el 70 %) | `.adherencia-cifra` es la cifra grande |
+| Celdas frente al total | `.mejor-total` / `.peor-total` | semáforo pastel al 55 %; margen de 1 punto o 10 % del total; agentes con menos de 10 llamadas, en gris (`tr.pocas`) y sin tinte |
+| Fila de total | `.ranking tr.total` | fondo `--superficie-2`, negrita |
+| Cabecera que no ordena | `.ranking .cab-columna` | no usar `.ordenar` si no ordena: site.js lo ordenaría en el navegador |
+| Matriz agente × etapa | `.tabla-matriz-gaia` | primera columna pegajosa; celdas con `mapa-rojo` / `mapa-ambar` / `mapa-verde` según los umbrales de la adherencia |
+| Punto de marca | `.marca-punto` con `.serie-*` | color fijo por marca |
+| Llamadas desplegables | `.filas-ns.filas-llamadas` con `.cols-llamada`, `.celda-doble`, `.recorta` | la marca y la etapa van bajo el agente para caber en el ancho mínimo; en móvil la fila hace scroll y el detalle no |
+| Detalle de llamada | `.detalle-gaia` (dos columnas), `.calificaciones-gaia` (con `.chip` Sí / No / N/A), `dl.datos-gaia`, `.texto-largo`, `.detalle-gaia-ids` | los ID se copian con `[data-copiar]` |
+| Paginación | `.paginacion` con `.pestanas-vista` y `.segmento` (`.desactivado`) | de 100 en 100 |
+| Aviso plegable | `.aviso-plegable` | los avisos del Excel de nómina, cerrado por defecto |
+| Tinte de ejemplo | `.muestra-tinte` (+ `.mejor-total`, `.peor-total`, `.mapa-*`) | muestras de color en las notas |
+
+- Variables: no hay nuevas; todo sale de `--malo`, `--atencion`, `--bueno`, `--mapa-*`, `--serie-*` y `--superficie-2`.
+- Iconos nuevos en `Iconos.cs`: `transferir`, `baja-cliente`, `etiqueta` y `carrito`.
+- La portada pasa a **tres tarjetas** en fila (General, CDM No solución y GAIA Formación): `.portada` sube a 1.320 px y la
+  tarjeta a 410 px; las «ventajas» se quedan en 1.040 px.
+- Estado de los datos de GAIA: sin datos, `.preparando-ns` (se recarga sola cada 10 s); tras un fallo sin reintento, el error
+  y «Volver a intentarlo». Panel: fechas (por defecto, todo el rango) y siete desplegables, sin «Más filtros».

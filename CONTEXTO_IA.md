@@ -38,7 +38,7 @@
   solución, copiar antes la caché de `App_Data` a `publicacion\datos` para no esperar a BigQuery.
 - **Probar** en una copia temporal en otro puerto (p. ej. 5190: `ASPNETCORE_URLS=http://localhost:5190
   dotnet run --no-build --no-launch-profile`) y **pararla al acabar**. Parar la web antes de compilar
-  (la DLL queda bloqueada). Pruebas: `dotnet test "CDM Auditorias Calidad.sln"` (290 en verde).
+  (la DLL queda bloqueada). Pruebas: `dotnet test "CDM Auditorias Calidad.sln"` (305 en verde).
 - Capturas: Edge sin ventana con `--force-prefers-reduced-motion` (o `scripts/capturas.py` de la skill).
   Si el usuario dice «sin capturas», verificar con texto y medidas: las imágenes gastan muchos tokens.
 
@@ -61,9 +61,12 @@
   torre nueva hay que recrear el DSN `BQCOL`.
 - Decidir si hace falta inicio de sesión; si la web entra en SOLARIS, su logotipo y su login.
 - Julio de WEB cuando avise el usuario (hasta entonces, agosto frente a julio sale inflado).
-- **GAIA Formación** (nueva vista, desde el 06-10-2026): PBI en `Power bi\GAIA Formación.pbip`; datos de
-  BigQuery filtrados por el Excel de la compartida. Analizado y con plan; **esperando decisiones del
-  usuario** (filtro exacto o cruce del PBI, correcciones, ruta). Todo en `docs/contexto/gaia-formacion.md`.
+- **GAIA Formación** (`/gaia`, desde el 06-10-2026): PBI en `Power bi\GAIA Formación.pbip`; llamadas de
+  BigQuery filtradas por el Excel de nómina de la compartida (filtro exacto agente + día, fallos del PBI
+  corregidos; se recarga sola al guardar el Excel). Datos, cálculos y las cuatro pestañas (Resumen, Ranking,
+  Estilo, Llamadas; vistas en `Views/Gaia`, piezas en la sección 9.6 de la guía) hechos y probados en el 5190;
+  **sin publicar**. Quedan fases 3 (Rendimiento, Ventas, Motivos…) y 4
+  (Españolización). Todo en `docs/contexto/gaia-formacion.md`.
 - Detalle de todo esto: `docs/contexto/pendientes.md`.
 
 ## Dónde está el detalle (`docs/contexto/`)
