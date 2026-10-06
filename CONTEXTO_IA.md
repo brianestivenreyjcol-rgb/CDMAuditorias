@@ -695,3 +695,9 @@ Parámetros de `/nosolucion…`: `desde`, `hasta`, `servicio`, `supervisor`, `tl
 - **06-10-2026** — Publicado en el 5180 (pedido del usuario): No solución con la causa de cada llamada,
   el control de repetidas y las etiquetas de impacto. Se copió la caché v3 de `App_Data` a
   `publicacion\datos` para que entrara al momento. Comprobado desde `http://10.148.223.143:5180`.
+- **06-10-2026** — Skill y agente **«frontend-solaris»** (pedido del usuario: «que solo se encargue del
+  front»): instalados en `~/.claude/skills/frontend-solaris` y `~/.claude/agents/frontend-solaris.md`;
+  llevan la guía de estilos, recetas de piezas, `revisar_vistas.py` (colores a mano, `<style>`/`<script>`
+  en vistas, emojis, negritas) y `capturas.py` (claro y oscuro con Edge). Para compartir:
+  `docs/compartir/` (`frontend-solaris.skill`, el agente y `LEEME.md`). Si cambia la guía, volver a
+  copiarla a la skill y regenerar el `.skill`.
