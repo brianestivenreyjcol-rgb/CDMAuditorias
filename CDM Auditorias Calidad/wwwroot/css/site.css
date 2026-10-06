@@ -718,6 +718,93 @@ a.opcion-enlace.activa { background: var(--acento-suave); font-weight: 600; }
 .paginacion-texto { font-size: 12.5px; color: var(--texto-tenue); font-variant-numeric: tabular-nums; }
 .segmento.desactivado { opacity: .45; cursor: default; }
 
+/* --- GAIA Formación, segunda tanda: Rendimiento, Evolución, Comercial, Motivos y Españolización --- */
+
+/* Nueve pestañas: más juntas y, si no caben, en dos líneas (el estado de los datos pasa a la segunda). */
+.pestanas.compactas { flex-wrap: wrap; row-gap: 8px; }
+.pestanas.compactas .pestana { padding: 7px 14px; }
+.pestanas.compactas .estado-ns { white-space: nowrap; }
+
+/* Colores de serie por posición (a, b, c… = --serie-1, --serie-2…) y por lado de la españolización. Las piezas leen --serie. */
+.serie-a { --serie: var(--serie-1); }
+.serie-b { --serie: var(--serie-2); }
+.serie-c { --serie: var(--serie-3); }
+.serie-d { --serie: var(--serie-4); }
+.serie-e { --serie: var(--serie-5); }
+.serie-espana { --serie: var(--serie-2); --relleno: var(--serie-2); }
+.serie-colombia { --serie: var(--serie-1); --relleno: var(--serie-1); }
+.columna-serie { fill: var(--serie, var(--serie-1)); }
+
+.vacio.corto { min-height: 120px; }
+.nota-suelta { margin: 0 0 16px; }
+.pestanas-vista.selector-nivel { width: fit-content; max-width: 100%; flex-wrap: wrap; border-radius: 20px; margin: 0 0 16px; }
+
+/* Selectores de indicador y de ejes: título y desplegable en una línea. */
+.selector-campo { display: flex; align-items: center; gap: 8px; }
+.selector-campo .campo-titulo { margin: 0; white-space: nowrap; }
+.barra-kpi .selector-campo details.multi { width: 220px; }
+.tarjeta .barra-kpi { margin: 4px 0 12px; }
+
+/* Dispersión de agentes: puntos HTML (tamaño = llamadas), líneas del total y flechas hacia lo mejor. */
+.grafica.dispersion { height: 420px; padding-right: 84px; }
+.punto-disp {
+  position: absolute; transform: translate(-50%, -50%); border-radius: 50%; cursor: default;
+  background: color-mix(in srgb, var(--serie) 45%, transparent); border: 1.5px solid var(--serie);
+  transition: background-color var(--mov-clic) var(--mov-curva);
+}
+.punto-disp:hover { background: var(--serie); }
+.etiqueta-eje { position: absolute; white-space: nowrap; pointer-events: none; font-size: 11px; font-weight: 600; color: var(--texto-suave); font-variant-numeric: tabular-nums; }
+.etiqueta-eje.arriba { top: -16px; transform: translateX(-50%); }
+.esquina { position: absolute; pointer-events: none; font-size: 11px; color: var(--texto-tenue); }
+.esquina-x { right: 6px; bottom: 6px; }
+.esquina-y { left: 6px; top: 4px; }
+
+/* Barras de un reparto con textos largos (temas, obstáculos): el nombre ocupa varias líneas. */
+.hbarras.libre.largo .hbarra { grid-template-columns: minmax(180px, 40%) minmax(0, 1fr) 64px; align-items: start; }
+.hbarras.libre.largo .hbarra-nombre { white-space: normal; overflow: visible; text-align: left; overflow-wrap: anywhere; }
+.hbarras.libre.largo .hbarra-pista { padding-top: 2px; }
+.hbarras.libre.largo .hbarra-media-valor { padding-top: 1px; }
+
+/* Barras al 100 % apiladas (estado de resolución, sentimientos) y su leyenda. */
+.apilada { display: flex; height: 16px; border-radius: 4px; overflow: hidden; background: var(--superficie-2); }
+.tabla-mapa-gaia .apilada { height: 14px; }
+.tramo { display: block; height: 100%; min-width: 2px; background: var(--relleno, var(--texto-tenue)); transform-origin: left center; animation: crecer-x var(--mov-crecer) var(--mov-curva) both; }
+.tramo + .tramo { border-left: 1px solid var(--superficie); }
+.apilada-bloque + .apilada-bloque { margin-top: 18px; }
+.apilada-titulo { display: block; margin-bottom: 6px; font-size: 12.5px; font-weight: 600; color: var(--texto-suave); }
+.apilada-bloque .veredicto-ns { margin: 8px 0 0; }
+.sentimientos-gaia { max-width: 760px; }
+
+/* Árbol de motivos: filas que se despliegan hasta tres niveles. */
+.cols-motivo { grid-template-columns: minmax(0, 1fr) 170px 74px 82px 90px 78px; }
+.desplegable-ns.nivel-2 > summary { padding-left: 34px; }
+.desplegable-ns.nivel-3 > summary { padding-left: 56px; }
+.hijos-motivo { border-top: 1px solid var(--borde); background: var(--fondo); }
+.hijos-motivo > .desplegable-ns { border-top: 1px solid var(--borde); }
+.hijos-motivo > .desplegable-ns:first-child { border-top: 0; }
+.filas-ns > .desplegable-ns { border-top: 1px solid var(--borde); }
+.filas-ns > .fila-ns-cabecera + .desplegable-ns { border-top: 0; }
+.sin-chevron { display: inline-block; width: 14px; flex: none; }
+.desplegable-ns.hoja > summary { cursor: default; }
+.desplegable-ns.hoja > summary:hover { background: transparent; }
+.filas-motivos .fila-ns-nombre { font-weight: 500; }
+.nivel-3 .fila-ns-nombre { font-weight: 400; }
+
+/* Tablas de las nuevas pestañas: ancho mínimo y scroll dentro de su contenedor. */
+.tabla-rendimiento-gaia { min-width: 720px; }
+.tabla-comercial-gaia { min-width: 880px; }
+.tabla-mapa-gaia { min-width: 760px; }
+.tabla-pares-gaia { min-width: 780px; }
+.tabla-espanolizacion-gaia { min-width: 780px; }
+.tabla-rendimiento-gaia td, .tabla-comercial-gaia td, .tabla-espanolizacion-gaia td { height: 44px; }
+.tabla-comercial-gaia td .sub-ns, .tabla-rendimiento-gaia td .sub-ns { margin-left: 0; }
+
+/* Textos largos de la llamada (resúmenes enteros y obstáculos). */
+.resumen-largo { display: grid; gap: 6px; }
+.resumen-largo .texto-largo { margin: 0; white-space: normal; }
+.rotulo-largo { margin-right: .35em; font-weight: 600; color: var(--texto-suave); }
+.lista-obstaculos { margin: 0; padding-left: 18px; display: grid; gap: 4px; font-size: 13px; line-height: 1.5; }
+
 /* =========================================================================================
    6. Portada (estilo ejecutivo)
    ========================================================================================= */
@@ -790,11 +877,16 @@ a.opcion-enlace.activa { background: var(--acento-suave); font-weight: 600; }
   .resumen.en-4, .detalle-gaia, .calificaciones-gaia { grid-template-columns: minmax(0, 1fr); }
   .barra-kpi details.multi { width: 100%; }
   .adherencia-cifra { font-size: 42px; }
+  .grafica.dispersion { height: 360px; padding-right: 60px; }
+  .cols-motivo { grid-template-columns: minmax(0, 1fr) 130px 70px 78px 84px 74px; }
+  .selector-campo { flex-wrap: wrap; }
+  .barra-kpi .selector-campo details.multi { width: 100%; }
+  .hbarras.libre.largo .hbarra { grid-template-columns: minmax(0, 1fr); }
   .filas-ns > .desplegable-ns:has(.cols-impedimento) { min-width: 0; }
 }
 
 /* Al filtrar (recarga parcial) no se repiten las animaciones de entrada: solo al cargar la página. */
-.actualizado :is(.resumen-dato, .tarjeta, .columna, .hbarra-relleno, .hbarra-media-relleno, .resumen-cobertura-relleno, .medidor-relleno, .desplegable) { animation: none; }
+.actualizado :is(.resumen-dato, .tarjeta, .columna, .hbarra-relleno, .hbarra-media-relleno, .resumen-cobertura-relleno, .medidor-relleno, .tramo, .desplegable) { animation: none; }
 
 /* Con «reducir movimiento» no se anima nada. */
 @media (prefers-reduced-motion: reduce) {

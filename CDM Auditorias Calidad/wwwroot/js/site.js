@@ -393,7 +393,7 @@
       t.parentElement.dataset.ficha = t.textContent.trim();
       t.remove();
     });
-    contenedor.querySelectorAll('.resumen-dato[title], .hbarra[title]').forEach(el => {
+    contenedor.querySelectorAll('.resumen-dato[title], .hbarra[title], .apilada[title]').forEach(el => {
       el.dataset.ficha = el.title;
       el.removeAttribute('title');
     });

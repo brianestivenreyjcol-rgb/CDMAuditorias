@@ -290,3 +290,30 @@ allí con `@using static`). Lo nuevo:
   tarjeta a 410 px; las «ventajas» se quedan en 1.040 px.
 - Estado de los datos de GAIA: sin datos, `.preparando-ns` (se recarga sola cada 10 s); tras un fallo sin reintento, el error
   y «Volver a intentarlo». Panel: fechas (por defecto, todo el rango) y siete desplegables, sin «Más filtros».
+
+### 9.7 GAIA Formación: las cinco pestañas de la segunda tanda (06-10-2026)
+
+Rendimiento, Evolución, Comercial, Motivos y Españolización se hicieron con lo de 9.6 más lo que sigue. **Nueve pestañas** en
+`.pestanas.compactas` (menos relleno y, si no caben, pasan a dos líneas). En `Views/Gaia/AyudasGaia.cs`, además de los formatos, están
+los tipos de las gráficas genéricas (`GraficoGaia`, `SerieGaia`, `SelectorGaia`, `DispersionGaia`, `TramoGaia`) y los constructores
+`Grafico("dia" | "semana" | "etapa", grupos, series…)` y `GraficoEspanolizacion(…)`.
+
+| Pieza | Clase / parcial | Notas |
+|---|---|---|
+| Líneas con varias series | `_LineasGaia` (`.grafica.lineas-ns`, `.sin-eje-x`) | porcentajes o segundos (`Segundos`, eje en minutos); con una serie, media, máximo y mínimo; con varias, el último valor de cada una a la derecha |
+| Columnas en grupo | `_ColumnasGaia` (`.columna-serie`) | por etapa o por semana; un grupo de columnas por punto; el eje de un porcentaje no pasa de 100 % |
+| Colores de serie por posición | `.serie-a` … `.serie-e` (`--serie-1` … `--serie-5`) y `.serie-espana` (azul) / `.serie-colombia` (naranja) | sin variables nuevas; las piezas leen `--serie` y `--relleno` |
+| Dispersión de agentes | `_DispersionGaia` (`.grafica.dispersion`, `.punto-disp`, `.etiqueta-eje`, `.esquina`) | puntos HTML, tamaño = llamadas, ficha con `data-ficha`; líneas discontinuas del total en cada eje y flechas hacia lo mejor |
+| Selector de enlaces | `_SelectorGaia` (`.selector-campo`, `.barra-kpi`, `a.opcion-enlace`) | `?kpi=`, `?x=`, `?y=`; para pocas opciones, `.pestanas-vista` con `.segmento` (`?nivel=`) |
+| Barras de un reparto | `_RepartoGaia` (`.hbarras.libre`, con `.largo` para textos de DataOrb) | «Otros» no cuenta para la escala y, si domina, va sin barra |
+| Barra al 100 % apilada | `_ApiladaGaia` (`.apilada` > `.tramo.tono-*`, `.apilada-titulo`) | estado de resolución y sentimientos; leyenda con `.veredicto-ns`; el `title` se vuelve ficha (site.js: `.apilada[title]`) |
+| Árbol de motivos | `_NodoMotivoGaia` (`.cols-motivo`, `.nivel-1/2/3`, `.hijos-motivo`, `.hoja`, `.sin-chevron`) | `details` anidados que se pintan a sí mismos; la hoja no se abre |
+| Texto largo | `_TextoLargoGaia` (`.resumen-largo`, `.rotulo-largo`) y `.lista-obstaculos` | los resúmenes de la llamada, enteros y en párrafos con su rótulo; los obstáculos, en lista |
+| Tablas de las pestañas | `.tabla-rendimiento-gaia`, `.tabla-comercial-gaia`, `.tabla-mapa-gaia`, `.tabla-pares-gaia`, `.tabla-espanolizacion-gaia` | ancho mínimo y scroll en su contenedor; `tr.pocas` en gris; `tr.total` arriba |
+
+- Motivos: DataOrb los manda en camelCase («facturacionOrCobros», «promoDescuentoNoAplicadoOMalAplicado»); `MotivoLegible` los
+  parte, pone «o» y las tildes más habituales («Facturación o cobros»). Lo que ya viene sin tilde y no está en su lista se queda así.
+- El nombre de una serie en la ficha no puede llevar una cifra justo tras un espacio («Menos de 60 s»): la ficha parte por la
+  primera cifra. Por eso «Cortas (<60 s)» y `NombreFicha`.
+- `AvisosCarga` (lo que no se pudo traer, p. ej. la españolización) se enseña como aviso ámbar visible; los del Excel, en el aviso
+  plegable.

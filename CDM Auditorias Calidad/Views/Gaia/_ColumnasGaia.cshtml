@@ -1,0 +1,81 @@
+@model GraficoGaia
+@* Columnas por etapa o por semana con una o varias series (en grupo), con las piezas de la guía. Etiquetas de
+   impacto, no de todas: con una serie, la media (línea discontinua con su cifra a la derecha) y el máximo y el
+   mínimo; con varias, el máximo de cada una. Cada punto lleva una banda con <title> para la ficha. *@
+@{
+    var n = Math.Max(1, Model.Etiquetas.Count);
+    var series = Model.Series;
+    // Unidad del eje: puntos porcentuales o minutos.
+    double U(double v) => Model.Segundos ? v / 60 : v * 100;
+    var maxU = series.SelectMany(s => s.Valores).Where(v => v is not null).Select(v => U(v!.Value))
+        .Append(Model.Media is { } m ? U(m) : 0).DefaultIfEmpty(0).Max();
+    var (tope, paso) = EscalaGrafico.DesdeCero(maxU, 4);
+    // Un porcentaje no pasa de 100: el eje se queda ahí aunque DesdeCero deje aire sobre la columna más alta.
+    if (!Model.Segundos && tope > 100 && maxU <= 100) tope = 100;
+    double X(int i) => (i + 0.5) / n;
+    double Y(double u) => 1 - u / tope;
+    string Eje(double u) => Model.Segundos ? u.ToString("0.#", Formato.Es) + " min" : Formato.PorcentajeEntero(u);
+    var grupo = Math.Min(0.12, 0.7 / n);
+    var ancho = grupo / series.Count;
+    var unaSerie = series.Count == 1;
+    var pasoX = Math.Max(1, (int)Math.Ceiling(n / (double)Model.MaxEtiquetasX));
+}
+<figure class="grafica con-meta" role="img" aria-label="@Model.Descripcion">
+    <div class="plano">
+        <svg viewBox="0 0 1000 1000" preserveAspectRatio="none" aria-hidden="true">
+            @for (var v = 0.0; v <= tope + paso / 2; v += paso)
+            {
+                <line class="rejilla-linea" x1="0" x2="1000" y1="@C(Y(v))" y2="@C(Y(v))" vector-effect="non-scaling-stroke" />
+            }
+            @for (var k = 0; k < series.Count; k++)
+            {
+                for (var i = 0; i < series[k].Valores.Count; i++)
+                {
+                    if (series[k].Valores[i] is not { } v) continue;
+                    var alto = Math.Max(0.004, 1 - Y(U(v)));
+                    <rect class="columna columna-serie @series[k].Clase" data-i="@i" x="@C(X(i) - grupo / 2 + k * ancho)" y="@C(1 - alto)" width="@C(ancho)" height="@C(alto)" />
+                }
+            }
+            @if (Model.Media is { } media)
+            {
+                <line class="meta" x1="0" x2="1000" y1="@C(Y(U(media)))" y2="@C(Y(U(media)))" vector-effect="non-scaling-stroke" />
+            }
+            @for (var i = 0; i < Model.Etiquetas.Count; i++)
+            {
+                var partes = series.Select(s => $"{NombreFicha(s.Nombre)} {Valor(s.Valores[i], Model.Segundos)}");
+                <rect class="banda" data-i="@i" data-x="@Formato.Coord(X(i))" x="@C((double)i / n)" y="0" width="@C(1.0 / n)" height="1000"><title>@Model.Titulos[i] · @string.Join(" · ", partes) · @Model.NombreVolumen @Formato.Entero(Model.Volumen[i])</title></rect>
+            }
+        </svg>
+        @for (var v = 0.0; v <= tope + paso / 2; v += paso)
+        {
+            <span class="eje-y" style="top:@P(Y(v))">@Eje(v)</span>
+        }
+        @if (Model.Media is { } mt)
+        {
+            <span class="meta-texto" style="top:@P(Y(U(mt)))">media @Valor(mt, Model.Segundos)</span>
+        }
+        @for (var k = 0; k < series.Count; k++)
+        {
+            var conValor = series[k].Valores.Select((v, i) => (V: v, I: i)).Where(p => p.V is not null && Model.Volumen[p.I] >= MinLlamadasFiable).ToList();
+            if (conValor.Count == 0) continue;
+            var alto = conValor.MaxBy(p => p.V)!;
+            var bajo = unaSerie && conValor.Count > 1 ? conValor.MinBy(p => p.V)! : default;
+            var posicion = series.Count == 1 ? 0.0 : (k - (series.Count - 1) / 2.0) * ancho;
+            <span class="valor pequeno con-fondo@(unaSerie ? "" : " valor-serie " + series[k].Clase)" style="left:@P(X(alto.I) + posicion);top:@P(Y(U(alto.V!.Value)))">@(unaSerie ? "máx. " : "")@Valor(alto.V, Model.Segundos)</span>
+            @if (bajo.V is not null && bajo.I != alto.I)
+            {
+                <span class="valor pequeno con-fondo" style="left:@P(X(bajo.I));top:@P(Y(U(bajo.V.Value)))">mín. @Valor(bajo.V, Model.Segundos)</span>
+            }
+        }
+        @if (Model.EjeX)
+        {
+            @for (var i = 0; i < Model.Etiquetas.Count; i++)
+            {
+                if (i == Model.Etiquetas.Count - 1 || (i % pasoX == 0 && Model.Etiquetas.Count - 1 - i >= pasoX))
+                {
+                    <span class="eje-x" style="left:@P(X(i))">@Model.Etiquetas[i]</span>
+                }
+            }
+        }
+    </div>
+</figure>

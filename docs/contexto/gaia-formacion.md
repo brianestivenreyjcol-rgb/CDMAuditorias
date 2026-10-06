@@ -135,6 +135,43 @@ método del PBI; el número es bajo por la fuente, no por la web.
   reclamación». Obstáculos de DataOrb como «String», «Not applicable» o «NA» no se enseñan.
 - Las filas de la pestaña Llamadas pesan unos 8 KB (resúmenes dentro): la página de 100 llamadas es de unos 870 KB.
 
+### Vistas de la segunda tanda (06-10-2026)
+
+- Nuevas en `Views/Gaia/`: `Rendimiento`, `Evolucion`, `Comercial`, `Motivos`, `Espanolizacion` y los parciales `_LineasGaia`,
+  `_ColumnasGaia`, `_DispersionGaia`, `_SelectorGaia`, `_RepartoGaia`, `_ApiladaGaia`, `_NodoMotivoGaia`, `_TextoLargoGaia`. Piezas y
+  clases: sección 9.7 de `docs/guia-de-estilos.md`.
+- Llamadas: los obstáculos van en lista (sin «NA», «String»…) y los resúmenes enteros, en párrafos con su rótulo.
+- Las páginas pesan: Llamadas, alrededor de 1,1 MB por 100 filas (resúmenes enteros); Ranking, Estilo, Rendimiento y Comercial,
+  de 450 a 550 KB (tablas de unos 300 agentes y todos los desplegables de filtro).
+
+## 6 quater. Fases 3 y 4: datos (06-10-2026)
+
+- Pestañas nuevas: **Rendimiento**, **Evolución** (Cronológico + Comparativo), **Comercial** (Ventas,
+  Detalle Comercial, Alineamientos), **Motivos** (Motivos de Contacto + Mapa de afectación) y
+  **Españolización** (con los niveles Novato, Aficionado y Experto). Cálculos en
+  `Servicios/Gaia/AnalisisGaia.cs`; modelos al final de `Models/Gaia/PaginaGaia.cs`. Pruebas:
+  `GaiaAnalisisTests.cs` (312 en verde).
+- Los dos resúmenes (contacto y resolución) van **enteros** (pedido del usuario); los obstáculos se
+  separan por « | » (con «, » se partían frases). Repartos sin valores vacíos (NA, String, No aplica…);
+  en Temas, que es texto libre, sin «Otros» (se llevaba el 89 %).
+- **Españolización**: `Consultas/GaiaEspanolizacion.sql` sobre la GAMMA de smartops_prod (transcripción
+  en `messages`), por tandas, con los marcadores `{{PARES}}` y `{{PALABRAS}}` una sola vez. La lista de
+  palabras está en `Datos/palabras_gaia.json` (pares España ↔ Colombia y nivel; editable, se aplica al
+  «Actualizar»). Los niveles salen de las tarjetas de las páginas del PBI: Novato 7 pares, Aficionado
+  +3, Experto +2; el resto, solo en «Todas».
+- **Correcciones frente al PBI** en españolización:
+  1. El PBI quitaba las líneas del hablante «1:» como si fuera el cliente, pero los números de hablante
+     no son fijos (0–4, comprobado contando frases de agente por hablante). Ahora el agente de cada
+     llamada es el hablante con más frases de agente («en qué le puedo ayudar», «mi nombre es», «le
+     atiende», «gracias por llamar», «bienvenid…»); sin ninguna, la llamada no cuenta.
+  2. Palabras enteras (`\b`): el PBI contaba «dar» en «andar», «vale» en «equivale»…
+  3. «piso» es de España y «apartamento» de Colombia (el PBI los tenía al revés).
+- Cobertura (06-10-2026): 9.305 de 13.529 llamadas tienen transcripción; en 9.169 (98,5 %) se identifica
+  al agente. Novato: 85,16 % de las llamadas con alguna palabra de España, 37,17 % con alguna de Colombia.
+- Si la españolización falla, el resto se carga igual y la página enseña el aviso (`AvisosCarga`).
+- Caché v2 (60 MB). Pendiente de valorar: cargar el detalle de Llamadas bajo demanda (1,1 MB por página
+  de 100) y una tabla de traducción de los motivos (llegan en camelCase; la vista los arregla a medias).
+
 ## 7. Plan de trabajo
 
 **Fase 0 — Decisiones y base (½ día).** Respuestas de la sección 6. Copia del Excel para pruebas en

@@ -1,0 +1,40 @@
+@model NodoMotivo
+@* Un motivo del árbol (Motivo 1 → 2 → 3): el nombre, su peso dentro del motivo padre en una barra, las llamadas y tres
+   indicadores. Con submotivos es un details que se despliega (y se vuelve a pintar a sí mismo con cada hijo); sin ellos
+   es una fila que no se abre. *@
+@{
+    var i = Model.Indicadores;
+    var hojas = Model.Hijos.Count == 0;
+}
+<details class="desplegable-ns nivel-@Model.Nivel@(hojas ? " hoja" : "")">
+    <summary class="fila-ns cols-motivo" tabindex="@(hojas ? "-1" : null)">
+        <span class="fila-ns-nombre">
+            @if (hojas)
+            {
+                <span class="sin-chevron" aria-hidden="true"></span>
+            }
+            else
+            {
+                @Iconos.Svg("derecha", "chevron-ns")
+            }
+            <span>@MotivoLegible(Model.Clave)</span>
+        </span>
+        <span class="pct-barra-ns" title="Peso dentro de su motivo padre">
+            <span>@Formato.Porcentaje(Model.Participacion)</span>
+            <span class="hbarra-media-pista" aria-hidden="true"><span class="hbarra-media-relleno" style="width:@(Formato.Coord(Math.Clamp(Model.Participacion, 0, 1) * 100))%"></span></span>
+        </span>
+        <span class="num">@Formato.Entero(i.Llamadas)</span>
+        <span class="num">@Formato.Porcentaje(i.Rellamada72)</span>
+        <span class="num">@Formato.Porcentaje(i.NoSolucion)</span>
+        <span class="num">@Formato.Porcentaje(i.Resuelto)</span>
+    </summary>
+    @if (!hojas)
+    {
+        <div class="hijos-motivo">
+            @foreach (var h in Model.Hijos)
+            {
+                @await Html.PartialAsync("_NodoMotivoGaia", h)
+            }
+        </div>
+    }
+</details>

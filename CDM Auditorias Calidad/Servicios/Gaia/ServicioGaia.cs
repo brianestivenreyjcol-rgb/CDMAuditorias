@@ -26,6 +26,7 @@ public sealed class ServicioGaia
 
     private readonly OpcionesGaia _op;
     private readonly string _rutaCache;
+    private readonly string _rutaPalabras;
     private readonly FuenteGaia _fuente;
     private readonly ILogger<ServicioGaia> _log;
     private readonly object _cerrojo = new();
@@ -40,6 +41,7 @@ public sealed class ServicioGaia
         _log = log;
         string Ruta(string r) => Path.IsPathRooted(r) ? r : Path.GetFullPath(Path.Combine(entorno.ContentRootPath, r));
         _rutaCache = Ruta(_op.RutaCache);
+        _rutaPalabras = Ruta(_op.RutaPalabras);
         _fuente = new FuenteGaia(_op.Odbc, Path.Combine(entorno.ContentRootPath, "Consultas"), _op.AgentesPorConsulta, log);
     }
 
@@ -124,7 +126,8 @@ public sealed class ServicioGaia
         try
         {
             var nomina = LectorNominaGaia.Leer(_op.RutaExcel, _op.Hoja);
-            var datos = await _fuente.TraerAsync(nomina, CancellationToken.None);
+            var palabras = PalabrasGaia.Leer(_rutaPalabras);
+            var datos = await _fuente.TraerAsync(nomina, palabras, CancellationToken.None);
             Actual = datos;
             UltimoError = null;
             GuardarCache(datos);

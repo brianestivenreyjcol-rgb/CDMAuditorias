@@ -1,0 +1,172 @@
+@model PaginaMotivosGaia
+@* Motivos («Motivos de contacto» y «Mapa de afectación» del PBI): el árbol Motivo 1 → 2 → 3 que se despliega, cómo
+   acaba cada motivo (resuelto, pendiente o no se puede cumplir) con sus indicadores, y los repartos de estado,
+   razón, problema, tema, obstáculos y sentimiento. *@
+@{
+    Layout = "_InformeGaia";
+}
+@if (!Model.Preparando)
+{
+    var t = Model.Total!;
+    if (t.Llamadas == 0)
+    {
+        <p class="vacio">Ninguna llamada cumple estos filtros.</p>
+    }
+    else
+    {
+        List<TramoGaia> TramosSentimiento(IReadOnlyList<RepartoGaia> reparto)
+            => reparto.Select(r => new TramoGaia(r.Texto, ClaseSentimiento(r.Texto), r.Fraccion)).ToList();
+
+        <section class="tarjeta">
+            <header class="tarjeta-cabecera">
+                <h2>Árbol de motivos</h2>
+                <span class="tarjeta-nota">@Formato.Entero(t.Llamadas) llamadas</span>
+            </header>
+            <p class="nota-ns">
+                Pulsa un motivo para ver sus submotivos (el segundo y el tercero). La barra es su peso dentro del motivo de arriba; los
+                porcentajes de la derecha son de las llamadas de ese motivo. «Sin motivo» son las llamadas a las que DataOrb no dio ese nivel.
+            </p>
+            <div class="filas-ns filas-motivos">
+                <div class="fila-ns fila-ns-cabecera cols-motivo" aria-hidden="true">
+                    <span>Motivo</span>
+                    <span>Peso en su grupo</span>
+                    <span class="num">Llamadas</span>
+                    <span class="num">Rellamada</span>
+                    <span class="num">No solución</span>
+                    <span class="num">Resuelto</span>
+                </div>
+                @foreach (var nodo in Model.Arbol)
+                {
+                    @await Html.PartialAsync("_NodoMotivoGaia", nodo)
+                }
+            </div>
+        </section>
+
+        <section class="tarjeta">
+            <header class="tarjeta-cabecera">
+                <h2>Mapa de afectación</h2>
+                <div class="cabecera-acciones-ns">
+                    <div class="pestanas-vista" role="group" aria-label="Nivel de motivo">
+                        @foreach (var n in new[] { 1, 2, 3 })
+                        {
+                            <a class="segmento@(n == Model.Nivel ? " activo" : "")" href="@Model.UrlCon(("nivel", n == 2 ? null : n.ToString()))" data-parcial
+                               aria-current="@(n == Model.Nivel ? "true" : null)">Motivo @n</a>
+                        }
+                    </div>
+                </div>
+            </header>
+            <p class="nota-ns">
+                Cómo acaban las llamadas de cada motivo (los 20 con más llamadas del nivel elegido). Lo que falta hasta el 100 % son
+                llamadas sin estado de resolución.
+            </p>
+            <div class="veredicto-ns">
+                <span class="tono-bueno"><i></i>Resuelto</span>
+                <span class="tono-atencion"><i></i>Pendiente</span>
+                <span class="tono-critico"><i></i>No se puede cumplir</span>
+                <span class="tono-neutro"><i></i>Sin dato</span>
+            </div>
+            @if (Model.Mapa.Count == 0)
+            {
+                <p class="vacio corto">Ninguna llamada tiene motivo de este nivel con estos filtros.</p>
+            }
+            else
+            {
+                <div class="tabla-contenedor alta">
+                    <table class="ranking tabla-mapa-gaia">
+                        <colgroup>
+                            <col style="width:25%" /><col style="width:31%" /><col style="width:11%" /><col style="width:11%" /><col style="width:11%" /><col style="width:11%" />
+                        </colgroup>
+                        <thead>
+                            <tr>
+                                <th scope="col"><span class="cab-columna">Motivo @Model.Nivel</span></th>
+                                <th scope="col"><span class="cab-columna">Estado de la resolución</span></th>
+                                <th scope="col" class="num"><span class="cab-columna">Rellamada</span></th>
+                                <th scope="col" class="num"><span class="cab-columna">No sol.</span></th>
+                                <th scope="col" class="num"><span class="cab-columna">Ofrecim.</span></th>
+                                <th scope="col" class="num"><span class="cab-columna">Llamadas</span></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var g in Model.Mapa)
+                            {
+                                var i = g.Indicadores;
+                                var resuelto = i.Resuelto ?? 0;
+                                var pendiente = i.Pendiente ?? 0;
+                                var noPuede = i.NoSePuedeCumplir ?? 0;
+                                var tramos = new List<TramoGaia>
+                                {
+                                    new("Resuelto", "tono-bueno", resuelto),
+                                    new("Pendiente", "tono-atencion", pendiente),
+                                    new("No se puede cumplir", "tono-critico", noPuede),
+                                    new("Sin dato", "tono-neutro", Math.Max(0, 1 - resuelto - pendiente - noPuede)),
+                                };
+                                <tr>
+                                    <td title="@MotivoLegible(g.Clave)">@MotivoLegible(g.Clave)</td>
+                                    <td>@await Html.PartialAsync("_ApiladaGaia", ((string?)MotivoLegible(g.Clave), (IReadOnlyList<TramoGaia>)tramos, false))</td>
+                                    <td class="num">@Formato.Porcentaje(i.Rellamada72)</td>
+                                    <td class="num">@Formato.Porcentaje(i.NoSolucion)</td>
+                                    <td class="num">@Formato.Porcentaje(i.Ofrecimientos)</td>
+                                    <td class="num">@Formato.Entero(i.Llamadas)</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </section>
+
+        <div class="rejilla-2">
+            <section class="tarjeta">
+                <header class="tarjeta-cabecera">
+                    <h2>Estado de la resolución</h2>
+                    <span class="tarjeta-nota">% de las llamadas</span>
+                </header>
+                @await Html.PartialAsync("_RepartoGaia", (Model.EstadosResolucion, "relleno-proceso", false))
+            </section>
+            <section class="tarjeta">
+                <header class="tarjeta-cabecera">
+                    <h2>Razón del contacto</h2>
+                    <span class="tarjeta-nota">% de las llamadas</span>
+                </header>
+                @await Html.PartialAsync("_RepartoGaia", (Model.RazonContacto, "relleno-proceso", false))
+            </section>
+        </div>
+
+        <div class="rejilla-2">
+            <section class="tarjeta">
+                <header class="tarjeta-cabecera">
+                    <h2>Tipo de problema</h2>
+                    <span class="tarjeta-nota">% de las llamadas</span>
+                </header>
+                @await Html.PartialAsync("_RepartoGaia", (Model.TiposProblema, "relleno-proceso", true))
+            </section>
+            <section class="tarjeta">
+                <header class="tarjeta-cabecera">
+                    <h2>Temas del contacto</h2>
+                    <span class="tarjeta-nota">los 15 más frecuentes</span>
+                </header>
+                @await Html.PartialAsync("_RepartoGaia", (Model.Temas, "relleno-proceso", true))
+            </section>
+        </div>
+
+        <section class="tarjeta">
+            <header class="tarjeta-cabecera">
+                <h2>Obstáculos de la resolución</h2>
+                <span class="tarjeta-nota">los 15 más frecuentes</span>
+            </header>
+            <p class="nota-ns">En cuántas llamadas aparece cada obstáculo, sobre todas las llamadas del filtro (una llamada puede tener varios).</p>
+            @await Html.PartialAsync("_RepartoGaia", (Model.Obstaculos, "relleno-atencion", true))
+        </section>
+
+        <section class="tarjeta">
+            <header class="tarjeta-cabecera">
+                <h2>Sentimiento del cliente</h2>
+                <span class="tarjeta-nota">al empezar y al acabar la llamada</span>
+            </header>
+            <div class="sentimientos-gaia">
+                @await Html.PartialAsync("_ApiladaGaia", ((string?)"Al empezar", (IReadOnlyList<TramoGaia>)TramosSentimiento(Model.SentimientoInicial), true))
+                @await Html.PartialAsync("_ApiladaGaia", ((string?)"Al acabar", (IReadOnlyList<TramoGaia>)TramosSentimiento(Model.SentimientoFinal), true))
+            </div>
+        </section>
+    }
+}

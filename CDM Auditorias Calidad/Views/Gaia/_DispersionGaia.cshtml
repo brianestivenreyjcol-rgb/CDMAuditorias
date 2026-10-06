@@ -1,0 +1,58 @@
+@model DispersionGaia
+@* Un punto por agente frente a dos indicadores (los ejes). El tamaño del punto es su volumen de llamadas y la
+   ficha da el nombre y los dos valores. Las líneas discontinuas son el total del filtro en cada eje: parten el plano
+   en cuadrantes. Los puntos son elementos HTML (no círculos del SVG, que al estirarse se volverían elipses). *@
+@{
+    var puntos = Model.Puntos;
+    var (minX, maxX, pasoX) = EscalaGrafico.Porcentaje(puntos.Select(p => p.X).Concat(Model.TotalX.HasValue ? new[] { Model.TotalX.Value } : Array.Empty<double>()));
+    var (minY, maxY, pasoY) = EscalaGrafico.Porcentaje(puntos.Select(p => p.Y).Concat(Model.TotalY.HasValue ? new[] { Model.TotalY.Value } : Array.Empty<double>()));
+    double X(double v) => (v - minX) / (maxX - minX);
+    double Y(double v) => 1 - (v - minY) / (maxY - minY);
+    var maxLlamadas = Math.Max(1, puntos.Select(p => p.Llamadas).DefaultIfEmpty(1).Max());
+}
+<figure class="grafica dispersion" role="img" aria-label="Agentes: @Model.X.Nombre frente a @Model.Y.Nombre">
+    <div class="plano">
+        <svg viewBox="0 0 1000 1000" preserveAspectRatio="none" aria-hidden="true">
+            @for (var v = minY; v <= maxY + pasoY / 2; v += pasoY)
+            {
+                <line class="rejilla-linea" x1="0" x2="1000" y1="@C(Y(v))" y2="@C(Y(v))" vector-effect="non-scaling-stroke" />
+            }
+            @for (var v = minX; v <= maxX + pasoX / 2; v += pasoX)
+            {
+                <line class="rejilla-linea" x1="@C(X(v))" x2="@C(X(v))" y1="0" y2="1000" vector-effect="non-scaling-stroke" />
+            }
+            @if (Model.TotalX is { } tx)
+            {
+                <line class="meta" x1="@C(X(tx))" x2="@C(X(tx))" y1="0" y2="1000" vector-effect="non-scaling-stroke" />
+            }
+            @if (Model.TotalY is { } ty)
+            {
+                <line class="meta" x1="0" x2="1000" y1="@C(Y(ty))" y2="@C(Y(ty))" vector-effect="non-scaling-stroke" />
+            }
+        </svg>
+        @for (var v = minY; v <= maxY + pasoY / 2; v += pasoY)
+        {
+            <span class="eje-y" style="top:@P(Y(v))">@Formato.PorcentajeEntero(Math.Round(v * 100))</span>
+        }
+        @for (var v = minX; v <= maxX + pasoX / 2; v += pasoX)
+        {
+            <span class="eje-x" style="left:@P(X(v))">@Formato.PorcentajeEntero(Math.Round(v * 100))</span>
+        }
+        @if (Model.TotalX is { } txt)
+        {
+            <span class="etiqueta-eje arriba" style="left:@P(X(txt))">total @Formato.Porcentaje(txt)</span>
+        }
+        @if (Model.TotalY is { } tyt)
+        {
+            <span class="meta-texto" style="top:@P(Y(tyt))">total @Formato.Porcentaje(tyt)</span>
+        }
+        @foreach (var p in puntos)
+        {
+            var d = Math.Round(8 + 12 * Math.Sqrt((double)p.Llamadas / maxLlamadas));
+            <span class="punto-disp serie-a" data-ficha="@p.Nombre · @NombreFicha(Model.X.Nombre) @Formato.Porcentaje(p.X) · @NombreFicha(Model.Y.Nombre) @Formato.Porcentaje(p.Y) · Llamadas @Formato.Entero(p.Llamadas)"
+                  style="left:@P(X(p.X));top:@P(Y(p.Y));width:@(Formato.Coord(d))px;height:@(Formato.Coord(d))px"></span>
+        }
+        <span class="esquina esquina-x">@(Model.X.MejorAlto ? "mejor →" : "← mejor")</span>
+        <span class="esquina esquina-y">@(Model.Y.MejorAlto ? "↑ mejor" : "↓ mejor")</span>
+    </div>
+</figure>

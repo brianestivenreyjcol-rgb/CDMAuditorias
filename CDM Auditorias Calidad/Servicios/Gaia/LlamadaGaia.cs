@@ -78,4 +78,13 @@ public sealed class LlamadaGaia
     public string AlineacionOferta { get; set; } = "";
     public bool? TieneVenta { get; set; }
     public string TipoServicioVenta { get; set; } = "";
+
+    // --- Españolización ---
+    /// <summary>La llamada está en la tabla de transcripciones (smartops).</summary>
+    public bool TieneTranscripcion { get; set; }
+    /// <summary>
+    /// Índices de <see cref="PalabrasGaia.Palabras"/> que dijo el agente. Nulo si no hay transcripción o
+    /// no se pudo saber qué hablante era el agente: esas llamadas no cuentan en la españolización.
+    /// </summary>
+    public List<int>? Palabras { get; set; }
 }

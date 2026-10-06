@@ -65,7 +65,7 @@ public sealed record GrupoGaia(string Clave, string Texto, IndicadoresGaia Indic
 /// <item>No hay «Abruptas» ni «Llamadas cortadas»: el dato no existe en DataOrb (el PBI ponía 0 fijo).</item>
 /// </list>
 /// </summary>
-public static class CalculadoraGaia
+public static partial class CalculadoraGaia
 {
     /// <summary>Pesos de la adherencia (medida <c>% Adherencia</c>).</summary>
     public const double PesoSaludo = 0.10, PesoSoyClaro = 0.15, PesoSoluciono = 0.25,

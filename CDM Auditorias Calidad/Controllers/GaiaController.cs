@@ -98,6 +98,119 @@ public sealed class GaiaController : Controller
         });
     }
 
+    [HttpGet("rendimiento")]
+    public IActionResult Rendimiento([FromQuery] PeticionGaia filtros)
+    {
+        var (datos, f) = Resolver(filtros);
+        if (f is null) return Pagina("Rendimiento", new PaginaRendimientoGaia { Datos = datos, Cargando = _gaia.Cargando, Error = _gaia.UltimoError });
+
+        return Pagina("Rendimiento", new PaginaRendimientoGaia
+        {
+            Datos = datos, Filtros = f, Cargando = _gaia.Cargando, Error = _gaia.UltimoError,
+            Actualizacion = TempData[ClaveActualizacion] as string,
+            Total = CalculadoraGaia.Calcular(f.Llamadas),
+            PorDia = CalculadoraGaia.PorDia(f.Llamadas),
+            PorSemana = CalculadoraGaia.PorSemana(f.Llamadas),
+            PorEtapa = CalculadoraGaia.PorEtapa(f.Llamadas),
+            Agentes = Ordenar(CalculadoraGaia.PorAgente(f.Llamadas), i => i.Tmo, descendente: true).ToList(),
+        });
+    }
+
+    [HttpGet("evolucion")]
+    public IActionResult Evolucion([FromQuery] PeticionGaia filtros, string? kpi, string? x, string? y)
+    {
+        var (datos, f) = Resolver(filtros);
+        if (f is null) return Pagina("Evolucion", new PaginaEvolucionGaia { Datos = datos, Cargando = _gaia.Cargando, Error = _gaia.UltimoError });
+
+        return Pagina("Evolucion", new PaginaEvolucionGaia
+        {
+            Datos = datos, Filtros = f, Cargando = _gaia.Cargando, Error = _gaia.UltimoError,
+            Actualizacion = TempData[ClaveActualizacion] as string,
+            Total = CalculadoraGaia.Calcular(f.Llamadas),
+            Kpi = CalculadoraGaia.Kpi(kpi ?? PaginaEvolucionGaia.KpiPorDefecto),
+            KpiX = CalculadoraGaia.Kpi(x ?? PaginaEvolucionGaia.XPorDefecto),
+            KpiY = CalculadoraGaia.Kpi(y ?? PaginaEvolucionGaia.YPorDefecto),
+            PorDia = CalculadoraGaia.PorDia(f.Llamadas),
+            PorSemana = CalculadoraGaia.PorSemana(f.Llamadas),
+            Agentes = CalculadoraGaia.PorAgente(f.Llamadas).Where(a => a.Indicadores.Llamadas >= PaginaEvolucionGaia.MinLlamadas).ToList(),
+        });
+    }
+
+    [HttpGet("comercial")]
+    public IActionResult Comercial([FromQuery] PeticionGaia filtros)
+    {
+        var (datos, f) = Resolver(filtros);
+        if (f is null) return Pagina("Comercial", new PaginaComercialGaia { Datos = datos, Cargando = _gaia.Cargando, Error = _gaia.UltimoError });
+
+        var conIntento = f.Llamadas.Where(l => l.IntentoVenta == true).ToList();
+        return Pagina("Comercial", new PaginaComercialGaia
+        {
+            Datos = datos, Filtros = f, Cargando = _gaia.Cargando, Error = _gaia.UltimoError,
+            Actualizacion = TempData[ClaveActualizacion] as string,
+            Total = CalculadoraGaia.Calcular(f.Llamadas),
+            ResultadosVenta = CalculadoraGaia.Reparto(conIntento, l => l.ResultadoVenta),
+            CategoriasOferta = CalculadoraGaia.Reparto(conIntento, l => l.CategoriaOferta),
+            TiposServicioVenta = CalculadoraGaia.Reparto(f.Llamadas.Where(l => l.TieneVenta == true), l => l.TipoServicioVenta),
+            PorDia = CalculadoraGaia.PorDia(f.Llamadas),
+            PorEtapa = CalculadoraGaia.PorEtapa(f.Llamadas),
+            Agentes = Ordenar(CalculadoraGaia.PorAgente(f.Llamadas), i => i.Ofrecimientos, descendente: true).ToList(),
+        });
+    }
+
+    [HttpGet("motivos")]
+    public IActionResult Motivos([FromQuery] PeticionGaia filtros, int nivel = 2)
+    {
+        var (datos, f) = Resolver(filtros);
+        if (f is null) return Pagina("Motivos", new PaginaMotivosGaia { Datos = datos, Cargando = _gaia.Cargando, Error = _gaia.UltimoError });
+
+        nivel = Math.Clamp(nivel, 1, 3);
+        return Pagina("Motivos", new PaginaMotivosGaia
+        {
+            Datos = datos, Filtros = f, Cargando = _gaia.Cargando, Error = _gaia.UltimoError,
+            Actualizacion = TempData[ClaveActualizacion] as string,
+            Total = CalculadoraGaia.Calcular(f.Llamadas),
+            Arbol = CalculadoraGaia.ArbolMotivos(f.Llamadas),
+            Nivel = nivel,
+            Mapa = CalculadoraGaia.PorMotivo(f.Llamadas, nivel),
+            EstadosResolucion = CalculadoraGaia.Reparto(f.Llamadas, l => l.EstadoResolucion),
+            RazonContacto = CalculadoraGaia.Reparto(f.Llamadas, l => l.RazonNivel1),
+            TiposProblema = CalculadoraGaia.Reparto(f.Llamadas, l => l.TipoProblema),
+            Temas = CalculadoraGaia.Reparto(f.Llamadas, l => l.TemaContacto, maximo: 15, conOtros: false),
+            Obstaculos = CalculadoraGaia.Obstaculos(f.Llamadas),
+            SentimientoInicial = CalculadoraGaia.Reparto(f.Llamadas, l => l.SentimientoInicial),
+            SentimientoFinal = CalculadoraGaia.Reparto(f.Llamadas, l => l.SentimientoFinal),
+        });
+    }
+
+    [HttpGet("espanolizacion")]
+    public IActionResult Espanolizacion([FromQuery] PeticionGaia filtros, int nivel = 0)
+    {
+        var (datos, f) = Resolver(filtros);
+        if (f is null) return Pagina("Espanolizacion", new PaginaEspanolizacionGaia { Datos = datos, Cargando = _gaia.Cargando, Error = _gaia.UltimoError });
+
+        var palabras = datos!.Palabras;
+        nivel = Math.Clamp(nivel, 0, palabras.Niveles.Count);
+        var porAgente = CalculadoraGaia.EspanolizacionPor(f.Llamadas, palabras, nivel, l => l.IdAgente, g => g.First().Agente);
+        return Pagina("Espanolizacion", new PaginaEspanolizacionGaia
+        {
+            Datos = datos, Filtros = f, Cargando = _gaia.Cargando, Error = _gaia.UltimoError,
+            Actualizacion = TempData[ClaveActualizacion] as string,
+            Total = CalculadoraGaia.Calcular(f.Llamadas),
+            Nivel = nivel,
+            Niveles = palabras.Niveles,
+            Resumen = CalculadoraGaia.Espanolizacion(f.Llamadas, palabras, nivel),
+            Pares = CalculadoraGaia.ParesEspanolizacion(f.Llamadas, palabras, nivel),
+            Palabras = CalculadoraGaia.PalabrasEspanolizacion(f.Llamadas, palabras, nivel),
+            PorEtapa = CalculadoraGaia.EspanolizacionPor(f.Llamadas, palabras, nivel, l => l.TipoConexion, g => g.Key)
+                .OrderBy(g => Array.IndexOf(LectorNominaGaia.ColumnasDias, g.Clave) is var i && i >= 0 ? i : 99).ToList(),
+            PorDia = CalculadoraGaia.EspanolizacionPor(f.Llamadas, palabras, nivel, l => l.Fecha.ToString("yyyy-MM-dd"), g => g.First().Fecha.ToString("dd/MM"))
+                .OrderBy(g => g.Clave).ToList(),
+            // Con base suficiente primero, de menos a más españolización; los de poca base, al final.
+            Agentes = porAgente.OrderBy(a => a.Espanolizacion.Base < PaginaEspanolizacionGaia.MinBase)
+                .ThenBy(a => a.Espanolizacion.Espana ?? 2).ThenByDescending(a => a.Espanolizacion.Base).ToList(),
+        });
+    }
+
     [HttpGet("llamadas")]
     public IActionResult Llamadas([FromQuery] PeticionGaia filtros, string? q, int pagina = 1)
     {

@@ -10,7 +10,7 @@
     var enCurso = Model.Cargando || Model.Actualizacion == "en-curso";
 }
 <div id="informe" class="contenedor" data-titulo="GAIA Formación · @PaginaGaia.Titulo(Model.Pestana) · CDM Auditorías Calidad">
-    <nav class="pestanas" aria-label="Pestañas de GAIA Formación">
+    <nav class="pestanas compactas" aria-label="Pestañas de GAIA Formación">
         @foreach (var p in Enum.GetValues<PestanaGaia>())
         {
             <a class="pestana@(p == Model.Pestana ? " activa" : "")" href="@Model.UrlPestana(p)" data-parcial
@@ -66,6 +66,10 @@
         @if (!string.IsNullOrEmpty(Model.Error))
         {
             <div class="aviso" role="alert">@Iconos.Svg("alerta") <span>El último intento de actualizar falló y se sigue viendo la última versión guardada. <small>@Model.Error</small></span></div>
+        }
+        @foreach (var aviso in Model.AvisosCarga)
+        {
+            <div class="aviso" role="alert">@Iconos.Svg("alerta") <span>@aviso</span></div>
         }
         @if (Model.AvisosExcel.Count > 0)
         {

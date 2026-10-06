@@ -78,3 +78,8 @@
 - **06-10-2026** — GAIA (pedido del usuario): fuera la fila «Total del filtro» del Ranking (el tinte sigue
   comparando con el total) y el resumen de contacto de Llamadas ya no se recorta (antes, 600 caracteres:
   se cortaban 12.776 de 13.529). La caché pasa a 47 MB; las tandas de 60 agentes siguen aguantando.
+- **06-10-2026** — GAIA, **fases 3 y 4** (pedido del usuario: «sigue con las demás fases»; resumen de
+  resolución también entero). Datos y cálculos de Rendimiento, Evolución, Comercial, Motivos y
+  Españolización; vistas con el agente frontend-solaris. Españolización: el agente de cada llamada se
+  identifica por sus frases (el «hablante 1» del PBI no es fijo), palabras enteras y piso/apartamento al
+  derecho; lista en `Datos/palabras_gaia.json`. Obstáculos separados por « | ». 312 pruebas. Sin publicar.

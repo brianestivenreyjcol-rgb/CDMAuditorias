@@ -46,9 +46,9 @@ SELECT
     BD.confirmResolution_rating AS CalificacionConfirmacion,
     BD.clearLanguage_rating AS CalificacionLenguajeClaro,
     BD.acknowledgementStatement_rating AS CalificacionReconocimiento,
-    -- El resumen de contacto va entero (lo pidió el usuario el 06-10-2026); el de resolución, recortado.
+    -- Los dos resúmenes van enteros (lo pidió el usuario el 06-10-2026).
     BD.contactReason_contactReasonSummary AS ResumenContacto,
-    SUBSTR(BD.resolution_resolutionSummary, 1, 600) AS ResumenResolucion,
+    BD.resolution_resolutionSummary AS ResumenResolucion,
     BD.resolution_resolutionIssueResolved AS ProblemaResuelto,
     BD.enh_Transfer AS Transferencia,
     BD.enh_Redial_72h AS Rellamada72h,
@@ -61,7 +61,8 @@ SELECT
     BD.interactionScopeDetail_classification AS Motivo3,
     (SELECT el FROM UNNEST(BD.resolution_issueResolutionInsights_resolutionStatus) AS el
       WHERE el IS NOT NULL LIMIT 1) AS EstadoResolucion,
-    ARRAY_TO_STRING(ARRAY(SELECT el FROM UNNEST(BD.resolution_resolutionImpediments) AS el), ', ') AS Obstaculos,
+    -- Separados por « | »: las frases de DataOrb llevan comas.
+    ARRAY_TO_STRING(ARRAY(SELECT el FROM UNNEST(BD.resolution_resolutionImpediments) AS el), ' | ') AS Obstaculos,
     (SELECT el FROM UNNEST(BD.commercialOfferInsights_salesOffers_salesOutcome) AS el
       WHERE el IS NOT NULL LIMIT 1) AS ResultadoVenta,
     (SELECT el FROM UNNEST(BD.commercialOfferInsights_salesOffers_offerCategory) AS el

@@ -18,6 +18,12 @@ public sealed class DatosGaia
     public List<AgenteGaia> Agentes { get; set; } = new();
     public List<string> AvisosExcel { get; set; } = new();
 
+    /// <summary>Lo que no se pudo traer pero no impide enseñar el resto (p. ej. la españolización).</summary>
+    public List<string> AvisosCarga { get; set; } = new();
+
+    /// <summary>La lista de palabras con la que se buscó (los índices de cada llamada apuntan a ella).</summary>
+    public PalabrasGaia Palabras { get; set; } = new();
+
     /// <summary>Cuándo se trajeron los datos de BigQuery.</summary>
     public DateTime Generado { get; set; }
 
@@ -27,7 +33,7 @@ public sealed class DatosGaia
     /// <summary>Versión del formato de la caché: si cambia, la caché vieja no se usa.</summary>
     public int Version { get; set; } = VersionActual;
 
-    public const int VersionActual = 1;
+    public const int VersionActual = 2;
 }
 
 /// <summary>
@@ -50,10 +56,11 @@ public sealed class FuenteGaia
         _log = log;
     }
 
-    public async Task<DatosGaia> TraerAsync(NominaGaia nomina, CancellationToken ct)
+    public async Task<DatosGaia> TraerAsync(NominaGaia nomina, PalabrasGaia palabras, CancellationToken ct)
     {
         var agentes = nomina.Agentes.Where(a => a.Dias.Count > 0).ToList();
         var llamadas = new List<LlamadaGaia>();
+        var avisos = new List<string>();
         if (agentes.Count > 0)
         {
             // Por tandas de agentes: con todo de una vez el driver se cortaba al bajar.
@@ -64,6 +71,17 @@ public sealed class FuenteGaia
             {
                 var filas = await FuenteBigQuery.ConsultarAsync(_odbc, ArmarConsulta(plantilla, tanda), _log, ct);
                 llamadas.AddRange(filas.Select(f => Convertir(f, porId)).Where(l => vistos.Add(l.IdConversacion)));
+            }
+
+            // La españolización va aparte: si falla, el resto se enseña igual.
+            try
+            {
+                await TraerEspanolizacionAsync(agentes, palabras, llamadas, ct);
+            }
+            catch (Exception ex) when (ex is ErrorBigQuery or IOException or InvalidOperationException)
+            {
+                _log?.LogWarning("GAIA: la españolización no se pudo traer: {Error}", ex.Message);
+                avisos.Add("No se pudo traer la españolización (transcripciones): " + ex.Message);
             }
         }
 
@@ -77,9 +95,43 @@ public sealed class FuenteGaia
             Actualizacion = actualizacion,
             Agentes = agentes,
             AvisosExcel = nomina.Avisos,
+            AvisosCarga = avisos,
+            Palabras = palabras,
             Generado = DateTime.Now,
             ExcelModificado = nomina.ExcelModificado,
         };
+    }
+
+    /// <summary>
+    /// <c>Consultas/GaiaEspanolizacion.sql</c> por tandas: marca en cada llamada si tiene transcripción
+    /// y qué palabras de la lista dijo el agente.
+    /// </summary>
+    private async Task TraerEspanolizacionAsync(List<AgenteGaia> agentes, PalabrasGaia palabras, List<LlamadaGaia> llamadas, CancellationToken ct)
+    {
+        var plantilla = await LeerConsultaAsync("GaiaEspanolizacion.sql", ct);
+        var expresion = palabras.ExpresionSql();
+        var porConversacion = llamadas.GroupBy(l => l.IdConversacion).ToDictionary(g => g.Key, g => g.First(), StringComparer.Ordinal);
+        foreach (var tanda in agentes.Chunk(Math.Max(1, _agentesPorConsulta)))
+        {
+            var sql = Sustituir(ArmarConsulta(plantilla, tanda), "{{PALABRAS}}", expresion);
+            foreach (var f in await FuenteBigQuery.ConsultarAsync(_odbc, sql, _log, ct))
+            {
+                if (!porConversacion.TryGetValue(Texto(f, "IdConversacion"), out var l)) continue;
+                l.TieneTranscripcion = true;
+                l.Palabras = Logico(f, "AgenteIdentificado") == true ? PalabrasGaia.Indices(Texto(f, "Palabras")) : null;
+            }
+        }
+    }
+
+    /// <summary>Sustituye un marcador que tiene que estar exactamente una vez.</summary>
+    public static string Sustituir(string plantilla, string marcador, string valor)
+    {
+        var veces = (plantilla.Length - plantilla.Replace(marcador, "", StringComparison.Ordinal).Length) / marcador.Length;
+        if (veces != 1)
+        {
+            throw new InvalidOperationException($"La consulta de GAIA tiene que llevar el marcador {marcador} una sola vez (lleva {veces}).");
+        }
+        return plantilla.Replace(marcador, valor, StringComparison.Ordinal);
     }
 
     private async Task<string> LeerConsultaAsync(string nombre, CancellationToken ct)
@@ -92,11 +144,6 @@ public sealed class FuenteGaia
     public static string ArmarConsulta(string plantilla, IEnumerable<AgenteGaia> agentes)
     {
         // Exactamente una vez: si estuviera también en un comentario, la lista rompería el SQL.
-        var veces = (plantilla.Length - plantilla.Replace("{{PARES}}", "", StringComparison.Ordinal).Length) / "{{PARES}}".Length;
-        if (veces != 1)
-        {
-            throw new InvalidOperationException($"La consulta de GAIA tiene que llevar el marcador {{{{PARES}}}} una sola vez (lleva {veces}).");
-        }
         var sb = new StringBuilder();
         foreach (var a in agentes)
         {
@@ -107,7 +154,7 @@ public sealed class FuenteGaia
                   .Append(dia.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)).Append("' AS dia)");
             }
         }
-        return plantilla.Replace("{{PARES}}", sb.ToString(), StringComparison.Ordinal);
+        return Sustituir(plantilla, "{{PARES}}", sb.ToString());
     }
 
     /// <summary>Texto seguro dentro de comillas simples de BigQuery.</summary>

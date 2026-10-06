@@ -26,6 +26,9 @@ public sealed class OpcionesGaia
     /// <summary>Los datos ya traídos, en disco. Relativo a la carpeta de la aplicación.</summary>
     public string RutaCache { get; set; } = Path.Combine("App_Data", "cache_gaia.json");
 
+    /// <summary>Pares de palabras de la españolización (viaja con el código).</summary>
+    public string RutaPalabras { get; set; } = Path.Combine("Datos", "palabras_gaia.json");
+
     /// <summary>Horas tras las que se vuelven a traer aunque el Excel no cambie (la rellamada mira 3 días adelante).</summary>
     public double RefrescoHoras { get; set; } = 12;
 

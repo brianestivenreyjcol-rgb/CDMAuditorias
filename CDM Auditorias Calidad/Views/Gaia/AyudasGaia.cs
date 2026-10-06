@@ -32,8 +32,8 @@ public static class AyudasGaia
     {
         if (string.IsNullOrWhiteSpace(motivo) || motivo == "NA") return "—";
         var partes = Regex
-            .Split(motivo.Trim(), "(?<=[a-zñáéíóú])(?=[A-ZÑÁÉÍÓÚ])")
-            .Select(p => p == "Or" ? "o" : p.ToLowerInvariant());
+            .Split(Regex.Replace(motivo.Trim(), "(?<=[a-zñáéíóú])O(?=[A-ZÑÁÉÍÓÚ])", "Or"), "(?<=[a-zñáéíóú])(?=[A-ZÑÁÉÍÓÚ])")
+            .Select(p => p == "Or" ? "o" : ConTildes(p.ToLowerInvariant()));
         var texto = string.Join(" ", partes);
         return char.ToUpper(texto[0], Formato.Es) + texto[1..];
     }
@@ -63,9 +63,8 @@ public static class AyudasGaia
 
     public static string Texto(string valor) => string.IsNullOrWhiteSpace(valor) || valor == "NA" ? "—" : valor;
 
-    /// <summary>Lo que DataOrb escribe cuando no hay obstáculo («No aplicable», «Not applicable», «String»…).</summary>
-    public static bool HayTexto(string valor)
-        => !string.IsNullOrWhiteSpace(valor) && !new[] { "NA", "String", "Not applicable", "No aplicable", "No aplica" }.Contains(valor.Trim());
+    /// <summary>Lo que DataOrb escribe cuando no hay dato («No aplicable», «Not applicable», «String», «NA»…).</summary>
+    public static bool HayTexto(string valor) => CalculadoraGaia.TieneValor(valor);
 
     /// <summary>Clase de tono de la barra de adherencia según los umbrales del PBI (≤ 40 %, ≤ 70 %, más).</summary>
     public static string TonoAdherencia(double? v)
@@ -103,4 +102,116 @@ public static class AyudasGaia
 
     public static string P(double fraccion) => Formato.Coord(fraccion * 100) + "%";
     public static string C(double fraccion) => Formato.Coord(fraccion * 1000);
+
+    // ---------------------------------------------------------------------------------------
+    // Textos largos, motivos y obstáculos
+    // ---------------------------------------------------------------------------------------
+
+    private static readonly Dictionary<string, string> Tildes = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ["movil"] = "móvil", ["tecnico"] = "técnico", ["logistica"] = "logística", ["telefonia"] = "telefonía",
+        ["generico"] = "genérico", ["erronea"] = "errónea", ["erroneo"] = "erróneo", ["area"] = "área", ["mas"] = "más",
+    };
+
+    /// <summary>Un motivo de DataOrb a veces llega sin tildes («facturacionOrCobros»): se las pone a lo habitual.</summary>
+    private static string ConTildes(string palabra)
+    {
+        if (Tildes.TryGetValue(palabra, out var t)) return t;
+        return palabra.Length > 4 && palabra.EndsWith("ion", StringComparison.Ordinal) ? palabra[..^3] + "ión" : palabra;
+    }
+
+    /// <summary>Los obstáculos de una llamada: vienen separados por « | »; sin los que no dicen nada (NA, String…).</summary>
+    public static IReadOnlyList<string> ObstaculosDe(string texto)
+        => texto.Split('|', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)
+                .Where(CalculadoraGaia.TieneValor).Distinct().ToList();
+
+    /// <summary>
+    /// Un resumen largo («Objetivo del Agente: …\nCatalizador del Contacto: …») en párrafos, cada uno con su rótulo
+    /// (lo que va antes de los primeros dos puntos, si es corto) aparte del texto.
+    /// </summary>
+    public static IReadOnlyList<(string? Rotulo, string Texto)> Parrafos(string resumen)
+        => resumen.Split('\n', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries).Select(linea =>
+        {
+            var i = linea.IndexOf(": ", StringComparison.Ordinal);
+            return i is > 2 and < 45 && !linea[..i].Contains('.') ? ((string?)linea[..i], linea[(i + 2)..]) : (null, linea);
+        }).ToList();
+
+    // ---------------------------------------------------------------------------------------
+    // Gráficas genéricas (varias series, día / semana / etapa, porcentajes o segundos)
+    // ---------------------------------------------------------------------------------------
+
+    /// <summary>Una línea o un grupo de columnas: sus valores en el orden de los puntos del gráfico.</summary>
+    /// <param name="Clase">Clase de color fijo (<c>serie-a</c> … <c>serie-e</c>, <c>serie-espana</c>, <c>serie-colombia</c>).</param>
+    public sealed record SerieGaia(string Nombre, string Clase, IReadOnlyList<double?> Valores);
+
+    /// <summary>
+    /// Lo que necesitan las gráficas de línea y de columnas: un punto por día, semana o etapa.
+    /// <paramref name="Volumen"/> es lo que se enseña en la ficha (llamadas o base) y lo que decide qué puntos pueden ser máximo o mínimo.
+    /// </summary>
+    public sealed record GraficoGaia(IReadOnlyList<string> Etiquetas, IReadOnlyList<string> Titulos, IReadOnlyList<int> Volumen, IReadOnlyList<SerieGaia> Series)
+    {
+        /// <summary>Los valores son segundos (TMO) y no fracciones.</summary>
+        public bool Segundos { get; init; }
+        public string NombreVolumen { get; init; } = "Llamadas";
+        /// <summary>Línea discontinua de la media (solo con una serie).</summary>
+        public double? Media { get; init; }
+        public IReadOnlyList<double> Referencias { get; init; } = [];
+        /// <summary>Etiquetas del eje X (las líneas con el volumen debajo van sin ellas).</summary>
+        public bool EjeX { get; init; } = true;
+        public int MaxEtiquetasX { get; init; } = 12;
+        public string Descripcion { get; init; } = "";
+    }
+
+    /// <summary>Un valor de un gráfico escrito como se lee: m:ss o porcentaje.</summary>
+    public static string Valor(double? valor, bool segundos) => segundos ? Duracion(valor) : Formato.Porcentaje(valor);
+
+    /// <summary>Segundos → minutos para el eje («2,5 min»).</summary>
+    public static string Minutos(double segundos) => (segundos / 60).ToString("0.#", Formato.Es) + " min";
+
+    private static GraficoGaia Construir(string escala, IReadOnlyList<(string Clave, string Texto, int Volumen)> puntos,
+        IEnumerable<(string Nombre, string Clase, IReadOnlyList<double?> Valores)> series)
+        => new(
+            puntos.Select(p => escala switch { "dia" => DateOnly.TryParse(p.Clave, out var d) ? Formato.Fecha(d) : p.Texto, "etapa" => EtapaCorta(p.Texto), _ => p.Texto }).ToList(),
+            puntos.Select(p => escala switch { "dia" => DiaLargo(p.Clave), "etapa" => EtapaLegible(p.Texto), _ => p.Texto.Replace(" · ", " del ") }).ToList(),
+            puntos.Select(p => p.Volumen).ToList(),
+            series.Select(s => new SerieGaia(s.Nombre, s.Clase, s.Valores)).ToList())
+        {
+            MaxEtiquetasX = escala == "semana" ? 6 : 12,
+        };
+
+    /// <summary>Gráfico de grupos (días, semanas o etapas) con una serie por indicador.</summary>
+    public static GraficoGaia Grafico(string escala, IReadOnlyList<GrupoGaia> grupos, params (string Nombre, string Clase, Func<IndicadoresGaia, double?> Valor)[] series)
+        => Construir(escala, grupos.Select(g => (g.Clave, g.Texto, g.Indicadores.Llamadas)).ToList(),
+            series.Select(s => (s.Nombre, s.Clase, (IReadOnlyList<double?>)grupos.Select(g => s.Valor(g.Indicadores)).ToList())));
+
+    /// <summary>Gráfico de españolización: una serie con España y otra con Colombia; el volumen es la base.</summary>
+    public static GraficoGaia GraficoEspanolizacion(string escala, IReadOnlyList<GrupoEspanolizacion> grupos)
+        => Construir(escala, grupos.Select(g => (g.Clave, g.Texto, g.Espanolizacion.Base)).ToList(),
+            [
+                ("España", "serie-espana", grupos.Select(g => g.Espanolizacion.Espana).ToList()),
+                ("Colombia", "serie-colombia", grupos.Select(g => g.Espanolizacion.Colombia).ToList()),
+            ]) with { NombreVolumen = "Base" };
+
+    // ---------------------------------------------------------------------------------------
+    // Selectores, dispersión y barras apiladas
+    // ---------------------------------------------------------------------------------------
+
+    public sealed record OpcionSelectorGaia(string Texto, string Url, bool Activa);
+
+    /// <summary>Un desplegable de enlaces (el indicador de las gráficas, los ejes de la dispersión).</summary>
+    public sealed record SelectorGaia(string Id, string Titulo, string Actual, IReadOnlyList<OpcionSelectorGaia> Opciones);
+
+    public sealed record PuntoGaia(string Nombre, string Detalle, double X, double Y, int Llamadas);
+
+    /// <summary>Los agentes enfrentados en dos indicadores; <paramref name="TotalX"/> y <paramref name="TotalY"/> son las líneas de referencia.</summary>
+    public sealed record DispersionGaia(IReadOnlyList<PuntoGaia> Puntos, KpiGaia X, KpiGaia Y, double? TotalX, double? TotalY);
+
+    /// <summary>Un tramo de una barra al 100 % apilada.</summary>
+    public sealed record TramoGaia(string Nombre, string Clase, double Fraccion);
+
+    /// <summary>Clase de tono de un sentimiento («Positivo», «Neutro», «Mixto», «Negativo»).</summary>
+    public static string ClaseSentimiento(string texto) => texto switch
+    {
+        "Positivo" => "tono-bueno", "Negativo" => "tono-critico", "Mixto" => "tono-atencion", _ => "tono-neutro",
+    };
 }
