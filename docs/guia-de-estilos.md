@@ -45,12 +45,19 @@ La marca se marca en `<html data-marca="…">` y cambia el acento de toda la pá
 |---|---|---|---|---|---|
 | **Yoigo · MásMóvil** | `#7b38c9` (morado) | `#5f27a3` | `#b48af0` | blanco | `#efe6fa` con tinta `#4a1f7d` |
 | **Orange** | `#f16e00` (naranja) | `#cc5e00` | `#ff8a1f` | negro `#141414` | `#ffe3cc` con tinta `#7a3a00` |
+| **Jazztel** | `#ffd200` (amarillo) | `#d9b300`; enlaces y texto de acento sobre blanco `#7a6200` | `#ffdd33` | negro `#141414` | `#fff4c2` con tinta `#5c4a00` |
 | **Clanes y Formación** | `#f16e00` | enlaces `#cc5e00` | naranja aclarado | `#121316` | — |
 | **Portada, menús y administración** | marino `#1f2a44` (hover `#2c3a5c`) | acento suave `#6b74b8` | botones `#e8eaf2` sobre `#1b2236` | — | — |
 | **Acceso de SOLARIS (login)** | naranja `#f16e00` a ascua `#e2570a`, fondo `#fbf6f0` | tinta `#111a24` | noche cálida `#120d0a` | `#1b0d03` | — |
 
 - **El texto que va encima del acento sale siempre de `--acento-texto`**: nunca se escribe a mano (blanco en morado, negro en
-  naranja).
+  naranja y en amarillo).
+- **El acento no se usa como color de texto sobre blanco en Jazztel**: el amarillo no se lee. Enlaces, pestaña activa en texto
+  y cifras «de acento» usan `--acento-enlace` (el oscuro del acento en cada marca: `#5f27a3`, `#cc5e00`, `#7a6200`).
+- **La marca sigue al filtro** (pedido del usuario el 06-10-2026): en los informes con filtro de marca, `data-marca` sale de lo
+  marcado: solo ORANGE → `orange`; solo YOIGO y/o MASMOVIL → `ygmm`; solo JAZZTEL → `jazztel`; nada o marcas de grupos
+  distintos → el color por defecto del informe. Lo pone el servidor y el JS lo actualiza en las recargas parciales. Las series
+  de las gráficas no cambian (tienen su color por marca).
 - En Yoigo, la serie «morada» de las gráficas pasa al ámbar `#c99400` para no confundirse con el acento.
 - Los menús y la portada van en marino y gris: el color de marca solo queda en los logotipos.
 
@@ -129,7 +136,7 @@ Yoigo, 3 en el de Orange). Debajo de 1.100 px, una por fila.
 | Tarjeta KPI con icono | `.tile.kpi-m` | iconos de trazo en `Service/IconosKpi.cs` |
 | Bloque | `.tarjeta` (voz), `.card` (informes) | radio 16 px |
 | Pareja de columnas | `.rejilla-2` | siempre dos |
-| Tabla que se ordena y colorea | `table.ranking[data-mapa]` | `th[data-sentido]` (1 más es mejor, −1 más es peor, 0 sin color) y `td[data-valor]`; los grupos con menos de 20 llamadas van al final y en gris; fila de totales sin color |
+| Tabla que se ordena y colorea | `table.ranking[data-mapa]` | `th[data-sentido]` (1 más es mejor, −1 más es peor, 0 sin color) y `td[data-valor]`; los grupos con menos de 20 llamadas van al final y en gris; **total al pie**: `<tfoot><tr class="total">` con «TOTAL», pegado abajo del scroll (`sticky; bottom: 0`), borde superior de 2 px, sin color; nunca una fila de total arriba |
 | Gráfica por tiempo | `.crono-tarjeta` con `crono-linea principal/secundaria`, área y pastillas | SVG del servidor |
 | Barras horizontales | `.hbarras > .hbarra` | `.hbarra-media` en pareja |
 | Árbol desplegable | `#tablaTipologico`, `tr.padre` / `tr.hija` | `ccvbpe.js` |
@@ -233,7 +240,7 @@ Usa las de Auditorías (cabecera, pestañas, panel, `_Desplegable`, `.resumen`, 
 | Reparto en una línea | `.veredicto-ns` con `span.relleno-*` | cuadradito del color de su `--relleno` y la cifra en negrita (la causa de la no solución) |
 | Comprobaciones | `ul.comprobaciones-ns` con `FormatoNoSolucion.ChipComprobacion` | pastilla «Correcto» (verde), «Revisar» (ámbar) o «Nota» (sin color) y el texto al lado |
 | Texto largo bajo un nombre | `.sub-ns.envuelve` | el `.sub-ns` normal corta con «…»; este ocupa varias líneas |
-| Etiquetas de impacto en las gráficas | `.fin-serie` (último valor de cada serie, a la derecha, con su `--serie`), `.valor.valor-serie` (pico con el color de su serie), `.valor.con-fondo` (etiqueta sobre otras barras, con el fondo de la tarjeta), `.meta` + `.meta-texto` (media) y `.grafica.con-meta` (hueco a la derecha para la cifra de la media) | se rotula lo que importa —media, pico, máximo y mínimo, último valor—, no cada punto; los días parciales y provisionales no cuentan como pico, máximo ni mínimo |
+| Etiquetas de las gráficas | `.etiqueta-punto` dentro de `.serie-*` (pastilla con tinte, borde y texto de su `--serie`; `.arriba` / `.abajo`) | **cada punto y cada columna con su valor** (pedido del usuario el 06-10-2026); con dos series, la mayor encima y la menor debajo; nada de «máx.», «mín.», «pico» ni media rotulada. Sustituye a las antiguas etiquetas de impacto (`.fin-serie`, `.valor-serie`, `.meta-texto`), que ya no se usan para rotular |
 
 ### 9.5 Reglas aprendidas en esta web
 
@@ -270,11 +277,11 @@ allí con `@using static`). Lo nuevo:
 | Tira de 10 indicadores | `.resumen` con 10 `.resumen-dato` | dos filas de cinco; el 6.º al 10.º entran con su escalón |
 | Tira de criterios | `.resumen.en-4` + `.resumen-dato.sin-icono` | cuatro por fila, sin icono, con `.resumen-cobertura` como barra y el peso en la nota |
 | Selector de indicador | `.barra-kpi` con `details.multi` y `a.opcion-enlace` (`.activa`) | cada enlace es `data-parcial` y recarga con `?kpi=`; no hace falta JS nuevo |
-| Columnas por etapa | `_ColumnasEtapaGaia` (`.grafica.con-meta`) | media discontinua con su cifra, máximo y mínimo; con `PorUmbral`, `.columna-umbral` + `.tono-*` |
-| Línea diaria + volumen | `_LineaDiaGaia` (`.grafica.lineas-ns.sin-eje-x`) y `_VolumenDiaGaia` (`.grafica.corta`, `.columna-volumen`) | comparten posiciones; el eje X va en el volumen; máximo y mínimo solo de días con 10 llamadas o más (`MinLlamadasFiable`); `.valor.debajo` pone el mínimo bajo su punto |
+| Columnas por etapa, semana o día | `_ColumnasGaia` (`.grafica.lineas-ns`, `.columna-serie`; con `PorUmbral`, `.columna-umbral` + `.tono-*`) | cada columna con su valor en una pastilla `.etiqueta-punto`; media discontinua con su cifra en la leyenda; con dos series, la mayor encima y la menor debajo del borde de su columna |
+| Línea + volumen | `_LineasGaia` y `_ColumnasGaia` con `GraficoVolumen` (`.grafica.corta`, `.columna-volumen`) | comparten posiciones; el eje X va en el volumen; cada punto y cada columna con su valor en pastilla; con más de ~20 periodos, una de cada dos o menos (siempre la primera y la última) |
 | Barra de adherencia | `.medidor` (`.medidor-pista`, `.medidor-relleno` con `--fraccion` y `.tono-*`, `.medidor-marca` en el 40 % y el 70 %) | `.adherencia-cifra` es la cifra grande |
 | Celdas frente al total | `.mejor-total` / `.peor-total` | semáforo pastel al 55 %; margen de 1 punto o 10 % del total; agentes con menos de 10 llamadas, en gris (`tr.pocas`) y sin tinte |
-| Fila de total | `.ranking tr.total` | fondo `--superficie-2`, negrita |
+| Fila de total | `table.ranking tfoot tr.total` (y `.fila-ns.fila-total` en las listas) | **última fila, en el `tfoot`**, con «TOTAL», pegada abajo del contenedor con scroll (`sticky; bottom: 0`), sobre la superficie, borde superior de 2 px, cifras en 600 y sin tinte; nunca una fila «Total del filtro» arriba |
 | Cabecera que no ordena | `.ranking .cab-columna` | no usar `.ordenar` si no ordena: site.js lo ordenaría en el navegador |
 | Matriz agente × etapa | `.tabla-matriz-gaia` | primera columna pegajosa; celdas con `mapa-rojo` / `mapa-ambar` / `mapa-verde` según los umbrales de la adherencia |
 | Punto de marca | `.marca-punto` con `.serie-*` | color fijo por marca |
@@ -300,10 +307,11 @@ los tipos de las gráficas genéricas (`GraficoGaia`, `SerieGaia`, `SelectorGaia
 
 | Pieza | Clase / parcial | Notas |
 |---|---|---|
-| Líneas con varias series | `_LineasGaia` (`.grafica.lineas-ns`, `.sin-eje-x`) | porcentajes o segundos (`Segundos`, eje en minutos); con una serie, media, máximo y mínimo; con varias, el último valor de cada una a la derecha |
-| Columnas en grupo | `_ColumnasGaia` (`.columna-serie`) | por etapa o por semana; un grupo de columnas por punto; el eje de un porcentaje no pasa de 100 % |
+| Líneas con varias series | `_LineasGaia` (`.grafica.lineas-ns`, `.sin-eje-x`, `.etiqueta-punto`, `.eje-y.derecho`) | porcentajes, segundos (eje en minutos) o recuentos; **cada punto con su valor en pastilla**, nada de «máx.», «mín.» ni media rotulada; dos series con escalas muy distintas (una cinco veces mayor), eje izquierdo y derecho; la leyenda va arriba y centrada (`_LeyendaGraficoGaia`, con la media y sus cifras) |
+| Columnas en grupo | `_ColumnasGaia` (`.columna-serie`) | por etapa, semana o día; un grupo de columnas por punto; el eje de un porcentaje no pasa de 100 %; mismas pastillas, ejes y leyenda que las líneas |
 | Colores de serie por posición | `.serie-a` … `.serie-e` (`--serie-1` … `--serie-5`) y `.serie-espana` (azul) / `.serie-colombia` (naranja) | sin variables nuevas; las piezas leen `--serie` y `--relleno` |
 | Dispersión de agentes | `_DispersionGaia` (`.grafica.dispersion`, `.punto-disp`, `.etiqueta-eje`, `.esquina`) | puntos HTML, tamaño = llamadas, ficha con `data-ficha`; líneas discontinuas del total en cada eje y flechas hacia lo mejor |
+| Semana / Día | `_SelectorVistaGaia` (`.pestanas-vista` con `button.segmento`) y `[data-vistas]` > `[data-vista="semana"]` / `[data-vista="dia"][hidden]` | arriba a la derecha de las gráficas con muchos días (Rendimiento y Evolución, que tienen `PorSemana`); empieza en Semana (eje «2026-W37»); lo cambia site.js sin recargar |
 | Selector de enlaces | `_SelectorGaia` (`.selector-campo`, `.barra-kpi`, `a.opcion-enlace`) | `?kpi=`, `?x=`, `?y=`; para pocas opciones, `.pestanas-vista` con `.segmento` (`?nivel=`) |
 | Barras de un reparto | `_RepartoGaia` (`.hbarras.libre`, con `.largo` para textos de DataOrb) | «Otros» no cuenta para la escala y, si domina, va sin barra |
 | Barra al 100 % apilada | `_ApiladaGaia` (`.apilada` > `.tramo.tono-*`, `.apilada-titulo`) | estado de resolución y sentimientos; leyenda con `.veredicto-ns`; el `title` se vuelve ficha (site.js: `.apilada[title]`) |
@@ -317,3 +325,18 @@ los tipos de las gráficas genéricas (`GraficoGaia`, `SerieGaia`, `SelectorGaia
   primera cifra. Por eso «Cortas (<60 s)» y `NombreFicha`.
 - `AvisosCarga` (lo que no se pudo traer, p. ej. la españolización) se enseña como aviso ámbar visible; los del Excel, en el aviso
   plegable.
+
+
+### 9.8 GAIA Formación: pastillas, total al pie y color por marca (06-10-2026)
+
+- **Etiquetas:** cada punto de una línea y cada columna lleva su valor en una pastilla `.etiqueta-punto` (tinte suave de `--serie`, borde fino y
+  texto 600 en el tono oscuro de la serie). Con más de ~20 periodos se rotula uno de cada dos o menos, según el ancho
+  (`AyudasGaia.Rotulados`), siempre el primero y el último. Las pastillas por umbral (adherencia) toman `--malo` / `--atencion` / `--bueno`.
+  La dispersión de agentes no rotula nada sobre los puntos: su leyenda lleva los totales.
+- **Total al pie:** toda tabla con cifras (Ranking, Estilo, Rendimiento, Comercial, Motivos, Españolización, por marca) lleva `<tfoot><tr class="total">`
+  con «TOTAL»; en las listas que no son tabla (árbol de motivos, Llamadas), una `.fila-total` al final.
+- **Color por marca filtrada:** `AyudasGaia.MarcaDePagina` (solo ORANGE → `orange`; solo YOIGO y/o MASMOVIL → `ygmm`; solo JAZZTEL → `jazztel`; si no,
+  `orange`) se pone en `<html data-marca>` (desde `_LayoutGaia`) y en `#informe[data-marca-pagina]`, y site.js lo copia a `<html>` en las recargas
+  parciales. Variables nuevas en `site.css`: `--acento-enlace` (el acento cuando es texto: se usa en enlaces, botones secundarios, iconos de tarjeta; en
+  Jazztel es `#7a6200` y no el amarillo) y los bloques `:root[data-marca="ygmm"]` / `"jazztel"` (claro y oscuro) con `--acento`, `--acento-osc`,
+  `--acento-enlace`, `--acento-texto`, `--acento-suave`, `--thead`, `--thead-texto` y `--tile-realce(-fuerte)`. Las series de las gráficas no cambian.

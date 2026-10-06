@@ -15,6 +15,7 @@
   --acento: #f16e00;
   --acento-osc: #cc5e00;
   --acento-texto: #141414;
+  --acento-enlace: var(--acento-osc); /* el acento cuando es COLOR DE TEXTO sobre la superficie (con amarillo, el acento no se lee) */
   --acento-suave: rgb(241 110 0 / .10);
   --thead: #ffe3cc;
   --thead-texto: #7a3a00;
@@ -130,6 +131,53 @@
   --cab-borde: #6b74b8;
 }
 
+/* Color de la página según la marca filtrada (GAIA): solo YOIGO y/o MASMOVIL → ygmm; solo JAZZTEL → jazztel; solo ORANGE →
+   orange (el de siempre). Solo cambian las variables de acento; las series de las gráficas mantienen su color. */
+:root[data-marca="ygmm"] {
+  --acento: #7b38c9;
+  --acento-osc: #5f27a3;
+  --acento-enlace: #5f27a3;
+  --acento-texto: #ffffff;
+  --acento-suave: rgb(123 56 201 / .10);
+  --thead: #efe6fa;
+  --thead-texto: #4a1f7d;
+  --tile-realce: rgb(123 56 201 / .07);
+  --tile-realce-fuerte: rgb(123 56 201 / .16);
+}
+:root[data-marca="ygmm"][data-tema="oscuro"] {
+  --acento: #b48af0;
+  --acento-osc: #cdb0f7;
+  --acento-enlace: #b48af0;
+  --acento-texto: #141414;
+  --acento-suave: rgb(180 138 240 / .14);
+  --thead: #2d2142;
+  --thead-texto: #dcc8f8;
+  --tile-realce: rgb(180 138 240 / .08);
+  --tile-realce-fuerte: rgb(180 138 240 / .15);
+}
+:root[data-marca="jazztel"] {
+  --acento: #ffd200;
+  --acento-osc: #d9b300;
+  --acento-enlace: #7a6200;
+  --acento-texto: #141414;
+  --acento-suave: rgb(255 210 0 / .16);
+  --thead: #fff4c2;
+  --thead-texto: #5c4a00;
+  --tile-realce: rgb(255 210 0 / .12);
+  --tile-realce-fuerte: rgb(255 210 0 / .24);
+}
+:root[data-marca="jazztel"][data-tema="oscuro"] {
+  --acento: #ffdd33;
+  --acento-osc: #ffe770;
+  --acento-enlace: #ffdd33;
+  --acento-texto: #141414;
+  --acento-suave: rgb(255 221 51 / .14);
+  --thead: #3a3410;
+  --thead-texto: #ffe98a;
+  --tile-realce: rgb(255 221 51 / .08);
+  --tile-realce-fuerte: rgb(255 221 51 / .15);
+}
+
 /* =========================================================================================
    2. Base
    ========================================================================================= */
@@ -236,7 +284,7 @@ html.cargando .contenido { opacity: .6; transition: opacity var(--mov-hover) var
   width: 34px; height: 34px; display: grid; place-items: center; border-radius: 50%; color: var(--texto-suave); font-size: 18px;
   transition: background-color var(--mov-hover) var(--mov-curva), color var(--mov-hover) var(--mov-curva);
 }
-.boton-icono:hover { background: var(--acento-suave); color: var(--acento-osc); }
+.boton-icono:hover { background: var(--acento-suave); color: var(--acento-enlace); }
 
 .campo { margin-bottom: 12px; }
 .campo-titulo { display: block; margin-bottom: 5px; font-size: 12.5px; font-weight: 600; color: var(--texto-suave); }
@@ -306,13 +354,13 @@ html.cargando details.multi[open] .acciones-nota::after { content: " · aplicand
   transition: border-color var(--mov-hover) var(--mov-curva), color var(--mov-hover) var(--mov-curva);
 }
 .boton-secundario .icono { font-size: 17px; }
-.boton-secundario:hover { border-color: var(--acento); color: var(--acento-osc); }
+.boton-secundario:hover { border-color: var(--acento); color: var(--acento-enlace); }
 .boton-aplicar {
   padding: 7px 16px; border: 0; border-radius: var(--radio-sm); background: var(--acento); color: var(--acento-texto); font-weight: 600; cursor: pointer;
   transition: background-color var(--mov-clic) var(--mov-curva);
 }
 .boton-aplicar:hover { background: var(--acento-osc); }
-.enlace { padding: 0; border: 0; background: none; color: var(--acento-osc); text-decoration: underline; cursor: pointer; font-size: 12.5px; }
+.enlace { padding: 0; border: 0; background: none; color: var(--acento-enlace); text-decoration: underline; cursor: pointer; font-size: 12.5px; }
 .estado-datos { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 4px 8px; font-size: 11.5px; color: var(--texto-tenue); text-align: center; }
 .estado-datos span { display: inline-flex; align-items: center; gap: 4px; }
 
@@ -334,7 +382,7 @@ html.cargando details.multi[open] .acciones-nota::after { content: " · aplicand
 .resumen-dato:nth-child(4) { animation-delay: calc(var(--mov-escalon) * 3); }
 .resumen-dato:nth-child(5) { animation-delay: calc(var(--mov-escalon) * 4); }
 .resumen-dato.destacada { --tile-realce: var(--tile-realce-fuerte); border-color: var(--borde-fuerte); border-top-color: var(--tile-filo); }
-.resumen-icono { grid-area: icono; width: 30px; height: 30px; display: grid; place-items: center; border-radius: var(--radio-sm); background: var(--acento-suave); color: var(--acento-osc); font-size: 16px; }
+.resumen-icono { grid-area: icono; width: 30px; height: 30px; display: grid; place-items: center; border-radius: var(--radio-sm); background: var(--acento-suave); color: var(--acento-enlace); font-size: 16px; }
 .resumen-titulo { grid-area: titulo; font-size: 12px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--texto-suave); }
 .resumen-cifra { grid-area: cifra; font-family: var(--font-titulo); font-size: 32px; font-weight: 600; line-height: 1.1; font-variant-numeric: tabular-nums; }
 .resumen-variacion { grid-area: variacion; display: inline-flex; align-items: center; gap: 5px; font-size: 12.5px; font-weight: 500; }
@@ -480,7 +528,7 @@ table.ranking { width: 100%; table-layout: fixed; border-collapse: separate; bor
 .estado-ns { margin-left: auto; display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--texto-tenue); }
 .estado-ns b { color: var(--texto-suave); font-weight: 600; }
 .aviso.aviso-info { background: var(--superficie); color: var(--texto); }
-.aviso.aviso-info .icono { color: var(--acento-osc); }
+.aviso.aviso-info .icono { color: var(--acento-enlace); }
 .resumen-variacion.peor { color: var(--malo); }
 .resumen-variacion.mejor { color: var(--bueno); }
 
@@ -639,7 +687,15 @@ table.ranking { width: 100%; table-layout: fixed; border-collapse: separate; bor
 /* Marca (punto con su color fijo), cabeceras sin orden, total y celdas frente al total. */
 .marca-punto { display: inline-block; width: 8px; height: 8px; margin-right: 6px; border-radius: 50%; background: var(--serie, var(--texto-tenue)); }
 .ranking .cab-columna { display: block; padding: 8px 10px; }
-.ranking tr.total td { background: var(--superficie-2); font-weight: 600; }
+/* Total al pie: la última fila, en el tfoot, pegada abajo del contenedor con scroll, sobre la superficie, con borde superior
+   de 2 px, cifras en 600 y sin tinte. */
+table.ranking tfoot tr.total td {
+  position: sticky; bottom: 0; z-index: 1; background: var(--superficie); color: var(--texto);
+  border-top: 2px solid var(--borde-fuerte); border-bottom: 0; font-weight: 600;
+}
+table.ranking tfoot tr.total td:first-child { text-transform: uppercase; letter-spacing: .04em; }
+.fila-ns.fila-total { border-top: 2px solid var(--borde-fuerte); background: var(--superficie); font-weight: 600; }
+.fila-total .fila-ns-nombre { text-transform: uppercase; letter-spacing: .04em; font-weight: 600; }
 /* Tinte suave frente al total del filtro: el semáforo pastel a media intensidad. */
 .mejor-total { background: color-mix(in srgb, var(--mapa-verde) 55%, transparent); }
 .peor-total { background: color-mix(in srgb, var(--mapa-rojo) 55%, transparent); }
@@ -657,6 +713,7 @@ table.ranking { width: 100%; table-layout: fixed; border-collapse: separate; bor
 .tabla-matriz-gaia th:first-child, .tabla-matriz-gaia td:first-child { position: sticky; left: 0; }
 .tabla-matriz-gaia th:first-child { z-index: 3; }
 .tabla-matriz-gaia td:first-child { z-index: 1; background: var(--superficie); }
+.tabla-matriz-gaia tfoot td:first-child { z-index: 2; }
 .tabla-matriz-gaia tbody tr:hover td:first-child { background-color: var(--superficie); }
 
 /* Indicador de las gráficas: desplegable de enlaces (cada uno recarga la pestaña con ?kpi=). */
@@ -673,7 +730,24 @@ a.opcion-enlace.activa { background: var(--acento-suave); font-weight: 600; }
 .grafica.corta { height: 128px; padding-top: 14px; }
 .columna-umbral { fill: var(--relleno, var(--serie-1)); }
 .columna-volumen { fill: var(--serie-2); }
-.valor.debajo { transform: translate(-50%, 8px); }
+.columna-serie.columna-umbral { fill: var(--relleno, var(--serie-1)); }
+.eje-y.derecho { right: auto; left: calc(100% + 8px); }
+.leyenda-ns.centrada { justify-content: center; margin: 2px 0 4px; }
+button.segmento { border: 0; background: none; font: inherit; cursor: pointer; }
+button.segmento.activo { background: var(--texto); color: var(--superficie); }
+
+/* Pastilla con el valor de un punto o de una columna: fondo con un tinte suave de su serie, borde fino y texto 600 en el tono
+   oscuro de la serie. Con dos series, la mayor va encima (.arriba) y la menor debajo (.abajo). */
+.etiqueta-punto {
+  position: absolute; transform: translate(-50%, calc(-100% - 8px)); padding: 1px 7px; border-radius: 6px; white-space: nowrap; pointer-events: none;
+  font-size: 11.5px; font-weight: 600; line-height: 1.35; font-variant-numeric: tabular-nums;
+  color: color-mix(in srgb, var(--serie) 72%, var(--texto)); background: color-mix(in srgb, var(--serie) 13%, var(--superficie));
+  border: 1px solid color-mix(in srgb, var(--serie) 45%, transparent);
+}
+.etiqueta-punto.abajo { transform: translate(-50%, 8px); }
+.etiqueta-punto.tono-critico { --serie: var(--malo); }
+.etiqueta-punto.tono-atencion { --serie: var(--atencion); }
+.etiqueta-punto.tono-bueno { --serie: var(--bueno); }
 
 /* Adherencia: cifra grande y barra con los umbrales del PBI (40 % y 70 %). */
 .adherencia-gaia-cifra { display: flex; align-items: center; gap: 14px; margin: 6px 0 20px; }
@@ -753,8 +827,6 @@ a.opcion-enlace.activa { background: var(--acento-suave); font-weight: 600; }
   transition: background-color var(--mov-clic) var(--mov-curva);
 }
 .punto-disp:hover { background: var(--serie); }
-.etiqueta-eje { position: absolute; white-space: nowrap; pointer-events: none; font-size: 11px; font-weight: 600; color: var(--texto-suave); font-variant-numeric: tabular-nums; }
-.etiqueta-eje.arriba { top: -16px; transform: translateX(-50%); }
 .esquina { position: absolute; pointer-events: none; font-size: 11px; color: var(--texto-tenue); }
 .esquina-x { right: 6px; bottom: 6px; }
 .esquina-y { left: 6px; top: 4px; }
@@ -873,7 +945,7 @@ a.opcion-enlace.activa { background: var(--acento-suave); font-weight: 600; }
   .filas-ns > * { min-width: 600px; }
   /* GAIA: las filas de llamadas hacen scroll; el detalle desplegado cabe en la pantalla. */
   .filas-ns.filas-llamadas > * { min-width: 0; }
-  .filas-llamadas > .fila-ns-cabecera, .filas-llamadas > details > summary { min-width: 760px; }
+  .filas-llamadas > .fila-ns-cabecera, .filas-llamadas > details > summary, .filas-llamadas > .fila-total { min-width: 760px; }
   .resumen.en-4, .detalle-gaia, .calificaciones-gaia { grid-template-columns: minmax(0, 1fr); }
   .barra-kpi details.multi { width: 100%; }
   .adherencia-cifra { font-size: 42px; }

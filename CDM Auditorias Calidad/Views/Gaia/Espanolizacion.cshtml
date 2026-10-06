@@ -129,6 +129,15 @@
                             </tr>
                         }
                     </tbody>
+                    <tfoot>
+                        <tr class="total">
+                            <td>TOTAL</td>
+                            <td></td>
+                            <td></td>
+                            <td class="num">@Formato.Porcentaje(r.Espana)</td>
+                            <td class="num">@Formato.Porcentaje(r.Colombia)</td>
+                        </tr>
+                    </tfoot>
                 </table>
             </div>
         </section>
@@ -163,10 +172,6 @@
                 <h2>Por etapa de formación</h2>
                 <span class="tarjeta-nota">¿mejora con la formación?</span>
             </header>
-            <div class="leyenda-ns">
-                <span class="serie-espana"><i></i>España</span>
-                <span class="serie-colombia"><i></i>Colombia</span>
-            </div>
             @await Html.PartialAsync("_ColumnasGaia", etapa)
         </section>
 
@@ -175,10 +180,6 @@
                 <h2>Por día</h2>
                 <span class="tarjeta-nota">% de las llamadas analizadas de cada día</span>
             </header>
-            <div class="leyenda-ns">
-                <span class="serie-espana"><i></i>España</span>
-                <span class="serie-colombia"><i></i>Colombia</span>
-            </div>
             @await Html.PartialAsync("_LineasGaia", dia)
         </section>
 
@@ -205,15 +206,6 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr class="total">
-                            <td>Total del filtro</td>
-                            <td class="num">@Formato.Entero(r.Base)</td>
-                            <td class="num">@Formato.Porcentaje(r.Espana)</td>
-                            <td class="num">@Formato.Porcentaje(r.Colombia)</td>
-                            <td class="num">@Formato.Porcentaje(t.Rellamada72)</td>
-                            <td class="num">@Formato.Porcentaje(t.NoSolucion)</td>
-                            <td class="num">@Formato.Porcentaje(t.Adherencia)</td>
-                        </tr>
                         @foreach (var a in Model.Agentes)
                         {
                             var e = a.Espanolizacion;
@@ -228,6 +220,17 @@
                             </tr>
                         }
                     </tbody>
+                    <tfoot>
+                        <tr class="total">
+                            <td>TOTAL</td>
+                            <td class="num">@Formato.Entero(r.Base)</td>
+                            <td class="num">@Formato.Porcentaje(r.Espana)</td>
+                            <td class="num">@Formato.Porcentaje(r.Colombia)</td>
+                            <td class="num">@Formato.Porcentaje(t.Rellamada72)</td>
+                            <td class="num">@Formato.Porcentaje(t.NoSolucion)</td>
+                            <td class="num">@Formato.Porcentaje(t.Adherencia)</td>
+                        </tr>
+                    </tfoot>
                 </table>
             </div>
         </section>

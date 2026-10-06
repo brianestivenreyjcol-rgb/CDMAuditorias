@@ -14,6 +14,19 @@
     }
     else
     {
+        List<TramoGaia> TramosEstado(IndicadoresGaia i)
+        {
+            var resuelto = i.Resuelto ?? 0;
+            var pendiente = i.Pendiente ?? 0;
+            var noPuede = i.NoSePuedeCumplir ?? 0;
+            return
+            [
+                new("Resuelto", "tono-bueno", resuelto),
+                new("Pendiente", "tono-atencion", pendiente),
+                new("No se puede cumplir", "tono-critico", noPuede),
+                new("Sin dato", "tono-neutro", Math.Max(0, 1 - resuelto - pendiente - noPuede)),
+            ];
+        }
         List<TramoGaia> TramosSentimiento(IReadOnlyList<RepartoGaia> reparto)
             => reparto.Select(r => new TramoGaia(r.Texto, ClaseSentimiento(r.Texto), r.Fraccion)).ToList();
 
@@ -39,6 +52,14 @@
                 {
                     @await Html.PartialAsync("_NodoMotivoGaia", nodo)
                 }
+                <div class="fila-ns fila-total cols-motivo">
+                    <span class="fila-ns-nombre"><span class="sin-chevron" aria-hidden="true"></span><span>TOTAL</span></span>
+                    <span></span>
+                    <span class="num">@Formato.Entero(t.Llamadas)</span>
+                    <span class="num">@Formato.Porcentaje(t.Rellamada72)</span>
+                    <span class="num">@Formato.Porcentaje(t.NoSolucion)</span>
+                    <span class="num">@Formato.Porcentaje(t.Resuelto)</span>
+                </div>
             </div>
         </section>
 
@@ -90,16 +111,7 @@
                             @foreach (var g in Model.Mapa)
                             {
                                 var i = g.Indicadores;
-                                var resuelto = i.Resuelto ?? 0;
-                                var pendiente = i.Pendiente ?? 0;
-                                var noPuede = i.NoSePuedeCumplir ?? 0;
-                                var tramos = new List<TramoGaia>
-                                {
-                                    new("Resuelto", "tono-bueno", resuelto),
-                                    new("Pendiente", "tono-atencion", pendiente),
-                                    new("No se puede cumplir", "tono-critico", noPuede),
-                                    new("Sin dato", "tono-neutro", Math.Max(0, 1 - resuelto - pendiente - noPuede)),
-                                };
+                                var tramos = TramosEstado(i);
                                 <tr>
                                     <td title="@MotivoLegible(g.Clave)">@MotivoLegible(g.Clave)</td>
                                     <td>@await Html.PartialAsync("_ApiladaGaia", ((string?)MotivoLegible(g.Clave), (IReadOnlyList<TramoGaia>)tramos, false))</td>
@@ -110,6 +122,16 @@
                                 </tr>
                             }
                         </tbody>
+                        <tfoot>
+                            <tr class="total">
+                                <td>TOTAL</td>
+                                <td>@await Html.PartialAsync("_ApiladaGaia", ((string?)"TOTAL", (IReadOnlyList<TramoGaia>)TramosEstado(t), false))</td>
+                                <td class="num">@Formato.Porcentaje(t.Rellamada72)</td>
+                                <td class="num">@Formato.Porcentaje(t.NoSolucion)</td>
+                                <td class="num">@Formato.Porcentaje(t.Ofrecimientos)</td>
+                                <td class="num">@Formato.Entero(t.Llamadas)</td>
+                            </tr>
+                        </tfoot>
                     </table>
                 </div>
             }

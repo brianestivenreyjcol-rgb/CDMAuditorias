@@ -11,6 +11,8 @@
 //   semáforo según th[data-sentido] (1 más es mejor, -1 más es peor, 0 sin color).
 // - Cifras de la tira de indicadores: cuentan desde cero al cargar la página y, al filtrar,
 //   pasan del valor anterior al nuevo (las animaciones de entrada solo se ven al cargar).
+// - GAIA Formación (/gaia): el color de la página sigue a la marca filtrada (#informe[data-marca-pagina] pasa a <html data-marca>
+//   en las recargas parciales) y las gráficas con muchos días llevan un selector Semana / Día ([data-vista-boton]).
 // - CDM No solución (/nosolucion) usa todo lo anterior y además: el buscador de Equipos
 //   (form[data-parcial]), «Copiar ID» de las llamadas de ejemplo ([data-copiar]) y, mientras se
 //   traen los datos de BigQuery, la recarga sola de la página ([data-recargar-en]).
@@ -58,6 +60,9 @@
 
       ocultarFicha();
       informe.replaceWith(nuevo);
+      // El color de la página sigue a la marca filtrada (GAIA): el servidor la deja en #informe y aquí pasa a <html>.
+      const marca = nuevo.dataset.marcaPagina;
+      if (marca) raiz.dataset.marca = marca;
       preparar(nuevo, cifrasAntes);
       if (reabrir) reabrirDesplegable(nuevo, reabrir);
       if (nuevo.dataset.titulo) document.title = nuevo.dataset.titulo;
@@ -179,6 +184,15 @@
     if (enlace && e.button === 0 && !e.ctrlKey && !e.metaKey && !e.shiftKey && !e.altKey) {
       e.preventDefault();
       cargar(enlace.href);
+      return;
+    }
+
+    // Semana / Día de una gráfica: muestra el bloque [data-vista] elegido dentro de su [data-vistas].
+    const vista = e.target.closest('[data-vista-boton]');
+    if (vista) {
+      const caja = vista.closest('[data-vistas]');
+      caja?.querySelectorAll('[data-vista-boton]').forEach(b => b.classList.toggle('activo', b === vista));
+      caja?.querySelectorAll('[data-vista]').forEach(b => { b.hidden = b.dataset.vista !== vista.dataset.vistaBoton; });
       return;
     }
 

@@ -95,6 +95,21 @@ public static partial class CalculadoraGaia
                  Calcular(g.ToList())))
              .ToList();
 
+    /// <summary>Españolización por semana ISO (clave «2026-W37»; texto «Sem 37 · 07/09»).</summary>
+    public static List<GrupoEspanolizacion> EspanolizacionPorSemana(IEnumerable<LlamadaGaia> ll, PalabrasGaia palabras, int nivel)
+        => ll.GroupBy(l => Lunes(l.Fecha))
+             .OrderBy(g => g.Key)
+             .Select(g =>
+             {
+                 var lista = g.ToList();
+                 var dia = g.Key.ToDateTime(TimeOnly.MinValue);
+                 return new GrupoEspanolizacion(
+                     $"{ISOWeek.GetYear(dia)}-W{ISOWeek.GetWeekOfYear(dia):00}",
+                     $"Sem {ISOWeek.GetWeekOfYear(dia)} · {g.Key:dd/MM}",
+                     Espanolizacion(lista, palabras, nivel), Calcular(lista));
+             })
+             .ToList();
+
     private static DateOnly Lunes(DateOnly d) => d.AddDays(-(((int)d.DayOfWeek + 6) % 7));
 
     /// <summary>El valor de un motivo en un nivel (1, 2 o 3).</summary>

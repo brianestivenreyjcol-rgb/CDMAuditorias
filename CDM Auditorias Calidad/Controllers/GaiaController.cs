@@ -38,6 +38,7 @@ public sealed class GaiaController : Controller
             Kpi = CalculadoraGaia.Kpi(kpi),
             PorEtapa = CalculadoraGaia.PorEtapa(f.Llamadas),
             PorDia = CalculadoraGaia.PorDia(f.Llamadas),
+            PorSemana = CalculadoraGaia.PorSemana(f.Llamadas),
             PorMarca = CalculadoraGaia.Agrupar(f.Llamadas, l => l.Marca),
             AgentesConLlamadas = f.Llamadas.Select(l => l.IdAgente).Distinct().Count(),
             AgentesEnNomina = agentesNomina,
@@ -92,6 +93,7 @@ public sealed class GaiaController : Controller
             Total = CalculadoraGaia.Calcular(f.Llamadas),
             PorEtapa = etapas,
             PorDia = CalculadoraGaia.PorDia(f.Llamadas),
+            PorSemana = CalculadoraGaia.PorSemana(f.Llamadas),
             Agentes = Ordenar(CalculadoraGaia.PorAgente(f.Llamadas), i => i.Adherencia, descendente: false).ToList(),
             MatrizEtapas = matriz,
             Etapas = etapas.Select(e => e.Clave).ToList(),
@@ -152,6 +154,7 @@ public sealed class GaiaController : Controller
             CategoriasOferta = CalculadoraGaia.Reparto(conIntento, l => l.CategoriaOferta),
             TiposServicioVenta = CalculadoraGaia.Reparto(f.Llamadas.Where(l => l.TieneVenta == true), l => l.TipoServicioVenta),
             PorDia = CalculadoraGaia.PorDia(f.Llamadas),
+            PorSemana = CalculadoraGaia.PorSemana(f.Llamadas),
             PorEtapa = CalculadoraGaia.PorEtapa(f.Llamadas),
             Agentes = Ordenar(CalculadoraGaia.PorAgente(f.Llamadas), i => i.Ofrecimientos, descendente: true).ToList(),
         });
@@ -205,6 +208,7 @@ public sealed class GaiaController : Controller
                 .OrderBy(g => Array.IndexOf(LectorNominaGaia.ColumnasDias, g.Clave) is var i && i >= 0 ? i : 99).ToList(),
             PorDia = CalculadoraGaia.EspanolizacionPor(f.Llamadas, palabras, nivel, l => l.Fecha.ToString("yyyy-MM-dd"), g => g.First().Fecha.ToString("dd/MM"))
                 .OrderBy(g => g.Clave).ToList(),
+            PorSemana = CalculadoraGaia.EspanolizacionPorSemana(f.Llamadas, palabras, nivel),
             // Con base suficiente primero, de menos a más españolización; los de poca base, al final.
             Agentes = porAgente.OrderBy(a => a.Espanolizacion.Base < PaginaEspanolizacionGaia.MinBase)
                 .ThenBy(a => a.Espanolizacion.Espana ?? 2).ThenByDescending(a => a.Espanolizacion.Base).ToList(),

@@ -51,7 +51,10 @@
   atención, atención, cliente, sin causa) con las reglas del proceso de soporte de YGMM
   (`C:\Proyectos\Soporte YGMM`); etiquetas nuevas de DataOrb por palabras clave; no hay llamadas
   repetidas (lo que sumaba de más eran llamadas con varios impedimentos).
-- Gráficas con etiquetas de impacto (media, pico, máximo, mínimo, último valor), no en cada punto.
+- Gráficas: **cada punto con su valor en una pastilla** del color de su serie, sin «máx./mín./media»
+  (06-10-2026, sustituye a las etiquetas de impacto). Tablas: **total al pie** (`tfoot`, «TOTAL», pegado
+  abajo), nunca arriba. El color de la página **sigue a la marca filtrada**: Orange naranja, YOIGO/MASMOVIL
+  morado, Jazztel `#FFD200`. Reglas en la skill frontend-solaris y en la guía (2.1, 4 y 9.4).
 
 ## Pendientes
 

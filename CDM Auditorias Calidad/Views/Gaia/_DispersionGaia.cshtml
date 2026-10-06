@@ -10,6 +10,17 @@
     double Y(double v) => 1 - (v - minY) / (maxY - minY);
     var maxLlamadas = Math.Max(1, puntos.Select(p => p.Llamadas).DefaultIfEmpty(1).Max());
 }
+<div class="leyenda-ns centrada">
+    <span class="serie-a"><i></i>Un agente (el tamaño es su número de llamadas)</span>
+    @if (Model.TotalX is { } tl)
+    {
+        <span><i class="discontinua"></i>total en horizontal: @Formato.Porcentaje(tl)</span>
+    }
+    @if (Model.TotalY is { } tv)
+    {
+        <span><i class="discontinua"></i>total en vertical: @Formato.Porcentaje(tv)</span>
+    }
+</div>
 <figure class="grafica dispersion" role="img" aria-label="Agentes: @Model.X.Nombre frente a @Model.Y.Nombre">
     <div class="plano">
         <svg viewBox="0 0 1000 1000" preserveAspectRatio="none" aria-hidden="true">
@@ -37,14 +48,6 @@
         @for (var v = minX; v <= maxX + pasoX / 2; v += pasoX)
         {
             <span class="eje-x" style="left:@P(X(v))">@Formato.PorcentajeEntero(Math.Round(v * 100))</span>
-        }
-        @if (Model.TotalX is { } txt)
-        {
-            <span class="etiqueta-eje arriba" style="left:@P(X(txt))">total @Formato.Porcentaje(txt)</span>
-        }
-        @if (Model.TotalY is { } tyt)
-        {
-            <span class="meta-texto" style="top:@P(Y(tyt))">total @Formato.Porcentaje(tyt)</span>
         }
         @foreach (var p in puntos)
         {

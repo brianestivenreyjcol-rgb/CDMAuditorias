@@ -1,6 +1,7 @@
 @model PaginaGaia
 @* #informe de GAIA Formación: pestañas, avisos, panel de filtros y la pestaña. Al filtrar, site.js lo pide
-   con la cabecera X-Parcial y el controlador lo devuelve sin la página alrededor. Mientras no hay datos,
+   con la cabecera X-Parcial y el controlador lo devuelve sin la página alrededor; data-marca-pagina lleva la marca de color
+   para que site.js la copie a <html> (si no, el color se quedaría con el de la marca anterior). Mientras no hay datos,
    «preparando», y la página se vuelve a pedir sola cada 10 s (salvo que el último intento fallara y no
    se esté reintentando: entonces se enseña el error y un botón). *@
 @{
@@ -9,7 +10,7 @@
     var volver = Context.Request.Path + Context.Request.QueryString;
     var enCurso = Model.Cargando || Model.Actualizacion == "en-curso";
 }
-<div id="informe" class="contenedor" data-titulo="GAIA Formación · @PaginaGaia.Titulo(Model.Pestana) · CDM Auditorías Calidad">
+<div id="informe" class="contenedor" data-marca-pagina="@MarcaDePagina(Model.Filtros?.Peticion.Marca)" data-titulo="GAIA Formación · @PaginaGaia.Titulo(Model.Pestana) · CDM Auditorías Calidad">
     <nav class="pestanas compactas" aria-label="Pestañas de GAIA Formación">
         @foreach (var p in Enum.GetValues<PestanaGaia>())
         {

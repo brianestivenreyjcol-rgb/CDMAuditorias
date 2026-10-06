@@ -1,70 +1,82 @@
 @model GraficoGaia
-@* Columnas por etapa o por semana con una o varias series (en grupo), con las piezas de la guía. Etiquetas de
-   impacto, no de todas: con una serie, la media (línea discontinua con su cifra a la derecha) y el máximo y el
-   mínimo; con varias, el máximo de cada una. Cada punto lleva una banda con <title> para la ficha. *@
+@* Columnas por etapa, semana o día con una o varias series (en grupo), con las piezas de la guía. Cada columna lleva su
+   valor en una pastilla (.etiqueta-punto) con el color de su serie; con dos series, la de valor más alto pone la pastilla
+   encima de su columna y la otra debajo del borde de la suya; con más de ~20 periodos se rotula uno de cada dos o menos.
+   Con PorUmbral, las columnas y las pastillas llevan el color de la adherencia. Dos series con escalas muy distintas:
+   eje izquierdo y derecho. Cada periodo lleva una banda con <title> para la ficha. *@
 @{
     var n = Math.Max(1, Model.Etiquetas.Count);
     var series = Model.Series;
-    // Unidad del eje: puntos porcentuales o minutos.
-    double U(double v) => Model.Segundos ? v / 60 : v * 100;
-    var maxU = series.SelectMany(s => s.Valores).Where(v => v is not null).Select(v => U(v!.Value))
-        .Append(Model.Media is { } m ? U(m) : 0).DefaultIfEmpty(0).Max();
-    var (tope, paso) = EscalaGrafico.DesdeCero(maxU, 4);
-    // Un porcentaje no pasa de 100: el eje se queda ahí aunque DesdeCero deje aire sobre la columna más alta.
-    if (!Model.Segundos && tope > 100 && maxU <= 100) tope = 100;
+    var doble = Doble(Model);
+    var todos = series.SelectMany(s => s.Valores).Where(v => v is not null).Select(v => v!.Value)
+        .Concat(Model.Media.HasValue ? new[] { Model.Media.Value } : Array.Empty<double>()).ToList();
+    var escalas = doble
+        ? series.Select(s => Escala(Model, s.Valores.Where(v => v is not null).Select(v => v!.Value), true)).ToArray()
+        : new[] { Escala(Model, todos, true) };
+    EscalaGaia Esc(int k) => escalas[doble ? k : 0];
     double X(int i) => (i + 0.5) / n;
-    double Y(double u) => 1 - u / tope;
-    string Eje(double u) => Model.Segundos ? u.ToString("0.#", Formato.Es) + " min" : Formato.PorcentajeEntero(u);
     var grupo = Math.Min(0.12, 0.7 / n);
     var ancho = grupo / series.Count;
-    var unaSerie = series.Count == 1;
+    var rotulados = Rotulados(Model);
     var pasoX = Math.Max(1, (int)Math.Ceiling(n / (double)Model.MaxEtiquetasX));
 }
-<figure class="grafica con-meta" role="img" aria-label="@Model.Descripcion">
+@if (Model.ConLeyenda)
+{
+    @await Html.PartialAsync("_LeyendaGraficoGaia", Model)
+}
+<figure class="grafica lineas-ns@(Model.Baja ? " corta" : "")@(Model.EjeX ? "" : " sin-eje-x")" role="img" aria-label="@Model.Descripcion">
     <div class="plano">
         <svg viewBox="0 0 1000 1000" preserveAspectRatio="none" aria-hidden="true">
-            @for (var v = 0.0; v <= tope + paso / 2; v += paso)
+            @foreach (var v in escalas[0].Marcas())
             {
-                <line class="rejilla-linea" x1="0" x2="1000" y1="@C(Y(v))" y2="@C(Y(v))" vector-effect="non-scaling-stroke" />
+                <line class="rejilla-linea" x1="0" x2="1000" y1="@C(escalas[0].Y(v))" y2="@C(escalas[0].Y(v))" vector-effect="non-scaling-stroke" />
             }
             @for (var k = 0; k < series.Count; k++)
             {
                 for (var i = 0; i < series[k].Valores.Count; i++)
                 {
                     if (series[k].Valores[i] is not { } v) continue;
-                    var alto = Math.Max(0.004, 1 - Y(U(v)));
-                    <rect class="columna columna-serie @series[k].Clase" data-i="@i" x="@C(X(i) - grupo / 2 + k * ancho)" y="@C(1 - alto)" width="@C(ancho)" height="@C(alto)" />
+                    var alto = Math.Max(0.004, 1 - Esc(k).Y(v));
+                    <rect class="columna columna-serie @series[k].Clase@(Model.PorUmbral ? " columna-umbral " + TonoAdherencia(v) : "")" data-i="@i" x="@C(X(i) - grupo / 2 + k * ancho)" y="@C(1 - alto)" width="@C(ancho)" height="@C(alto)" />
                 }
             }
             @if (Model.Media is { } media)
             {
-                <line class="meta" x1="0" x2="1000" y1="@C(Y(U(media)))" y2="@C(Y(U(media)))" vector-effect="non-scaling-stroke" />
+                <line class="meta" x1="0" x2="1000" y1="@C(escalas[0].Y(media))" y2="@C(escalas[0].Y(media))" vector-effect="non-scaling-stroke" />
             }
             @for (var i = 0; i < Model.Etiquetas.Count; i++)
             {
-                var partes = series.Select(s => $"{NombreFicha(s.Nombre)} {Valor(s.Valores[i], Model.Segundos)}");
+                var partes = series.Select(s => $"{NombreFicha(s.Nombre)} {Valor(s.Valores[i], Model)}");
                 <rect class="banda" data-i="@i" data-x="@Formato.Coord(X(i))" x="@C((double)i / n)" y="0" width="@C(1.0 / n)" height="1000"><title>@Model.Titulos[i] · @string.Join(" · ", partes) · @Model.NombreVolumen @Formato.Entero(Model.Volumen[i])</title></rect>
             }
         </svg>
-        @for (var v = 0.0; v <= tope + paso / 2; v += paso)
+        @foreach (var v in escalas[0].Marcas())
         {
-            <span class="eje-y" style="top:@P(Y(v))">@Eje(v)</span>
+            <span class="eje-y" style="top:@P(escalas[0].Y(v))">@Eje(Model, v, escalas[0])</span>
         }
-        @if (Model.Media is { } mt)
+        @if (doble)
         {
-            <span class="meta-texto" style="top:@P(Y(U(mt)))">media @Valor(mt, Model.Segundos)</span>
+            foreach (var v in escalas[1].Marcas())
+            {
+                <span class="eje-y derecho" style="top:@P(escalas[1].Y(v))">@Eje(Model, v, escalas[1])</span>
+            }
         }
         @for (var k = 0; k < series.Count; k++)
         {
-            var conValor = series[k].Valores.Select((v, i) => (V: v, I: i)).Where(p => p.V is not null && Model.Volumen[p.I] >= MinLlamadasFiable).ToList();
-            if (conValor.Count == 0) continue;
-            var alto = conValor.MaxBy(p => p.V)!;
-            var bajo = unaSerie && conValor.Count > 1 ? conValor.MinBy(p => p.V)! : default;
-            var posicion = series.Count == 1 ? 0.0 : (k - (series.Count - 1) / 2.0) * ancho;
-            <span class="valor pequeno con-fondo@(unaSerie ? "" : " valor-serie " + series[k].Clase)" style="left:@P(X(alto.I) + posicion);top:@P(Y(U(alto.V!.Value)))">@(unaSerie ? "máx. " : "")@Valor(alto.V, Model.Segundos)</span>
-            @if (bajo.V is not null && bajo.I != alto.I)
+            for (var i = 0; i < series[k].Valores.Count; i++)
             {
-                <span class="valor pequeno con-fondo" style="left:@P(X(bajo.I));top:@P(Y(U(bajo.V.Value)))">mín. @Valor(bajo.V, Model.Segundos)</span>
+                if (!rotulados.Contains(i) || series[k].Valores[i] is not { } v) continue;
+                var y = Esc(k).Y(v);
+                var arriba = true;
+                if (series.Count == 2 && series[1 - k].Valores[i] is { } otro)
+                {
+                    var yOtro = Esc(1 - k).Y(otro);
+                    arriba = y < yOtro || (y == yOtro && k == 0);
+                }
+                // Una pastilla «debajo» de un punto pegado al eje X pisaría sus fechas; una «encima» de uno pegado al techo se saldría.
+                if (!arriba && y > 0.9) arriba = true;
+                else if (arriba && y < 0.06 && series.Count == 2) arriba = false;
+                <span class="etiqueta-punto @series[k].Clase@(Model.PorUmbral ? " " + TonoAdherencia(v) : "") @(arriba ? "arriba" : "abajo")" style="left:@P(X(i));top:@P(y)">@Valor(v, Model)</span>
             }
         }
         @if (Model.EjeX)

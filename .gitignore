@@ -19,3 +19,6 @@ capturas/
 
 # Caché de CDM No solución en desarrollo (unos 60 MB)
 **/App_Data/
+
+# Copia suelta de las hojas del portal SOLARIS (la buena está en la skill frontend-solaris)
+docs/referencia-portal/

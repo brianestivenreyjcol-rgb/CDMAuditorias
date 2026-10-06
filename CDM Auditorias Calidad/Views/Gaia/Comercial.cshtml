@@ -84,10 +84,6 @@
                 <h2>Ofrecimientos y ventas por día</h2>
                 <span class="tarjeta-nota">% sobre las llamadas de cada día</span>
             </header>
-            <div class="leyenda-ns">
-                <span class="serie-a"><i></i>Ofrecimientos</span>
-                <span class="serie-c"><i></i>Ventas</span>
-            </div>
             @await Html.PartialAsync("_LineasGaia", porDia)
         </section>
 
@@ -96,10 +92,6 @@
                 <h2>Ofrecimientos y ventas por etapa</h2>
                 <span class="tarjeta-nota">de la preconexión al aseguramiento</span>
             </header>
-            <div class="leyenda-ns">
-                <span class="serie-a"><i></i>Ofrecimientos</span>
-                <span class="serie-c"><i></i>Ventas</span>
-            </div>
             @await Html.PartialAsync("_ColumnasGaia", porEtapa)
         </section>
 
@@ -128,17 +120,6 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr class="total">
-                            <td>Total del filtro</td>
-                            <td class="num">@Formato.Entero(t.Llamadas)</td>
-                            <td class="num">@Formato.Porcentaje(t.Ofrecimientos)</td>
-                            <td class="num">@Formato.Porcentaje(t.Proactivo)</td>
-                            <td class="num">@Formato.Porcentaje(t.Reactivo)</td>
-                            <td class="num">@Formato.Entero(t.OfrecimientosAlineados)</td>
-                            <td class="num">@Formato.Porcentaje(t.PorcentajeVentas)</td>
-                            <td class="num">@Formato.Porcentaje(t.Rellamada72)</td>
-                            <td class="num">@Formato.Porcentaje(t.NoSolucion)</td>
-                        </tr>
                         @foreach (var fila in Model.Agentes)
                         {
                             var i = fila.Indicadores;
@@ -158,6 +139,19 @@
                             </tr>
                         }
                     </tbody>
+                    <tfoot>
+                        <tr class="total">
+                            <td>TOTAL</td>
+                            <td class="num">@Formato.Entero(t.Llamadas)</td>
+                            <td class="num">@Formato.Porcentaje(t.Ofrecimientos)</td>
+                            <td class="num">@Formato.Porcentaje(t.Proactivo)</td>
+                            <td class="num">@Formato.Porcentaje(t.Reactivo)</td>
+                            <td class="num">@Formato.Entero(t.OfrecimientosAlineados)</td>
+                            <td class="num">@Formato.Porcentaje(t.PorcentajeVentas)</td>
+                            <td class="num">@Formato.Porcentaje(t.Rellamada72)</td>
+                            <td class="num">@Formato.Porcentaje(t.NoSolucion)</td>
+                        </tr>
+                    </tfoot>
                 </table>
             </div>
         </section>

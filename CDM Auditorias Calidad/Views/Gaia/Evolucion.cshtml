@@ -16,8 +16,8 @@
     {
         var kpi = Model.Kpi;
         var mediaKpi = kpi.Valor(t);
-        var porDia = Grafico("dia", Model.PorDia, (kpi.Nombre, "serie-a", kpi.Valor)) with { Media = mediaKpi, EjeX = false, Descripcion = kpi.Nombre + " por día" };
-        var porSemana = Grafico("semana", Model.PorSemana, (kpi.Nombre, "serie-a", kpi.Valor)) with { Media = mediaKpi, Descripcion = kpi.Nombre + " por semana" };
+        GraficoGaia Linea(string escala, IReadOnlyList<GrupoGaia> grupos)
+            => Grafico(escala, grupos, (kpi.Nombre, "serie-a", kpi.Valor)) with { Media = mediaKpi, EjeX = false, Descripcion = kpi.Nombre + " por " + escala };
 
         SelectorGaia Selector(string id, string titulo, KpiGaia actual, string porDefecto)
             => new(id, titulo, actual.Nombre, CalculadoraGaia.Kpis
@@ -34,29 +34,19 @@
             <p class="nota-ns">@kpi.Ayuda @(kpi.MejorAlto ? "Más alto es mejor." : "Más bajo es mejor.")</p>
         </div>
 
-        <section class="tarjeta">
+        <section class="tarjeta" data-vistas>
             <header class="tarjeta-cabecera">
-                <h2>@kpi.Nombre por día</h2>
-                <span class="tarjeta-nota">y llamadas de cada día</span>
+                <h2>@kpi.Nombre</h2>
+                <partial name="_SelectorVistaGaia" />
             </header>
-            <div class="leyenda-ns">
-                <span class="serie-a"><i></i>@kpi.Nombre</span>
-                @if (mediaKpi is not null)
-                {
-                    <span><i class="discontinua"></i>media @Formato.Porcentaje(mediaKpi)</span>
-                }
+            <div data-vista="semana">
+                @await Html.PartialAsync("_LineasGaia", Linea("semana", Model.PorSemana))
+                @await Html.PartialAsync("_ColumnasGaia", GraficoVolumen("semana", Model.PorSemana))
             </div>
-            @await Html.PartialAsync("_LineasGaia", porDia)
-            @await Html.PartialAsync("_VolumenDiaGaia", Model.PorDia)
-            <p class="nota-ns">Un día con menos de @MinLlamadasFiable llamadas puede salir en un extremo, pero no cuenta como máximo ni como mínimo.</p>
-        </section>
-
-        <section class="tarjeta">
-            <header class="tarjeta-cabecera">
-                <h2>@kpi.Nombre por semana</h2>
-                <span class="tarjeta-nota">semanas de lunes a domingo</span>
-            </header>
-            @await Html.PartialAsync("_ColumnasGaia", porSemana)
+            <div data-vista="dia" hidden>
+                @await Html.PartialAsync("_LineasGaia", Linea("dia", Model.PorDia))
+                @await Html.PartialAsync("_ColumnasGaia", GraficoVolumen("dia", Model.PorDia))
+            </div>
         </section>
 
         <section class="tarjeta">

@@ -67,7 +67,6 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @* Sin fila de total (la quitó el usuario el 06-10-2026); el total sigue sirviendo de referencia para el tinte. *@
                         @foreach (var fila in Model.Filas)
                         {
                             var ind = fila.Indicadores;
@@ -86,6 +85,16 @@
                             </tr>
                         }
                     </tbody>
+                    <tfoot>
+                        <tr class="total">
+                            <td>TOTAL</td>
+                            <td class="num">@Formato.Entero(t.Llamadas)</td>
+                            @foreach (var c in columnas)
+                            {
+                                <td class="num">@Formato.Porcentaje(CalculadoraGaia.Kpi(c.Clave).Valor(t))</td>
+                            }
+                        </tr>
+                    </tfoot>
                 </table>
             </div>
         }

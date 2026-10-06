@@ -128,7 +128,7 @@ método del PBI; el número es bajo por la fuente, no por la web.
 ## 6 ter. Vistas (06-10-2026, agente frontend-solaris)
 
 - `Views/Gaia/`: `_LayoutGaia`, `_InformeGaia` (pestañas, avisos, preparando), `_PanelGaia` (filtros y pie con el estado de los
-  datos), `Resumen`, `Ranking`, `Estilo`, `Llamadas` y las gráficas `_ColumnasEtapaGaia`, `_LineaDiaGaia`, `_VolumenDiaGaia`.
+  datos), `Resumen`, `Ranking`, `Estilo`, `Llamadas` y las gráficas `_LineasGaia` y `_ColumnasGaia` (antes había tres parciales de gráficas propios; ver la tercera tanda).
   Ayudantes de presentación en `Views/Gaia/AyudasGaia.cs` (etiquetas de etapa y motivo, Sí/No/N/A, m:ss, clases de umbral).
 - Piezas y clases nuevas: sección 9.6 de `docs/guia-de-estilos.md`. Tarjeta «GAIA Formación» en la portada.
 - Los motivos llegan sin traducir en camelCase con «Or» (`incidenciaOrReclamación`); la vista los pasa a «Incidencia o
@@ -171,6 +171,15 @@ método del PBI; el número es bajo por la fuente, no por la web.
 - Si la españolización falla, el resto se carga igual y la página enseña el aviso (`AvisosCarga`).
 - Caché v2 (60 MB). Pendiente de valorar: cargar el detalle de Llamadas bajo demanda (1,1 MB por página
   de 100) y una tabla de traducción de los motivos (llegan en camelCase; la vista los arregla a medias).
+
+### Vistas, tercera tanda (06-10-2026)
+
+- Pastillas con el valor de cada punto en todas las gráficas (sin «máx.», «mín.» ni media rotulada), leyenda arriba y centrada, eje derecho si
+  dos series tienen escalas muy distintas, y selector Semana / Día en Rendimiento y Evolución. Resumen, Estilo, Comercial y Españolización no tienen
+  `PorSemana` en su modelo: ahí, el Día rotula uno de cada pocos puntos.
+- TOTAL al pie en todas las tablas; color de la página según la marca filtrada (`data-marca`: orange, ygmm, jazztel). Sección 9.8 de `docs/guia-de-estilos.md`.
+- Los parciales `_ColumnasEtapaGaia`, `_LineaDiaGaia` y `_VolumenDiaGaia` desaparecen: todo pasa por `_LineasGaia` y `_ColumnasGaia`
+  (el volumen es `GraficoVolumen`).
 
 ## 7. Plan de trabajo
 

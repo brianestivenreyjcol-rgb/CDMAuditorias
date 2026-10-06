@@ -144,45 +144,146 @@ public static class AyudasGaia
     /// <param name="Clase">Clase de color fijo (<c>serie-a</c> … <c>serie-e</c>, <c>serie-espana</c>, <c>serie-colombia</c>).</param>
     public sealed record SerieGaia(string Nombre, string Clase, IReadOnlyList<double?> Valores);
 
+    /// <summary>Un elemento de la leyenda que no es una serie (la media, los umbrales): una línea discontinua con su texto.</summary>
+    public sealed record ItemLeyendaGaia(string Texto, string Clase, bool Discontinua);
+
     /// <summary>
     /// Lo que necesitan las gráficas de línea y de columnas: un punto por día, semana o etapa.
-    /// <paramref name="Volumen"/> es lo que se enseña en la ficha (llamadas o base) y lo que decide qué puntos pueden ser máximo o mínimo.
+    /// <paramref name="Volumen"/> es lo que se enseña en la ficha (llamadas o base).
     /// </summary>
     public sealed record GraficoGaia(IReadOnlyList<string> Etiquetas, IReadOnlyList<string> Titulos, IReadOnlyList<int> Volumen, IReadOnlyList<SerieGaia> Series)
     {
-        /// <summary>Los valores son segundos (TMO) y no fracciones.</summary>
+        /// <summary>Los valores son segundos (TMO).</summary>
         public bool Segundos { get; init; }
+        /// <summary>Los valores son recuentos (llamadas): enteros con miles.</summary>
+        public bool Entero { get; init; }
         public string NombreVolumen { get; init; } = "Llamadas";
-        /// <summary>Línea discontinua de la media (solo con una serie).</summary>
+        /// <summary>Línea discontinua de la media (solo con una serie); su cifra va en la leyenda, no sobre los puntos.</summary>
         public double? Media { get; init; }
         public IReadOnlyList<double> Referencias { get; init; } = [];
+        /// <summary>Otros elementos de la leyenda (p. ej. «umbrales 40 % y 70 %»).</summary>
+        public IReadOnlyList<ItemLeyendaGaia> Extras { get; init; } = [];
         /// <summary>Etiquetas del eje X (las líneas con el volumen debajo van sin ellas).</summary>
         public bool EjeX { get; init; } = true;
+        /// <summary>Gráfica baja (el volumen bajo una línea).</summary>
+        public bool Baja { get; init; }
+        /// <summary>Las columnas llevan el color de los umbrales de la adherencia.</summary>
+        public bool PorUmbral { get; init; }
+        public bool ConLeyenda { get; init; } = true;
+        /// <summary>Los puntos son días (si son muchos, se rotula uno de cada dos o menos).</summary>
+        public bool Dia { get; init; }
+        /// <summary>Ancho en píxeles del plano: decide cuántas pastillas caben (media tarjeta, 400; tarjeta entera, 800).</summary>
+        public int AnchoEstimado { get; init; } = 800;
         public int MaxEtiquetasX { get; init; } = 12;
         public string Descripcion { get; init; } = "";
     }
 
-    /// <summary>Un valor de un gráfico escrito como se lee: m:ss o porcentaje.</summary>
-    public static string Valor(double? valor, bool segundos) => segundos ? Duracion(valor) : Formato.Porcentaje(valor);
+    /// <summary>Un valor de un gráfico escrito como se lee: m:ss, entero o porcentaje.</summary>
+    public static string Valor(double? valor, GraficoGaia g)
+        => valor is not { } v ? "—" : g.Segundos ? Duracion(v) : g.Entero ? Formato.Entero((int)Math.Round(v)) : Formato.Porcentaje(v);
 
     /// <summary>Segundos → minutos para el eje («2,5 min»).</summary>
     public static string Minutos(double segundos) => (segundos / 60).ToString("0.#", Formato.Es) + " min";
 
+    /// <summary>Eje de una gráfica: de <see cref="Min"/> a <see cref="Max"/> con marcas cada <see cref="Paso"/> (en la unidad de los valores).</summary>
+    public sealed record EscalaGaia(double Min, double Max, double Paso)
+    {
+        /// <summary>Posición vertical (0 arriba, 1 abajo) de un valor.</summary>
+        public double Y(double v) => 1 - (v - Min) / (Max - Min);
+        public IEnumerable<double> Marcas() { for (var v = Min; v <= Max + Paso / 2; v += Paso) yield return v; }
+    }
+
+    /// <summary>La escala de unos valores: las columnas parten de cero; las líneas de porcentaje se ajustan a los datos.</summary>
+    public static EscalaGaia Escala(GraficoGaia g, IEnumerable<double> valores, bool columnas)
+    {
+        var lista = valores.ToList();
+        var max = lista.DefaultIfEmpty(0).Max();
+        if (g.Segundos) { var (tope, paso) = EscalaGrafico.DesdeCero(max / 60, 4); return new(0, tope * 60, paso * 60); }
+        if (g.Entero) { var (tope, paso) = EscalaGrafico.DesdeCero(max, 3); return new(0, tope, paso); }
+        if (columnas)
+        {
+            var (tope, paso) = EscalaGrafico.DesdeCero(max * 100, 4);
+            // Un porcentaje no pasa de 100: el eje se queda ahí aunque DesdeCero deje aire sobre la columna más alta.
+            if (tope > 100 && max * 100 <= 100) tope = 100;
+            return new(0, tope / 100, paso / 100);
+        }
+        var (min, mx, p) = EscalaGrafico.Porcentaje(lista);
+        return new(min, mx, p);
+    }
+
+    /// <summary>Una marca del eje Y escrita según la unidad.</summary>
+    public static string Eje(GraficoGaia g, double v, EscalaGaia e)
+        => g.Segundos ? Minutos(v) : g.Entero ? Formato.Entero((int)Math.Round(v))
+           : e.Paso * 100 < 1 ? (v * 100).ToString("0.0", Formato.Es) + Formato.EspacioFino + "%" : Formato.PorcentajeEntero(Math.Round(v * 100));
+
+    private static double MaximoDe(SerieGaia s) => s.Valores.Where(v => v is not null).Select(v => v!.Value).DefaultIfEmpty(0).Max();
+
+    /// <summary>Dos series con escalas muy distintas (una cinco veces mayor que la otra): eje izquierdo para la primera y derecho para la segunda.</summary>
+    public static bool Doble(GraficoGaia g)
+    {
+        if (g.Segundos || g.Entero || g.Series.Count != 2) return false;
+        var a = MaximoDe(g.Series[0]);
+        var b = MaximoDe(g.Series[1]);
+        return a > 0 && b > 0 && (a / b > 5 || b / a > 5);
+    }
+
+    /// <summary>
+    /// En qué puntos va la pastilla con el valor: en todos si caben; si no (más de ~20 periodos), en uno de cada dos
+    /// (o de cada tantos como haga falta para que no se pisen) y siempre en el primero y el último.
+    /// </summary>
+    public static HashSet<int> Rotulados(GraficoGaia g)
+    {
+        var n = g.Etiquetas.Count;
+        var ancho = g.Segundos ? 46 : g.Entero ? 42 : 58;
+        var salto = (int)Math.Ceiling(n * (double)ancho / g.AnchoEstimado);
+        if (g.Dia && n > 20) salto = Math.Max(2, salto);
+        if (salto <= 1) return Enumerable.Range(0, n).ToHashSet();
+        var r = new HashSet<int>();
+        for (var i = 0; i < n; i += salto) r.Add(i);
+        var ultimo = n - 1;
+        if (ultimo >= 0 && !r.Contains(ultimo))
+        {
+            var previo = r.Max();
+            if (ultimo - previo < (salto + 1) / 2) r.Remove(previo);
+            r.Add(ultimo);
+        }
+        return r;
+    }
+
+    /// <summary>
+    /// Marca de la página según el filtro de marca: solo ORANGE → «orange»; solo YOIGO y/o MASMOVIL → «ygmm»; solo JAZZTEL →
+    /// «jazztel»; nada marcado o marcas de grupos distintos → el color por defecto de GAIA (naranja).
+    /// </summary>
+    public static string MarcaDePagina(IEnumerable<string>? marcas, string porDefecto = "orange")
+    {
+        var grupos = (marcas ?? []).Select(m => m.ToUpperInvariant() switch
+        {
+            "ORANGE" => "orange", "JAZZTEL" => "jazztel", "YOIGO" or "MASMOVIL" => "ygmm", _ => "",
+        }).Distinct().ToList();
+        return grupos.Count == 1 && grupos[0] != "" ? grupos[0] : porDefecto;
+    }
+
     private static GraficoGaia Construir(string escala, IReadOnlyList<(string Clave, string Texto, int Volumen)> puntos,
         IEnumerable<(string Nombre, string Clase, IReadOnlyList<double?> Valores)> series)
         => new(
-            puntos.Select(p => escala switch { "dia" => DateOnly.TryParse(p.Clave, out var d) ? Formato.Fecha(d) : p.Texto, "etapa" => EtapaCorta(p.Texto), _ => p.Texto }).ToList(),
+            puntos.Select(p => escala switch { "dia" => DateOnly.TryParse(p.Clave, out var d) ? Formato.Fecha(d) : p.Texto, "etapa" => EtapaCorta(p.Texto), _ => p.Clave }).ToList(),
             puntos.Select(p => escala switch { "dia" => DiaLargo(p.Clave), "etapa" => EtapaLegible(p.Texto), _ => p.Texto.Replace(" · ", " del ") }).ToList(),
             puntos.Select(p => p.Volumen).ToList(),
             series.Select(s => new SerieGaia(s.Nombre, s.Clase, s.Valores)).ToList())
         {
-            MaxEtiquetasX = escala == "semana" ? 6 : 12,
+            MaxEtiquetasX = escala == "semana" ? 7 : 12,
+            Dia = escala == "dia",
         };
 
     /// <summary>Gráfico de grupos (días, semanas o etapas) con una serie por indicador.</summary>
     public static GraficoGaia Grafico(string escala, IReadOnlyList<GrupoGaia> grupos, params (string Nombre, string Clase, Func<IndicadoresGaia, double?> Valor)[] series)
         => Construir(escala, grupos.Select(g => (g.Clave, g.Texto, g.Indicadores.Llamadas)).ToList(),
             series.Select(s => (s.Nombre, s.Clase, (IReadOnlyList<double?>)grupos.Select(g => s.Valor(g.Indicadores)).ToList())));
+
+    /// <summary>Las llamadas de cada día, semana o etapa en columnas bajas (bajo una línea); cada columna con su cifra.</summary>
+    public static GraficoGaia GraficoVolumen(string escala, IReadOnlyList<GrupoGaia> grupos)
+        => Grafico(escala, grupos, ("Llamadas", "serie-b", i => i.Llamadas))
+           with { Entero = true, Baja = true, ConLeyenda = false, Descripcion = "Llamadas" };
 
     /// <summary>Gráfico de españolización: una serie con España y otra con Colombia; el volumen es la base.</summary>
     public static GraficoGaia GraficoEspanolizacion(string escala, IReadOnlyList<GrupoEspanolizacion> grupos)

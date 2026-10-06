@@ -8,6 +8,7 @@
 }
 @if (!Model.Preparando)
 {
+    var t = Model.Total!;
     var desde = (Model.Pagina - 1) * PaginaLlamadasGaia.PorPagina + 1;
     var hasta = desde + Model.Filas.Count - 1;
 
@@ -141,6 +142,15 @@
                         </div>
                     </details>
                 }
+                <div class="fila-ns fila-total cols-llamada" title="Todas las llamadas del filtro, no solo las de esta página">
+                    <span class="fila-ns-nombre">TOTAL</span>
+                    <span class="celda-doble"><span class="recorta">@Formato.Entero(t.Llamadas) llamadas</span></span>
+                    <span class="num">@Duracion(t.Tmo)</span>
+                    <span>@Formato.Porcentaje(t.Rellamada72)</span>
+                    <span>@Formato.Porcentaje(t.NoSolucion)</span>
+                    <span>@Formato.Porcentaje(t.SentimientoPositivoFinal)</span>
+                    <span class="texto-tenue">TMO y % del filtro</span>
+                </div>
             </div>
 
             @if (Model.TotalPaginas > 1)

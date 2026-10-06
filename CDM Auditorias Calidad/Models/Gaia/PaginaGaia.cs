@@ -99,6 +99,7 @@ public sealed class PaginaResumenGaia : PaginaGaia
     public KpiGaia Kpi { get; init; } = CalculadoraGaia.Kpis[0];
     public IReadOnlyList<GrupoGaia> PorEtapa { get; init; } = [];
     public IReadOnlyList<GrupoGaia> PorDia { get; init; } = [];
+    public IReadOnlyList<GrupoGaia> PorSemana { get; init; } = [];
     public IReadOnlyList<GrupoGaia> PorMarca { get; init; } = [];
 
     /// <summary>Agentes distintos con llamadas en el filtro.</summary>
@@ -148,6 +149,7 @@ public sealed class PaginaEstiloGaia : PaginaGaia
 
     public IReadOnlyList<GrupoGaia> PorEtapa { get; init; } = [];
     public IReadOnlyList<GrupoGaia> PorDia { get; init; } = [];
+    public IReadOnlyList<GrupoGaia> PorSemana { get; init; } = [];
 
     /// <summary>Agentes ordenados de menor a mayor adherencia (los que más ayuda necesitan, arriba).</summary>
     public IReadOnlyList<FilaAgenteGaia> Agentes { get; init; } = [];
@@ -253,6 +255,7 @@ public sealed class PaginaComercialGaia : PaginaGaia
     public IReadOnlyList<RepartoGaia> TiposServicioVenta { get; init; } = [];
 
     public IReadOnlyList<GrupoGaia> PorDia { get; init; } = [];
+    public IReadOnlyList<GrupoGaia> PorSemana { get; init; } = [];
     public IReadOnlyList<GrupoGaia> PorEtapa { get; init; } = [];
 
     /// <summary>Agentes de más a menos ofrecimientos.</summary>
@@ -308,6 +311,7 @@ public sealed class PaginaEspanolizacionGaia : PaginaGaia
     public IReadOnlyList<FilaPalabraGaia> Palabras { get; init; } = [];
     public IReadOnlyList<GrupoEspanolizacion> PorEtapa { get; init; } = [];
     public IReadOnlyList<GrupoEspanolizacion> PorDia { get; init; } = [];
+    public IReadOnlyList<GrupoEspanolizacion> PorSemana { get; init; } = [];
 
     /// <summary>Agentes de menos a más españolización (los que más ayuda necesitan, arriba).</summary>
     public IReadOnlyList<GrupoEspanolizacion> Agentes { get; init; } = [];

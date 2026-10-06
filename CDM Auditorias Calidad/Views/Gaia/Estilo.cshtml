@@ -39,7 +39,6 @@
     }
     else
     {
-        <div class="rejilla-2">
             <section class="tarjeta adherencia-gaia">
                 <header class="tarjeta-cabecera">
                     <h2>Adherencia al estilo</h2>
@@ -66,9 +65,8 @@
                     <h2>Adherencia por etapa</h2>
                     <span class="tarjeta-nota">de la preconexión al aseguramiento</span>
                 </header>
-                @await Html.PartialAsync("_ColumnasEtapaGaia", (enEtapa, adherencia, "Adherencia", media, true))
+                @await Html.PartialAsync("_ColumnasGaia", Grafico("etapa", enEtapa, ("Adherencia", "serie-a", adherencia)) with { Media = media, PorUmbral = true, Descripcion = "Adherencia por etapa de formación" })
             </section>
-        </div>
 
         <section class="resumen en-4" aria-label="Criterios del estilo">
             @foreach (var c in criterios)
@@ -91,17 +89,11 @@
                 <h2>Adherencia por día</h2>
                 <span class="tarjeta-nota">y llamadas de cada día</span>
             </header>
-            <div class="leyenda-ns">
-                <span class="serie-orange"><i></i>Adherencia</span>
-                <span><i class="discontinua"></i>@Formato.PorcentajeEntero(bajo * 100) y @Formato.PorcentajeEntero(medio * 100), los umbrales</span>
-                @if (media is not null)
-                {
-                    <span><i class="discontinua"></i>media @Formato.Porcentaje(media)</span>
-                }
-            </div>
-            @await Html.PartialAsync("_LineaDiaGaia", (Model.PorDia, adherencia, "Adherencia", media, umbrales))
-            @await Html.PartialAsync("_VolumenDiaGaia", Model.PorDia)
-            <p class="nota-ns">Un día con menos de @MinLlamadasFiable llamadas puede salir en un extremo, pero no cuenta como máximo ni como mínimo.</p>
+            @await Html.PartialAsync("_LineasGaia", Grafico("dia", Model.PorDia, ("Adherencia", "serie-a", adherencia))
+                with { Media = media, EjeX = false, Referencias = umbrales, Descripcion = "Adherencia por día",
+                       Extras = [new ItemLeyendaGaia(Formato.PorcentajeEntero(bajo * 100) + " y " + Formato.PorcentajeEntero(medio * 100) + ", los umbrales", "", true)] })
+            @await Html.PartialAsync("_ColumnasGaia", GraficoVolumen("dia", Model.PorDia))
+            <p class="nota-ns">Con tantos días, la pastilla con el valor va en uno de cada pocos puntos (siempre en el primero y el último); la ficha da el de cada día.</p>
         </section>
 
         <section class="tarjeta">
@@ -153,6 +145,17 @@
                             </tr>
                         }
                     </tbody>
+                    <tfoot>
+                        <tr class="total">
+                            <td>TOTAL</td>
+                            <td class="num">@Formato.Entero(t.Llamadas)</td>
+                            <td class="num">@Formato.Porcentaje(t.Adherencia)</td>
+                            @foreach (var etapa in Model.Etapas)
+                            {
+                                <td class="num">@Formato.Porcentaje(Model.PorEtapa.FirstOrDefault(g => g.Clave == etapa)?.Indicadores.Adherencia)</td>
+                            }
+                        </tr>
+                    </tfoot>
                 </table>
             </div>
         </section>

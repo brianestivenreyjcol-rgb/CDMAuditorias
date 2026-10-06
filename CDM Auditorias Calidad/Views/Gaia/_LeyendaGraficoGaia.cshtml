@@ -1,0 +1,21 @@
+@model GraficoGaia
+@* La leyenda de una gráfica, arriba y centrada: un punto de color con el nombre de cada serie (y su eje si hay dos) y,
+   con raya discontinua, la media y las referencias, con su cifra: ya no se rotulan sobre los puntos. *@
+@{
+    var doble = Doble(Model);
+}
+<div class="leyenda-ns centrada">
+    @for (var k = 0; k < Model.Series.Count; k++)
+    {
+        var s = Model.Series[k];
+        <span class="@s.Clase"><i></i>@s.Nombre@(doble ? (k == 0 ? " (eje izquierdo)" : " (eje derecho)") : "")</span>
+    }
+    @if (Model.Media is { } media)
+    {
+        <span><i class="discontinua"></i>media @Valor(media, Model)</span>
+    }
+    @foreach (var extra in Model.Extras)
+    {
+        <span class="@extra.Clase"><i class="@(extra.Discontinua ? "discontinua" : null)"></i>@extra.Texto</span>
+    }
+</div>
