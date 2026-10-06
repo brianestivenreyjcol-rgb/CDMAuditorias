@@ -27,10 +27,10 @@
   días guardado en disco que se renueva solo cada 12 h.
 - **Ventana de datos**: 3 meses atrás + el mes en curso (hoy, julio a octubre). ICEBERG ya trae
   julio; las tablas WEB empiezan el 01/08 y el usuario **avisará** cuando el origen traiga 4 meses.
-- **Pendiente principal**: **publicar en el 5180 la causa de cada no solución** (atención o proceso,
-  sección 3 ter): el usuario publicó la primera versión de No solución el 05-10-2026 a las 12:43 y
-  lo de después está probado solo en una copia temporal. Cuenta de servicio para SQL, decidir si hace
-  falta inicio de sesión, y julio de WEB cuando avise el usuario (sección 7).
+- **Producción (5180) al día** desde el 06-10-2026: No solución con la causa de cada llamada y las
+  etiquetas de impacto, en `http://10.148.223.143:5180/nosolucion`. **Pendiente principal**: cuenta de
+  servicio para SQL y BigQuery, decidir si hace falta inicio de sesión, y julio de WEB cuando avise el
+  usuario (sección 7).
 
 ---
 
@@ -589,14 +589,12 @@ Parámetros de `/nosolucion…`: `desde`, `hasta`, `servicio`, `supervisor`, `tl
 
 ## 7. Pendientes y decisiones abiertas
 
-- **Publicar la causa de cada no solución** (05-10-2026, tarde): el 5180 sirve la primera versión de
-  No solución (publicada por el usuario a las 12:43). Al publicar, el cubo pasa a v3 y se vuelve a
-  traer (~1 min). Revisar con el usuario el umbral de la rúbrica (1 de 7) y, de vez en cuando, las
-  etiquetas que siguen en «Otro» (`ClasificadorEtiquetas`).
+- **Causa de la no solución**: publicada el 06-10-2026. Revisar con el usuario el umbral de la rúbrica
+  (1 de 7) y, de vez en cuando, las etiquetas que siguen en «Otro» (`ClasificadorEtiquetas`).
 
-- **CDM No solución en el 5180**: el usuario publicó la primera versión el 05-10-2026 a las 12:43
-  (caché en `publicacion\datos`). Para lo siguiente: cerrar la ventana «CDM Auditorias Calidad (5180)»,
-  `publicar.cmd`, `arrancar.cmd`.
+- **CDM No solución en el 5180**: publicado (caché en `publicacion\datos`). Al publicar un cambio de
+  formato del cubo, copiar la caché de `App_Data` a `publicacion\datos` para no esperar a BigQuery.
+  Para lo siguiente: cerrar la ventana «CDM Auditorias Calidad (5180)», `publicar.cmd`, `arrancar.cmd`.
 - **No solución depende del DSN `BQCOL` de usuario** (la cuenta de Google del usuario), igual que
   en ranking-mvc. En la torre nueva hay que volver a crearlo. Para entregar la web haría falta una
   cuenta de servicio de BigQuery.
@@ -694,3 +692,6 @@ Parámetros de `/nosolucion…`: `desde`, `hasta`, `servicio`, `supervisor`, `tl
   los días completos, máximo y mínimo con su cifra y «parcial» en los días parciales. Los días
   parciales y provisionales no cuentan como pico, máximo ni mínimo (sus encuestas siguen llegando).
   Probado en el 5190; sin publicar.
+- **06-10-2026** — Publicado en el 5180 (pedido del usuario): No solución con la causa de cada llamada,
+  el control de repetidas y las etiquetas de impacto. Se copió la caché v3 de `App_Data` a
+  `publicacion\datos` para que entrara al momento. Comprobado desde `http://10.148.223.143:5180`.
