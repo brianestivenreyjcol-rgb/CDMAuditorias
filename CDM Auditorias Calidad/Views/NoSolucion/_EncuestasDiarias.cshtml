@@ -1,6 +1,9 @@
 @model RespuestaResumen
 @* Columnas con las encuestas recogidas cada día; los días parciales, en gris. Cada día lleva una
-   banda con su <title> para la ficha. *@
+   banda con su <title> para la ficha.
+   Etiquetas de impacto: la media de los días completos y cerrados (línea discontinua, .meta, con su cifra
+   a la derecha), el día más alto y el más bajo con su cifra, y «parcial» sobre los días parciales. Los
+   días provisionales (las encuestas siguen llegando) no cuentan para la media ni para máximo y mínimo. *@
 @{
     var serie = Model.Serie;
     var n = Math.Max(1, serie.Count);
@@ -11,8 +14,15 @@
     string C(double fr) => Formato.Coord(fr * 1000);
     string P(double fr) => Formato.Coord(fr * 100) + "%";
     var pasoX = Math.Max(1, (int)Math.Ceiling(n / 12.0));
+
+    // Media, máximo y mínimo de los días completos y cerrados con encuestas.
+    var completos = serie.Select((x, i) => (x, i))
+        .Where(p => !p.x.Parcial && !Model.Provisionales.Contains(p.x.Dia) && p.x.Encuestadas > 0).ToList();
+    double? media = completos.Count > 0 ? completos.Average(p => (double)p.x.Encuestadas) : null;
+    var diaAlto = completos.Count > 0 ? completos.MaxBy(p => p.x.Encuestadas).i : -1;
+    var diaBajo = completos.Count > 1 ? completos.MinBy(p => p.x.Encuestadas).i : -1;
 }
-<figure class="grafica" role="img" aria-label="Encuestas recogidas cada día">
+<figure class="grafica con-meta" role="img" aria-label="Encuestas recogidas cada día">
     <div class="plano">
         <svg viewBox="0 0 1000 1000" preserveAspectRatio="none" aria-hidden="true">
             @for (var v = 0.0; v <= tope + paso / 2; v += paso)
@@ -26,6 +36,10 @@
                 var alto = Math.Max(0.004, 1 - Y(x.Encuestadas));
                 <rect class="columna columna-ns@(x.Parcial ? " parcial" : "")" data-i="@i" x="@C(X(i) - ancho / 2)" y="@C(1 - alto)" width="@C(ancho)" height="@C(alto)" />
             }
+            @if (media is { } m)
+            {
+                <line class="meta" x1="0" x2="1000" y1="@C(Y(m))" y2="@C(Y(m))" vector-effect="non-scaling-stroke" />
+            }
             @for (var i = 0; i < serie.Count; i++)
             {
                 var x = serie[i];
@@ -35,6 +49,22 @@
         @for (var v = 0.0; v <= tope + paso / 2; v += paso)
         {
             <span class="eje-y" style="top:@P(Y(v))">@FormatoNoSolucion.Int(v)</span>
+        }
+        @if (media is { } mt)
+        {
+            <span class="meta-texto" style="top:@P(Y(mt))">media @FormatoNoSolucion.Int(mt)</span>
+        }
+        @for (var i = 0; i < serie.Count; i++)
+        {
+            var x = serie[i];
+            if (i == diaAlto || i == diaBajo)
+            {
+                <span class="valor pequeno con-fondo" style="left:@P(X(i));top:@P(Y(x.Encuestadas))">@(i == diaAlto ? "máx. " : "mín. ")@FormatoNoSolucion.Int(x.Encuestadas)</span>
+            }
+            else if (x.Parcial)
+            {
+                <span class="valor pequeno con-fondo texto-tenue" style="left:@P(X(i));top:@P(Y(x.Encuestadas))">parcial</span>
+            }
         }
         @for (var i = 0; i < serie.Count; i++)
         {

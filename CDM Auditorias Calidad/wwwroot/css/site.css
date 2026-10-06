@@ -537,6 +537,17 @@ table.ranking { width: 100%; table-layout: fixed; border-collapse: separate; bor
 .lineas-ns .crono-linea.discontinua { stroke-dasharray: 5 4; }
 .lineas-ns .punto { width: 8px; height: 8px; margin: -4px 0 0 -4px; border-color: var(--serie); }
 .columna-ns.parcial { fill: var(--texto-tenue); }
+/* Etiquetas de impacto: último valor de cada marca a la derecha, pico con el color de su marca,
+   media en la leyenda (a la derecha están los finales) y hueco para la media de las columnas. */
+.grafica.lineas-ns { padding-right: 68px; }
+.grafica.con-meta { padding-right: 84px; }
+.fin-serie {
+  position: absolute; left: calc(100% + 8px); transform: translateY(-50%); white-space: nowrap; pointer-events: none;
+  font-size: 11.5px; font-weight: 600; color: var(--serie); font-variant-numeric: tabular-nums;
+}
+.valor.valor-serie { color: var(--serie); font-weight: 600; }
+/* Etiqueta sobre otras barras o líneas: con el fondo de la tarjeta para que se lea siempre. */
+.valor.con-fondo { padding: 1px 4px; border-radius: 4px; background: var(--superficie); }
 
 /* Equipos: buscador y tabla. */
 .buscar-ns { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 4px 0 12px; }

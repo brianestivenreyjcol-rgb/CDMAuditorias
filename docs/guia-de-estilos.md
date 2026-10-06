@@ -233,6 +233,7 @@ Usa las de Auditorías (cabecera, pestañas, panel, `_Desplegable`, `.resumen`, 
 | Reparto en una línea | `.veredicto-ns` con `span.relleno-*` | cuadradito del color de su `--relleno` y la cifra en negrita (la causa de la no solución) |
 | Comprobaciones | `ul.comprobaciones-ns` con `FormatoNoSolucion.ChipComprobacion` | pastilla «Correcto» (verde), «Revisar» (ámbar) o «Nota» (sin color) y el texto al lado |
 | Texto largo bajo un nombre | `.sub-ns.envuelve` | el `.sub-ns` normal corta con «…»; este ocupa varias líneas |
+| Etiquetas de impacto en las gráficas | `.fin-serie` (último valor de cada serie, a la derecha, con su `--serie`), `.valor.valor-serie` (pico con el color de su serie), `.valor.con-fondo` (etiqueta sobre otras barras, con el fondo de la tarjeta), `.meta` + `.meta-texto` (media) y `.grafica.con-meta` (hueco a la derecha para la cifra de la media) | se rotula lo que importa —media, pico, máximo y mínimo, último valor—, no cada punto; los días parciales y provisionales no cuentan como pico, máximo ni mínimo |
 
 ### 9.5 Reglas aprendidas en esta web
 

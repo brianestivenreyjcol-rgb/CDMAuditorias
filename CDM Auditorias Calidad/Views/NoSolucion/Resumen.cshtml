@@ -91,6 +91,10 @@
                 {
                     <span><i class="discontinua"></i>día parcial</span>
                 }
+                @if (t.Pct is not null)
+                {
+                    <span><i class="discontinua"></i>media @FormatoNoSolucion.Pct(t.Pct)</span>
+                }
             </div>
             @if (r.Serie.Count > 0)
             {

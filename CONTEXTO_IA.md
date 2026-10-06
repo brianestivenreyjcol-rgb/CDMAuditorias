@@ -688,3 +688,9 @@ Parámetros de `/nosolucion…`: `desde`, `hasta`, `servicio`, `supervisor`, `tl
   «¿Hay llamadas repetidas?» (no hay: lo que sumaba de más eran llamadas con varios impedimentos) y
   etiquetas nuevas de DataOrb clasificadas por palabras clave. Cubo v3. 290 pruebas. Probado en el 5190
   con datos reales; sin publicar.
+- **06-10-2026** — Resumen de No solución: **etiquetas de impacto** en las dos gráficas (pedido del
+  usuario). Evolución por marca: último valor de cada marca a la derecha (separados para no pisarse),
+  el pico del periodo y la media en la leyenda con su línea discontinua. Encuestas por día: media de
+  los días completos, máximo y mínimo con su cifra y «parcial» en los días parciales. Los días
+  parciales y provisionales no cuentan como pico, máximo ni mínimo (sus encuestas siguen llegando).
+  Probado en el 5190; sin publicar.

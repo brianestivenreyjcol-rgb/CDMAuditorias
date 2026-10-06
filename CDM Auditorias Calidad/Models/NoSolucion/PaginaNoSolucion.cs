@@ -168,7 +168,9 @@ public sealed class PaginaResumenNoSolucion : PaginaNoSolucion
             Detalles: r.Serie.Select(x => FormatoNoSolucion.FechaLarga(x.Dia) + (x.Parcial ? " (parcial)" : "")).ToList(),
             Series: series,
             Discontinuos: parciales,
-            Maximo: Math.Max(5, Math.Ceiling(maximo * 1.15 / 5) * 5));
+            Maximo: Math.Max(5, Math.Ceiling(maximo * 1.15 / 5) * 5),
+            Media: r.Totales.Pct,
+            Provisionales: r.Serie.Select((x, i) => (x, i)).Where(p => r.Provisionales.Contains(p.x.Dia)).Select(p => p.i).ToHashSet());
     }
 }
 
@@ -293,12 +295,16 @@ public sealed record SerieNs(string Nombre, string Clase, IReadOnlyList<double?>
 /// </summary>
 /// <param name="Detalles">El texto largo de cada día, para la ficha.</param>
 /// <param name="Discontinuos">Días que van con línea discontinua (los parciales).</param>
+/// <param name="Media">El % del rango con todas las marcas: la línea de referencia discontinua.</param>
+/// <param name="Provisionales">Días cuyas encuestas siguen llegando: no se marcan como pico.</param>
 public sealed record GraficoSeries(
     IReadOnlyList<string> Etiquetas,
     IReadOnlyList<string> Detalles,
     IReadOnlyList<SerieNs> Series,
     IReadOnlySet<int> Discontinuos,
-    double Maximo);
+    double Maximo,
+    double? Media = null,
+    IReadOnlySet<int>? Provisionales = null);
 
 /// <summary>Una barra horizontal: <c>Valor</c> manda el largo; el resto es texto.</summary>
 public sealed record BarraNs(string Nombre, string? Sub, double Valor, string Etiqueta, string? Nota, string Clase);
