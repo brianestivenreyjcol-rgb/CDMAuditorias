@@ -2,7 +2,7 @@ using CDM_Auditorias_Calidad.Servicios.Tablero;
 
 namespace CDM_Auditorias_Calidad.Tests;
 
-/// <summary>Las funciones de fechas de DAX (ver CONTEXTO_IA.md, 2.3).</summary>
+/// <summary>Las funciones de fechas de DAX (ver docs/contexto/power-bi.md, 2.3).</summary>
 public class PeriodosTests
 {
     private static DateOnly F(int a, int m, int d) => new(a, m, d);

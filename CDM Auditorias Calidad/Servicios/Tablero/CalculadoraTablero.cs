@@ -6,7 +6,7 @@ namespace CDM_Auditorias_Calidad.Servicios.Tablero;
 
 /// <summary>
 /// Calcula una página del tablero a partir de las auditorías en memoria: las medidas DAX del
-/// Power BI (tabla «Medidas») pasadas a C#. Ver CONTEXTO_IA.md, sección 2.3.
+/// Power BI (tabla «Medidas») pasadas a C#. Ver docs/contexto/power-bi.md, sección 2.3.
 /// </summary>
 public static class CalculadoraTablero
 {

@@ -28,5 +28,7 @@ pasado a ASP.NET Core MVC (.NET 8, C#, Razor), con sus mismas medidas y filtros.
 
 ## Documentación
 
-**`CONTEXTO_IA.md`** lo cuenta todo: el análisis del Power BI, cómo se pasó cada medida DAX,
-las decisiones, la estructura, cómo se ejecuta y publica, lo comprobado y lo pendiente.
+**`CONTEXTO_IA.md`** es el resumen: qué es, datos, cómo se prueba y publica, decisiones y
+pendientes. El detalle, por temas, está en **`docs/contexto/`** (análisis del Power BI y medidas
+DAX, decisiones, No solución, estructura, verificación, pendientes y bitácora). La guía de estilos,
+en `docs/guia-de-estilos.md`, y la skill y el agente de front para compartir, en `docs/compartir/`.

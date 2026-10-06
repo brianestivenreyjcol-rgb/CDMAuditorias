@@ -1,0 +1,67 @@
+# Bitácora
+
+> Parte del contexto de CDM Auditorías Calidad: el resumen está en `CONTEXTO_IA.md` (raíz del
+> proyecto). Las referencias a «sección N» son de cuando todo estaba en un solo fichero:
+> 1–2 → `power-bi.md` · 3 y 3 bis → `decisiones.md` · 3 ter → `no-solucion.md` ·
+> 4–5 → `estructura-y-ejecucion.md` · 6 → `verificacion.md` · 7 → `pendientes.md` · 8 → `bitacora.md`.
+
+## 8. Bitácora
+
+(Lo más reciente al final.)
+
+- **01-10-2026** — Análisis del PBI completo (sección 2). Probada la conexión de lectura con
+  la cuenta de DB_2 de ranking-mvc: lee las 4 tablas de origen y la consulta completa (~2 s).
+- **01-10-2026** — Web construida sobre la plantilla MVC del usuario: portada, General,
+  Formación & Calidad, filtros, 4 gráficos, Excel, recarga periódica, pruebas, scripts de
+  publicación.
+- **02-10-2026** — Aspecto rehecho con la guía de estilos SOLARIS · GAIA (sección 3 bis): tema
+  claro/oscuro, cabecera de 72 px, pestañas, panel de 268 px con «Más filtros», tira de
+  indicadores con icono, barras con la nota en pareja, tabla ranking ordenable con semáforo,
+  fichas, animaciones y portada ejecutiva.
+- **02-10-2026** — Proyecto subido a GitHub (repositorio privado; el usuario lo pasó de público
+  a privado antes de subir).
+- **02-10-2026** — Portada solo con «General». Tarjeta «Agentes auditados» sustituida por
+  «Total agentes» (nómina frente a auditados; nueva consulta `Nomina.sql`, sección 2.2 bis).
+- **02-10-2026** — El usuario arrancó producción en el 5180 (versión anterior; sin actualizar).
+- **02-10-2026** — Filtros: los desplegables quedaban detrás de las tarjetas (arreglado con
+  `z-index` en el panel pegajoso); ahora filtran al marcar y siguen abiertos; se abren hacia
+  arriba si no caben; sin animaciones de entrada al filtrar. Documentación repasada entera.
+- **02-10-2026** — La variación de «Total auditorías» y de la nota compara con el mismo tiempo
+  justo antes (el DATEADD -1 MONTH del PBI daba +102 % con el rango completo).
+- **02-10-2026** — Julio: ICEBERG con 3 meses atrás + el mes en curso (`- 3`, cambio del usuario)
+  activo en desarrollo y producción; las consultas se leen de la carpeta de la aplicación en cada
+  carga. WEB sin julio en origen: el usuario pedirá que traiga 4 meses y avisará. El usuario
+  quitó la carpeta `Power bi\` del proyecto (subido el borrado; sigue en el historial).
+- **02-10-2026** — El buscador de los desplegables filtra mientras se escribe (antes ocultaba con
+  `[hidden]` pero el CSS lo anulaba).
+- **02-10-2026** — Una sola dirección: el 5180 (también el perfil de Visual Studio); producción
+  publicada con la versión actual y comprobada (`localhost` y la IP del equipo, julio en el
+  filtro: 5.530 auditorías, todas ICEBERG; datos del 01/07 al 02/10, 20.874 auditorías).
+- **05-10-2026** — **CDM No solución** traído de ranking-mvc a `/nosolucion` (sección 3 ter): motor de
+  BigQuery, caché y cálculos copiados con sus pruebas; controlador, modelos y vistas rehechos con las
+  piezas de este proyecto; tarjeta en la portada. Probado en una copia temporal (5190) con datos
+  reales; producción (5180) sin tocar, a la espera del usuario.
+- **05-10-2026** — `docs/guia-de-estilos.md` actualizada (el usuario la volvió a pasar, idéntica): las
+  secciones 1–8 siguen siendo las de SOLARIS y la nueva sección 9 recoge cómo se aplica aquí, las
+  variables añadidas y las piezas de Auditorías y de No solución. La misma copia quedó en su carpeta
+  de Descargas.
+- **05-10-2026** — Sin acceso a internet: **una causa por llamada** (atención, proceso, las dos, cliente,
+  sin causa) con las reglas del proceso de soporte de YGMM, CSV de cada llamada con su causa, tarjeta
+  «¿Hay llamadas repetidas?» (no hay: lo que sumaba de más eran llamadas con varios impedimentos) y
+  etiquetas nuevas de DataOrb clasificadas por palabras clave. Cubo v3. 290 pruebas. Probado en el 5190
+  con datos reales; sin publicar.
+- **06-10-2026** — Resumen de No solución: **etiquetas de impacto** en las dos gráficas (pedido del
+  usuario). Evolución por marca: último valor de cada marca a la derecha (separados para no pisarse),
+  el pico del periodo y la media en la leyenda con su línea discontinua. Encuestas por día: media de
+  los días completos, máximo y mínimo con su cifra y «parcial» en los días parciales. Los días
+  parciales y provisionales no cuentan como pico, máximo ni mínimo (sus encuestas siguen llegando).
+  Probado en el 5190; sin publicar.
+- **06-10-2026** — Publicado en el 5180 (pedido del usuario): No solución con la causa de cada llamada,
+  el control de repetidas y las etiquetas de impacto. Se copió la caché v3 de `App_Data` a
+  `publicacion\datos` para que entrara al momento. Comprobado desde `http://10.148.223.143:5180`.
+- **06-10-2026** — Skill y agente **«frontend-solaris»** (pedido del usuario: «que solo se encargue del
+  front»): instalados en `~/.claude/skills/frontend-solaris` y `~/.claude/agents/frontend-solaris.md`;
+  llevan la guía de estilos, recetas de piezas, `revisar_vistas.py` (colores a mano, `<style>`/`<script>`
+  en vistas, emojis, negritas) y `capturas.py` (claro y oscuro con Edge). Para compartir:
+  `docs/compartir/` (`frontend-solaris.skill`, el agente y `LEEME.md`). Si cambia la guía, volver a
+  copiarla a la skill y regenerar el `.skill`.
