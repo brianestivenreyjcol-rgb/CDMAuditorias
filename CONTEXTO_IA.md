@@ -61,12 +61,16 @@
   torre nueva hay que recrear el DSN `BQCOL`.
 - Decidir si hace falta inicio de sesión; si la web entra en SOLARIS, su logotipo y su login.
 - Julio de WEB cuando avise el usuario (hasta entonces, agosto frente a julio sale inflado).
+- **GAIA Formación** (nueva vista, desde el 06-10-2026): PBI en `Power bi\GAIA Formación.pbip`; datos de
+  BigQuery filtrados por el Excel de la compartida. Analizado y con plan; **esperando decisiones del
+  usuario** (filtro exacto o cruce del PBI, correcciones, ruta). Todo en `docs/contexto/gaia-formacion.md`.
 - Detalle de todo esto: `docs/contexto/pendientes.md`.
 
 ## Dónde está el detalle (`docs/contexto/`)
 
 | Fichero | Léelo cuando… |
 |---|---|
+| `gaia-formacion.md` | toques la vista GAIA Formación (análisis de su PBI, Excel de nómina, plan por fases) |
 | `power-bi.md` | toques medidas, fechas DAX o la consulta de auditorías (análisis del PBI y cómo se pasó cada medida) |
 | `decisiones.md` | toques el informe de Auditorías: filtros, tarjetas, top 10, Excel, estilo aplicado |
 | `no-solucion.md` | toques No solución: fuente, cubo, pestañas, causas atención/proceso, palabras clave |

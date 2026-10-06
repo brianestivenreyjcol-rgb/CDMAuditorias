@@ -65,3 +65,7 @@
   en vistas, emojis, negritas) y `capturas.py` (claro y oscuro con Edge). Para compartir:
   `docs/compartir/` (`frontend-solaris.skill`, el agente y `LEEME.md`). Si cambia la guía, volver a
   copiarla a la skill y regenerar el `.skill`.
+- **06-10-2026** — Análisis del PBI **GAIA Formación** (`Power bi\`, lo añadió el usuario) y plan de
+  migración a una vista nueva: `docs/contexto/gaia-formacion.md`. Lo importante: el filtro del PBI
+  (todas las fechas × todos los ID del Excel) trae 110.718 llamadas; el exacto (cada agente en sus
+  días) 13.461. Abruptas siempre 0, encuestas con fechas fijas hasta junio. Sin código todavía.
