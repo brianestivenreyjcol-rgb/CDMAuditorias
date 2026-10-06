@@ -75,3 +75,6 @@
   agentes); se recarga sola al cambiar el Excel. Corregidos transferencia, rellamada 24 h (con el dato
   de origen) y encuestas sin fechas fijas; «abruptas» no existe en DataOrb y se quita. Consulta por
   tandas de 60 agentes (el driver se cortaba). 15 pruebas nuevas (305 en verde). Sin publicar.
+- **06-10-2026** — GAIA (pedido del usuario): fuera la fila «Total del filtro» del Ranking (el tinte sigue
+  comparando con el total) y el resumen de contacto de Llamadas ya no se recorta (antes, 600 caracteres:
+  se cortaban 12.776 de 13.529). La caché pasa a 47 MB; las tandas de 60 agentes siguen aguantando.

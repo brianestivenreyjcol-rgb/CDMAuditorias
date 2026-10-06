@@ -46,8 +46,8 @@ SELECT
     BD.confirmResolution_rating AS CalificacionConfirmacion,
     BD.clearLanguage_rating AS CalificacionLenguajeClaro,
     BD.acknowledgementStatement_rating AS CalificacionReconocimiento,
-    -- Textos recortados: con el texto entero el driver se cortaba al bajar.
-    SUBSTR(BD.contactReason_contactReasonSummary, 1, 600) AS ResumenContacto,
+    -- El resumen de contacto va entero (lo pidió el usuario el 06-10-2026); el de resolución, recortado.
+    BD.contactReason_contactReasonSummary AS ResumenContacto,
     SUBSTR(BD.resolution_resolutionSummary, 1, 600) AS ResumenResolucion,
     BD.resolution_resolutionIssueResolved AS ProblemaResuelto,
     BD.enh_Transfer AS Transferencia,

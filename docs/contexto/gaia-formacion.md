@@ -110,7 +110,7 @@ método del PBI; el número es bajo por la fuente, no por la web.
 
 ## 6 bis. Lo construido (fases 1 y 2)
 
-- `Consultas/GaiaLlamadas.sql` (marcador `{{PARES}}` una sola vez; textos de resumen recortados a 600)
+- `Consultas/GaiaLlamadas.sql` (marcador `{{PARES}}` una sola vez; el resumen de contacto va entero —lo pidió el usuario—, el de resolución recortado a 600)
   y `Consultas/GaiaActualizacion.sql`. Se lanzan por tandas de 60 agentes (`Gaia:AgentesPorConsulta`):
   con todos de golpe el driver se cortaba («Failure when receiving data from the peer»).
 - `Servicios/Gaia/`: `NominaGaia.cs` (lector del Excel, ClosedXML, solo la hoja Oleadas, abierto en
