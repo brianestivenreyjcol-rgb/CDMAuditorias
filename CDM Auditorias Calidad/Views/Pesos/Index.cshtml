@@ -172,10 +172,6 @@
                                         <th scope="col"><button type="button" class="ordenar">KPI</button></th>
                                         <th scope="col" class="num"><button type="button" class="ordenar">Peso</button></th>
                                         <th scope="col" class="num"><button type="button" class="ordenar">Meta 0 %</button></th>
-                                        @if (Model.HayMeta60)
-                                        {
-                                            <th scope="col" class="num"><button type="button" class="ordenar">Meta 60 %</button></th>
-                                        }
                                         <th scope="col" class="num"><button type="button" class="ordenar">Meta 100 %</button></th>
                                         <th scope="col" class="num"><button type="button" class="ordenar">Meta 150 %</button></th>
                                         <th scope="col" class="cab-columna">Fichero</th>
@@ -196,10 +192,6 @@
                                                 }</td>
                                             <td class="num" data-valor="@Formato.Crudo(f.Peso)">@(f.Peso is { } pe ? Formato.Porcentaje(pe) : "sin peso")</td>
                                             <td class="num" data-valor="@Formato.Crudo(f.Meta0)">@PaginaPesos.Meta(f.Meta0, f.EnPorcentaje)</td>
-                                            @if (Model.HayMeta60)
-                                            {
-                                                <td class="num" data-valor="@Formato.Crudo(f.Meta60)">@PaginaPesos.Meta(f.Meta60, f.EnPorcentaje)</td>
-                                            }
                                             <td class="num" data-valor="@Formato.Crudo(f.Meta100)">@PaginaPesos.Meta(f.Meta100, f.EnPorcentaje)</td>
                                             <td class="num" data-valor="@Formato.Crudo(f.Meta150)">@PaginaPesos.Meta(f.Meta150, f.EnPorcentaje)</td>
                                             <td><button type="button" class="enlace" data-copiar="@f.Ruta" title="@f.Ruta">@Iconos.Svg("copiar") Copiar ruta</button></td>
@@ -213,10 +205,6 @@
                                         <td>@Formato.Entero(Model.Filas.Count) KPI</td>
                                         <td class="num"></td>
                                         <td class="num"></td>
-                                        @if (Model.HayMeta60)
-                                        {
-                                            <td class="num"></td>
-                                        }
                                         <td class="num"></td>
                                         <td class="num"></td>
                                         <td></td>

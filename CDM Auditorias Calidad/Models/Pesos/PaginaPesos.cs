@@ -66,7 +66,6 @@ public sealed class PaginaPesos
     public IReadOnlyList<ComprobacionPesos> Comprobaciones { get; init; } = [];
     public IReadOnlyList<ArchivoAnalizado> Archivos { get; init; } = [];
 
-    public bool HayMeta60 => Filas.Any(f => f.Meta60 is not null);
     public bool AnalizandoEsteMes => Analizando && Mes is not null && MesEnCurso == Mes.Clave;
 
     /// <summary>El mes como está en la carpeta (pedido del usuario): «09. SEPTIEMBRE 2026»; corto, «09. SEPTIEMBRE».</summary>
@@ -241,8 +240,11 @@ public sealed class PaginaPesos
                 continue;
             }
             if (f.Peso == 0) continue;
-            var faltan = f.Metas.Select((m, i) => (m, i)).Where(x => x.m is null).Select(x => Formato.PorcentajeEntero(b.Cabecera[x.i] * 100)).ToList();
-            if (faltan.Count == f.Metas.Count)
+            // Solo las metas que se enseñan (0, 100 y 150 %): la del 60 % no sale en la vista (pedido del usuario el 07-10-2026).
+            var vistas = f.Metas.Select((m, i) => (Meta: m, Nivel: i < b.Cabecera.Count ? b.Cabecera[i] : -1))
+                .Where(x => Math.Abs(x.Nivel - 0.6) > 1e-9).ToList();
+            var faltan = vistas.Where(x => x.Meta is null).Select(x => Formato.PorcentajeEntero(x.Nivel * 100)).ToList();
+            if (faltan.Count == vistas.Count)
             {
                 // «Ponderación Equipo AG», «Promedio 3M»: pesa, pero se calcula aparte (el cumplimiento del equipo…), sin metas.
                 salida.Add(new(null, sector, $"«{f.Kpi}» en {donde} pesa {Formato.Porcentaje(f.Peso)} y no tiene metas en el bloque: se calcula aparte (p. ej. el cumplimiento del equipo)."));
@@ -253,7 +255,7 @@ public sealed class PaginaPesos
                 salida.Add(new(false, sector, $"«{f.Kpi}» en {donde} pesa {Formato.Porcentaje(f.Peso)} y le falta la meta del {string.Join(", ", faltan)}."));
                 continue;
             }
-            var m = f.Metas.Select(x => x!.Value).ToList();
+            var m = vistas.Select(x => x.Meta!.Value).ToList();
             var sube = m.Zip(m.Skip(1)).All(z => z.Second >= z.First);
             var baja = m.Zip(m.Skip(1)).All(z => z.Second <= z.First);
             if (!sube && !baja)

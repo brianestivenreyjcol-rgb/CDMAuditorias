@@ -117,3 +117,4 @@
 - **07-10-2026** — Pesos: una sola hoja por sector, la principal de agentes («Ranking AG Universal», «Ranking AG», «Ranking AGENTE» o la primera de agentes). 348 pruebas; sin publicar.
 - **07-10-2026** — **Publicado en el 5180** Pesos y metas por sector (pedido del usuario). Se copió `cache_pesos.json` (agosto, septiembre y octubre) de `App_Data` a `publicacion\datos`. Comprobadas desde `http://10.148.223.143:5180` todas las páginas, la portada con la tarjeta nueva y el CSV.
 - **07-10-2026** — Pesos: se leen los .xlsb (`LectorXlsb`), bloques con columna vacía y por grupos (WhatsApp Técnico) y hojas extra que son otro sector (Bo Seguro Móvil, Buzones Otros). Caché v2. 350 pruebas. **Publicado en el 5180** (caché de septiembre copiada). Se lanzó otra sesión para la vista de KPI con resultado y cumplimiento.
+- **07-10-2026** — Pesos: fuera la columna «Meta 60 %» (tabla y CSV) y la validación ya no la exige. **Publicado en el 5180.**

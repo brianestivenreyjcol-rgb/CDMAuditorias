@@ -66,4 +66,4 @@ Los bloques «Indicador | Objetivo | Peso» de TL/SP son aceleradores y no entra
   % Reitero) cuadran con sus metas. Publicado en el 5180.
 - Los cuatro «ReContacto WhatsApp» del catálogo de Clan (indirectos) salen de: AtenFide → CO WhatsApp YGMM («Ranking AGENTE apoyo»), retención →
   CO WhatsApp Retención, Técnico → CO WhatsApp Técnico («Recontacto»), Infancia → Infancia Convergente, bloque CDA («Re-Chat»). Mismas metas, otro peso.
-
+- **Sin la meta del 60 %** (pedido del usuario el 07-10-2026): ni en la tabla ni en el CSV; la validación solo mira las metas 0, 100 y 150 %. El dato se sigue leyendo (`FilaTablaPesos.Meta60`). Publicado en el 5180.

@@ -70,7 +70,6 @@ public sealed class PesosController : Controller
             new("KPI", f => f.Kpi),
             new("Peso", f => N(f.Peso)),
             new("Meta 0%", f => N(f.Meta0)),
-            new("Meta 60%", f => N(f.Meta60)),
             new("Meta 100%", f => N(f.Meta100)),
             new("Meta 150%", f => N(f.Meta150)),
             new("Fichero", f => f.Ruta),
