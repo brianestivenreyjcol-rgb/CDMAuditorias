@@ -107,3 +107,4 @@
   TMO, Evolución, Comercial, Españolización, General y No solución; y la primera columna de todas las tablas se lee entera y queda fija a la izquierda. Guía, 9.12. 319 pruebas; probado en el 5190; sin publicar.
 
 - **07-10-2026** — La curva suavizada de las gráficas (`AyudasGaia.TrazosSuaves`) ya no se pasa de largo: los puntos de control se acotan al rango de cada tramo (antes podía bajar de 0 en un valle). Guía recopiada a la skill.
+- **07-10-2026** — **Publicado en el 5180** (pedido del usuario): paletas por marca, tablas compactas con la primera columna entera y fija, Ranking y Estilo, Motivo de contacto y todas las gráficas de línea con el estilo de la de adherencia. Sin copiar caché (formato v2 sin cambios). Comprobado desde `http://10.148.223.143:5180`; el 5190, parado.
