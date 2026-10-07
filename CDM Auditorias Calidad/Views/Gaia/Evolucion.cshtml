@@ -17,7 +17,7 @@
         var kpi = Model.Kpi;
         var mediaKpi = kpi.Valor(t);
         GraficoGaia Linea(string escala, IReadOnlyList<GrupoGaia> grupos)
-            => Grafico(escala, grupos, (kpi.Nombre, "serie-a", kpi.Valor)) with { Media = mediaKpi, EjeX = false, Descripcion = kpi.Nombre + " por " + escala };
+            => Grafico(escala, grupos, (kpi.Nombre, "serie-a", kpi.Valor)) with { EjeX = false, Descripcion = kpi.Nombre + " por " + escala };
 
         SelectorGaia Selector(string id, string titulo, KpiGaia actual, string porDefecto)
             => new(id, titulo, actual.Nombre, CalculadoraGaia.Kpis
@@ -66,9 +66,7 @@
             {
                 @await Html.PartialAsync("_DispersionGaia", dispersion)
                 <p class="nota-ns">
-                    Cada punto es un agente y su tamaño, su número de llamadas (pasa el ratón para ver el detalle). Las líneas discontinuas son el
-                    total del filtro: @Model.KpiX.Nombre (@(Model.KpiX.MejorAlto ? "más alto es mejor" : "más bajo es mejor")) en el eje horizontal y
-                    @Model.KpiY.Nombre (@(Model.KpiY.MejorAlto ? "más alto es mejor" : "más bajo es mejor")) en el vertical.
+                    Cada punto es un agente y su tamaño, su número de llamadas (pasa el ratón para ver el detalle). En el eje horizontal, @Model.KpiX.Nombre (@(Model.KpiX.MejorAlto ? "más alto es mejor" : "más bajo es mejor")); en el vertical, @Model.KpiY.Nombre (@(Model.KpiY.MejorAlto ? "más alto es mejor" : "más bajo es mejor")).
                 </p>
             }
         </section>

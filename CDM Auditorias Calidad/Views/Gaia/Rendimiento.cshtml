@@ -19,7 +19,7 @@
             ("Cortas (<60 s)", "serie-a", i => i.Menores60), ("Sin contexto", "serie-b", i => i.SinContexto),
         };
         GraficoGaia Tmo(string escala, IReadOnlyList<GrupoGaia> grupos)
-            => Grafico(escala, grupos, ("TMO", "serie-a", i => i.Tmo)) with { Segundos = true, Media = t.Tmo, EjeX = false, Descripcion = "TMO por " + escala };
+            => Grafico(escala, grupos, ("TMO", "serie-a", i => i.Tmo)) with { Segundos = true, EjeX = false, Descripcion = "TMO por " + escala };
         GraficoGaia Cortas(string escala, IReadOnlyList<GrupoGaia> grupos)
             => Grafico(escala, grupos, cortas) with { Descripcion = "Llamadas cortas y sin contexto" };
 
@@ -85,7 +85,7 @@
                 <h2>TMO por etapa</h2>
                 <span class="tarjeta-nota">de la preconexión al aseguramiento</span>
             </header>
-            @await Html.PartialAsync("_ColumnasGaia", Grafico("etapa", Model.PorEtapa, ("TMO", "serie-a", i => i.Tmo)) with { Segundos = true, Media = t.Tmo, Descripcion = "TMO por etapa de formación" })
+            @await Html.PartialAsync("_ColumnasGaia", Grafico("etapa", Model.PorEtapa, ("TMO", "serie-a", i => i.Tmo)) with { Segundos = true, Descripcion = "TMO por etapa de formación" })
         </section>
 
         <section class="tarjeta">
@@ -149,7 +149,7 @@
                 <h2>Agentes por TMO</h2>
                 <span class="tarjeta-nota">@Formato.Entero(Model.Agentes.Count) agentes, de mayor a menor TMO</span>
             </header>
-            <p class="nota-ns">En gris, los agentes con menos de <b>@MinLlamadasFiable llamadas</b>: sus promedios no son fiables.</p>
+            
             <div class="tabla-contenedor alta">
                 <table class="ranking con-puesto tabla-rendimiento-gaia">
                     <colgroup>
@@ -170,7 +170,7 @@
                         @foreach (var fila in Model.Agentes)
                         {
                             var i = fila.Indicadores;
-                            <tr class="@(i.Llamadas < MinLlamadasFiable ? "pocas" : null)">
+                            <tr>
                                 <td class="celda-nombre" title="@fila.Agente · @fila.Sector · oleada @fila.Oleada"><div class="nombre-fila"><span class="nombre-texto">@fila.Agente</span><span class="pastilla-dato" title="Oleada @fila.Oleada">@fila.Oleada</span></div></td>
                                 <td class="num">@Duracion(i.Tmo)</td>
                                 <td class="num barra-volumen" data-valor="@i.Llamadas">@Formato.Entero(i.Llamadas)</td>

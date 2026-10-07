@@ -191,7 +191,7 @@
                 <h2>Agentes</h2>
                 <span class="tarjeta-nota">@Formato.Entero(Model.Agentes.Count) agentes, de menos a más España</span>
             </header>
-            <p class="nota-ns">Los que más ayuda necesitan, arriba. En gris y al final, los agentes con menos de <b>@PaginaEspanolizacionGaia.MinBase llamadas analizadas</b>: su porcentaje no es fiable.</p>
+            <p class="nota-ns">Los que más ayuda necesitan, arriba; al final, los agentes con menos de <b>@PaginaEspanolizacionGaia.MinBase llamadas analizadas</b> (su porcentaje es poco fiable).</p>
             <div class="tabla-contenedor alta">
                 <table class="ranking con-puesto tabla-espanolizacion-gaia">
                     <colgroup>
@@ -212,7 +212,7 @@
                         @foreach (var a in Model.Agentes)
                         {
                             var e = a.Espanolizacion;
-                            <tr class="@(e.Base < PaginaEspanolizacionGaia.MinBase ? "pocas" : null)">
+                            <tr>
                                 <td class="celda-nombre" title="@a.Texto · oleada @a.Oleada"><div class="nombre-fila"><span class="nombre-texto">@a.Texto</span>@if (a.Oleada.Length > 0) {<span class="pastilla-dato" title="Oleada @a.Oleada">@a.Oleada</span>}</div></td>
                                 <td class="num barra-volumen" data-valor="@e.Base">@Formato.Entero(e.Base)</td>
                                 <td class="num">@Formato.Porcentaje(e.Espana)</td>

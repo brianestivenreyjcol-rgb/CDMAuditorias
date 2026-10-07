@@ -8,8 +8,7 @@
     var n = Math.Max(1, Model.Etiquetas.Count);
     var series = Model.Series;
     var doble = Doble(Model);
-    var todos = series.SelectMany(s => s.Valores).Where(v => v is not null).Select(v => v!.Value)
-        .Concat(Model.Media.HasValue ? new[] { Model.Media.Value } : Array.Empty<double>()).ToList();
+    var todos = series.SelectMany(s => s.Valores).Where(v => v is not null).Select(v => v!.Value).ToList();
     var escalas = doble
         ? series.Select(s => Escala(Model, s.Valores.Where(v => v is not null).Select(v => v!.Value), true)).ToArray()
         : new[] { Escala(Model, todos, true) };
@@ -41,10 +40,6 @@
                     var alto = Math.Max(0.004, 1 - Esc(k).Y(v));
                     <rect class="columna columna-serie @series[k].Clase@(Model.PorUmbral ? " columna-umbral " + TonoAdherencia(v) : "")@(porEtapa ? " " + ClaseEtapa(Model.Titulos[i]) : "")" data-i="@i" x="@C(X(i) - grupo / 2 + k * ancho)" y="@C(1 - alto)" width="@C(ancho)" height="@C(alto)" />
                 }
-            }
-            @if (Model.Media is { } media)
-            {
-                <line class="meta" x1="0" x2="1000" y1="@C(escalas[0].Y(media))" y2="@C(escalas[0].Y(media))" vector-effect="non-scaling-stroke" />
             }
             @for (var i = 0; i < Model.Etiquetas.Count; i++)
             {

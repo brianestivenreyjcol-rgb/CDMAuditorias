@@ -46,59 +46,59 @@ public sealed class GaiaController : Controller
     }
 
     [HttpGet("ranking")]
-    public IActionResult Ranking([FromQuery] PeticionGaia filtros, string? orden, string? dir, string? q)
+    public IActionResult RankingEstilo([FromQuery] PeticionGaia filtros, string? agrupar, string? orden, string? dir, string? q, int motivo = 2)
     {
         var (datos, f) = Resolver(filtros);
-        if (f is null) return Pagina("Ranking", new PaginaRankingGaia { Datos = datos, Cargando = _gaia.Cargando, Error = _gaia.UltimoError });
+        if (f is null) return Pagina("RankingEstilo", new PaginaRankingEstiloGaia { Datos = datos, Cargando = _gaia.Cargando, Error = _gaia.UltimoError });
 
-        var clave = orden is "llamadas" or "agente" ? orden : CalculadoraGaia.Kpi(orden).Clave;
+        var grupo = PaginaRankingEstiloGaia.Agrupaciones.Any(a => a.Clave == agrupar) ? agrupar! : "agente";
+        var clave = orden == "texto" || PaginaRankingEstiloGaia.Columna(orden) is not null ? orden! : "llamadas";
         var desc = dir != "asc";
-        IEnumerable<FilaAgenteGaia> filas = CalculadoraGaia.PorAgente(f.Llamadas);
+        IEnumerable<FilaRankingGaia> filas = CalculadoraGaia.Ranking(f.Llamadas, grupo);
         if (!string.IsNullOrWhiteSpace(q))
         {
-            filas = filas.Where(r => r.Agente.Contains(q.Trim(), StringComparison.CurrentCultureIgnoreCase));
+            filas = filas.Where(r => r.Texto.Contains(q.Trim(), StringComparison.CurrentCultureIgnoreCase));
         }
-        filas = clave switch
+        if (clave == "texto")
         {
-            "agente" => desc ? filas.OrderByDescending(r => r.Agente) : filas.OrderBy(r => r.Agente),
-            "llamadas" => desc ? filas.OrderByDescending(r => r.Indicadores.Llamadas) : filas.OrderBy(r => r.Indicadores.Llamadas),
-            _ => Ordenar(filas, CalculadoraGaia.Kpi(clave).Valor, desc),
-        };
-
-        return Pagina("Ranking", new PaginaRankingGaia
+            filas = desc ? filas.OrderByDescending(r => r.Texto) : filas.OrderBy(r => r.Texto);
+        }
+        else
         {
-            Datos = datos, Filtros = f, Cargando = _gaia.Cargando, Error = _gaia.UltimoError,
-            Actualizacion = TempData[ClaveActualizacion] as string,
-            Total = CalculadoraGaia.Calcular(f.Llamadas),
-            Filas = filas.ToList(), Orden = clave, Descendente = desc, Busqueda = q?.Trim(),
-        });
-    }
-
-    [HttpGet("estilo")]
-    public IActionResult Estilo([FromQuery] PeticionGaia filtros)
-    {
-        var (datos, f) = Resolver(filtros);
-        if (f is null) return Pagina("Estilo", new PaginaEstiloGaia { Datos = datos, Cargando = _gaia.Cargando, Error = _gaia.UltimoError });
+            var valor = PaginaRankingEstiloGaia.Columna(clave)!.Valor;
+            var conValor = filas.Where(r => valor(r.Indicadores) is not null);
+            filas = (desc ? conValor.OrderByDescending(r => valor(r.Indicadores)) : conValor.OrderBy(r => valor(r.Indicadores)))
+                .ThenByDescending(r => r.Indicadores.Llamadas)
+                .Concat(filas.Where(r => valor(r.Indicadores) is null));
+        }
 
         var etapas = CalculadoraGaia.PorEtapa(f.Llamadas);
         var matriz = f.Llamadas.GroupBy(l => l.IdAgente).ToDictionary(
             g => g.Key,
             g => (IReadOnlyDictionary<string, double?>)g.GroupBy(l => l.TipoConexion)
                  .ToDictionary(e => e.Key, e => CalculadoraGaia.Estilo(e).Adherencia));
+        motivo = Math.Clamp(motivo, 1, 3);
 
-        return Pagina("Estilo", new PaginaEstiloGaia
+        return Pagina("RankingEstilo", new PaginaRankingEstiloGaia
         {
             Datos = datos, Filtros = f, Cargando = _gaia.Cargando, Error = _gaia.UltimoError,
             Actualizacion = TempData[ClaveActualizacion] as string,
             Total = CalculadoraGaia.Calcular(f.Llamadas),
             PorEtapa = etapas,
-            PorDia = CalculadoraGaia.PorDia(f.Llamadas),
             PorSemana = CalculadoraGaia.PorSemana(f.Llamadas),
-            Agentes = Ordenar(CalculadoraGaia.PorAgente(f.Llamadas), i => i.Adherencia, descendente: false).ToList(),
+            PorDia = CalculadoraGaia.PorDia(f.Llamadas),
+            AgentesEtapa = Ordenar(CalculadoraGaia.PorAgente(f.Llamadas), i => i.Adherencia, descendente: false).ToList(),
             MatrizEtapas = matriz,
             Etapas = etapas.Select(e => e.Clave).ToList(),
+            Agrupar = grupo, Filas = filas.ToList(), Orden = clave, Descendente = desc, Busqueda = q?.Trim(),
+            NivelMotivo = motivo,
+            Tipologico = CalculadoraGaia.Tipologico(f.Llamadas, motivo),
         });
     }
+
+    /// <summary>«Estilo» está ahora dentro de «Ranking y Estilo» (07-10-2026): los enlaces viejos siguen valiendo.</summary>
+    [HttpGet("estilo")]
+    public IActionResult Estilo() => LocalRedirect(PaginaGaia.Ruta(PestanaGaia.RankingEstilo) + Request.QueryString);
 
     [HttpGet("rendimiento")]
     public IActionResult Rendimiento([FromQuery] PeticionGaia filtros)
@@ -161,27 +161,32 @@ public sealed class GaiaController : Controller
     }
 
     [HttpGet("motivos")]
-    public IActionResult Motivos([FromQuery] PeticionGaia filtros, int nivel = 2)
+    public IActionResult Motivos([FromQuery] PeticionGaia filtros, string? rol)
     {
         var (datos, f) = Resolver(filtros);
         if (f is null) return Pagina("Motivos", new PaginaMotivosGaia { Datos = datos, Cargando = _gaia.Cargando, Error = _gaia.UltimoError });
 
-        nivel = Math.Clamp(nivel, 1, 3);
+        // «Histórico»: los mismos filtros sin las fechas.
+        var sinFechas = new PeticionGaia
+        {
+            Marca = filtros.Marca, Sector = filtros.Sector, Oleada = filtros.Oleada, Formador = filtros.Formador,
+            Supervisor = filtros.Supervisor, Conexion = filtros.Conexion, Agente = filtros.Agente,
+        };
+        rol = PaginaMotivosGaia.Roles.Any(r => r.Clave == rol) ? rol! : "agente";
+
         return Pagina("Motivos", new PaginaMotivosGaia
         {
             Datos = datos, Filtros = f, Cargando = _gaia.Cargando, Error = _gaia.UltimoError,
             Actualizacion = TempData[ClaveActualizacion] as string,
             Total = CalculadoraGaia.Calcular(f.Llamadas),
-            Arbol = CalculadoraGaia.ArbolMotivos(f.Llamadas),
-            Nivel = nivel,
-            Mapa = CalculadoraGaia.PorMotivo(f.Llamadas, nivel),
-            EstadosResolucion = CalculadoraGaia.Reparto(f.Llamadas, l => l.EstadoResolucion),
-            RazonContacto = CalculadoraGaia.Reparto(f.Llamadas, l => l.RazonNivel1),
-            TiposProblema = CalculadoraGaia.Reparto(f.Llamadas, l => l.TipoProblema),
-            Temas = CalculadoraGaia.Reparto(f.Llamadas, l => l.TemaContacto, maximo: 15, conOtros: false),
-            Obstaculos = CalculadoraGaia.Obstaculos(f.Llamadas),
-            SentimientoInicial = CalculadoraGaia.Reparto(f.Llamadas, l => l.SentimientoInicial),
-            SentimientoFinal = CalculadoraGaia.Reparto(f.Llamadas, l => l.SentimientoFinal),
+            Historico = CalculadoraGaia.Calcular(FiltrosGaia.Resolver(datos!.Llamadas, sinFechas).Llamadas),
+            Burbujas = CalculadoraGaia.PorAgente(f.Llamadas).Where(a => a.Indicadores.Llamadas >= PaginaMotivosGaia.MinBurbuja).ToList(),
+            Sentimiento = CalculadoraGaia.SentimientoInicialFinal(f.Llamadas),
+            Rol = rol,
+            RellamadaPorRol = CalculadoraGaia.RellamadaPorRol(f.Llamadas, rol),
+            Obstaculos = CalculadoraGaia.Obstaculos(f.Llamadas, maximo: 10),
+            Tema = CalculadoraGaia.MotivoPorSemana(f.Llamadas),
+            Clientes = CalculadoraGaia.ClientesQueVuelven(f.Llamadas),
         });
     }
 

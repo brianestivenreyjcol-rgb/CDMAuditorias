@@ -151,7 +151,7 @@ Yoigo, 3 en el de Orange). Debajo de 1.100 px, una por fila.
 | Tarjeta KPI con icono | `.tile.kpi-m` | iconos de trazo en `Service/IconosKpi.cs` |
 | Bloque | `.tarjeta` (voz), `.card` (informes) | radio 16 px |
 | Pareja de columnas | `.rejilla-2` | siempre dos |
-| Tabla que se ordena y colorea | `table.ranking[data-mapa]` | `th[data-sentido]` (1 más es mejor, −1 más es peor, 0 sin color) y `td[data-valor]`; los grupos con menos de 20 llamadas van al final y en gris; **total al pie**: `<tfoot><tr class="total">` con «TOTAL», pegado abajo del scroll (`sticky; bottom: 0`), borde superior de 2 px, sin color; nunca una fila de total arriba |
+| Tabla que se ordena y colorea | `table.ranking[data-mapa]` | `th[data-sentido]` (1 más es mejor, −1 más es peor, 0 sin color) y `td[data-valor]`; los grupos con pocas llamadas pueden ir al final, **sin gris**; **total al pie**: `<tfoot><tr class="total">` con «TOTAL», pegado abajo del scroll (`sticky; bottom: 0`), borde superior de 2 px, sin color; nunca una fila de total arriba |
 | Gráfica por tiempo | `.crono-tarjeta` con `crono-linea principal/secundaria`, área y pastillas | SVG del servidor |
 | Barras horizontales | `.hbarras > .hbarra` | `.hbarra-media` en pareja |
 | Árbol desplegable | `#tablaTipologico`, `tr.padre` / `tr.hija` | `ccvbpe.js` |
@@ -468,4 +468,40 @@ Rendimiento y Comercial llevan la oleada en la pastilla y el sector en el `title
 día de la semana en la pastilla; Españolización no lleva oleada (su modelo de agente no la trae) y General no tenía subtítulo. **Llamadas**: la fecha y la hora van en una
 línea y el agente, la marca y la etapa abreviada («Pre 1», «Aseg 3») tienen su propia columna (`.cols-llamada`, 9 columnas; en móvil la fila hace scroll con 940 px de ancho
 mínimo). Las filas de las listas desplegables (`.fila-ns`) bajaron a 7 px de relleno.
+
+
+### 9.11 «Ranking y Estilo», «Motivo de contacto», indicador + volumen y fuera medias y grises (07-10-2026)
+
+**Reglas nuevas en toda la web.** (1) **Sin líneas de media, de meta ni de umbrales** en ninguna gráfica, ni como clave de la leyenda: se quitaron
+`GraficoGaia.Media`, `Referencias` y `Extras` (y `ItemLeyendaGaia`), la línea de meta de General, la media de No solución (líneas y columnas) y las líneas del
+total de la dispersión de Evolución; también `.meta` del CSS. Los colores por umbral siguen en el medidor, los anillos y la matriz, pero sin rotular
+«40 %» ni «70 %». (2) **Ninguna fila en gris** por tener pocas llamadas: `.ranking tr.pocas` ya no tiene estilo (en General la clase solo sirve para ordenarlas al
+final y la nota lo dice). El semáforo pastel de `colorearTabla` incluye ahora esas filas.
+
+**Indicador + volumen** (`Views/Shared/_IndicadorVolumenGaia.cshtml`, modelo `AyudasGaia.IndicadorVolumenGaia(Id, Indicadores, Semanas, Dias)` con
+`IndicadorGaia(Clave, Nombre, Valor, Segundos)`). Una línea suavizada (`AyudasGaia.TrazosSuaves`, Catmull-Rom) con su área en degradado
+(`.degradado-ini` / `.degradado-fin`, del `--serie-1` al 32 % a transparente), las llamadas como columnas grises detrás (`.columna-gris`, 34 % del alto) con su
+cifra gris (`.valor-volumen`), el eje Y del indicador ajustado al rango de los datos más un 10 % (no desde 0) y una pastilla en cada punto. Con varios indicadores
+lleva pestañas en pastilla (`.pastillas-indicador` > `button.segmento[data-indicador-boton]`) y siempre el selector Semana / Día (`[data-ind-vista]`). El servidor pinta
+**todos** los bloques (`.indicador-bloque[data-indicador][data-vista]`, con `hidden` los no elegidos) y site.js (`mostrarIndicador`) enseña el que toca sin recargar y
+cambia el título (`[data-ind-nombre]`). Se usa en Ranking y Estilo (adherencia y sus ocho criterios) y en la evolución del Resumen de GAIA (un solo indicador, el KPI elegido).
+
+**«Ranking y Estilo»** (`/gaia/ranking`; `/gaia/estilo` redirige; modelo `PaginaRankingEstiloGaia`, vista `Views/Gaia/RankingEstilo.cshtml`) sustituye a las
+pestañas Ranking y Estilo. De arriba abajo: medidor (`.medidor`, sin umbrales rotulados, con `.medidor-pie` «N llamadas · fechas») y los ocho anillos en el orden del
+portal («no puntúa» donde no hay peso); evolución con pestañas de indicador; **ranking general** (segmento Supervisor / Formador / Oleada / Agente con `UrlAgrupar`,
+buscador `q` en `.buscar-tarjeta`, columnas de `PaginaRankingEstiloGaia.Columnas` con `data-sentido` para el semáforo, `CeldaRanking` para escribirlas, barrita de
+volumen en «Q llamadas», «Sector» solo al agrupar por agente, TOTAL con `Model.Total`; `.tabla-ranking-estilo` hace scroll dentro de su caja); **ranking tipológico** por
+motivo (segmento Motivo 1/2/3, `tr.fila-padre[data-hijos]` con «+» / «−» y `tr.hija[data-padre][hidden]`; el nivel 3 no despliega; el semáforo toma su escala de las filas principales
+y se aplica también a las hijas; `MotivoDe` deja «Sin asignar» como viene); y, al final, la adherencia por etapa (preconexión / aseguramiento, sin umbrales) y la matriz agente × etapa.
+
+**«Motivo de contacto»** (`/gaia/motivos`, `PaginaMotivosGaia`, `Views/Gaia/Motivos.cshtml`). Cuatro tarjetas (`.resumen.en-4` > `.resumen-dato.sin-icono.con-barra`) con
+`.resumen-nota` («histórico X · mejor / peor / igual», más bajo es mejor en TMO, % problemas no resueltos y % rellamada; el veredicto compara el total con `Model.Historico`) y
+`.resumen-barra` (tono bueno / crítico / neutro); burbujas rellamada–TMO (`_BurbujasGaia`, `.punto-disp.burbuja`, ficha con nombre y cifras, sin líneas de total); sentimiento del
+cliente (`.sentimientos`: «Inicial» gris y «Final» en el color de la marca); rellamada 72 h por rol (`.roles`, `.rol-pista` con `.rol-base` verde pastel y `.rol-rellamadas` rojo, ambos
+sobre el máximo de la base, y «438 de 2.537»); obstáculos (`_RepartoGaia` con `.relleno-marca`); mapa de calor «Tema de contacto» (`.tabla-calor`, `td.calor[--i]` = Valor / Maximo con el color
+de la marca, columna Total y TOTAL al pie) y «Clientes que más vuelven» (`.tabla-clientes`, ordenable en el navegador, TOTAL = suma de llamadas y rellamadas). El árbol de motivos y el
+mapa de afectación desaparecieron (los sustituye el tipológico); se quitaron `_ApiladaGaia`, `_NodoMotivoGaia` y su CSS (`.apilada`, `.tramo`, `.cols-motivo`…).
+
+**Piezas pequeñas.** `Views/_ViewImports.cshtml` importa también `Servicios.Gaia` (las vistas compartidas usan `GrupoGaia`). `.barra-tarjeta` pone segmentos y buscador a la derecha de la cabecera
+de una tarjeta (en móvil, debajo y a todo el ancho). Españolización lleva la oleada en la pastilla del agente.
 

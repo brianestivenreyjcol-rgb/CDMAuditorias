@@ -5,8 +5,7 @@
    que las gráficas de Auditorías y GAIA.
    Cada punto con su valor en una pastilla (.etiqueta-punto) del color de su marca (06-10-2026; sustituye al pico y a los
    últimos valores): con tantos días se rotula uno de cada pocos (siempre el primero y el último, como en GAIA) y, como
-   hay hasta cuatro marcas en cada día, las pastillas de un mismo día se separan para que no se pisen. La media va en la
-   leyenda (la línea discontinua, .meta). *@
+   hay hasta cuatro marcas en cada día, las pastillas de un mismo día se separan para que no se pisen. Sin línea de media. *@
 @{
     var n = Math.Max(1, Model.Etiquetas.Count);
     var max = Model.Maximo;
@@ -55,10 +54,6 @@
             @for (var v = 0.0; v <= max + paso / 2.0; v += paso)
             {
                 <line class="rejilla-linea" x1="0" x2="1000" y1="@C(Y(v))" y2="@C(Y(v))" vector-effect="non-scaling-stroke" />
-            }
-            @if (Model.Media is { } mediaLinea)
-            {
-                <line class="meta" x1="0" x2="1000" y1="@C(Y(mediaLinea))" y2="@C(Y(mediaLinea))" vector-effect="non-scaling-stroke" />
             }
             @foreach (var s in Model.Series)
             {

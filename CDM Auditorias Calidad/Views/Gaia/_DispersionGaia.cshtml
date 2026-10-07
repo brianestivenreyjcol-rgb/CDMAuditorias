@@ -1,25 +1,16 @@
 @model DispersionGaia
 @* Un punto por agente frente a dos indicadores (los ejes). El tamaño del punto es su volumen de llamadas y la
-   ficha da el nombre y los dos valores. Las líneas discontinuas son el total del filtro en cada eje: parten el plano
-   en cuadrantes. Los puntos son elementos HTML (no círculos del SVG, que al estirarse se volverían elipses). *@
+   ficha da el nombre y los dos valores (sin líneas del total, pedido del usuario el 07-10-2026). Los puntos son elementos HTML (no círculos del SVG, que al estirarse se volverían elipses). *@
 @{
     var puntos = Model.Puntos;
-    var (minX, maxX, pasoX) = EscalaGrafico.Porcentaje(puntos.Select(p => p.X).Concat(Model.TotalX.HasValue ? new[] { Model.TotalX.Value } : Array.Empty<double>()));
-    var (minY, maxY, pasoY) = EscalaGrafico.Porcentaje(puntos.Select(p => p.Y).Concat(Model.TotalY.HasValue ? new[] { Model.TotalY.Value } : Array.Empty<double>()));
+    var (minX, maxX, pasoX) = EscalaGrafico.Porcentaje(puntos.Select(p => p.X));
+    var (minY, maxY, pasoY) = EscalaGrafico.Porcentaje(puntos.Select(p => p.Y));
     double X(double v) => (v - minX) / (maxX - minX);
     double Y(double v) => 1 - (v - minY) / (maxY - minY);
     var maxLlamadas = Math.Max(1, puntos.Select(p => p.Llamadas).DefaultIfEmpty(1).Max());
 }
 <div class="leyenda-ns centrada">
     <span class="serie-a"><i></i>Un agente (el tamaño es su número de llamadas)</span>
-    @if (Model.TotalX is { } tl)
-    {
-        <span><i class="discontinua"></i>total en horizontal: @Formato.Porcentaje(tl)</span>
-    }
-    @if (Model.TotalY is { } tv)
-    {
-        <span><i class="discontinua"></i>total en vertical: @Formato.Porcentaje(tv)</span>
-    }
 </div>
 <figure class="grafica dispersion" role="img" aria-label="Agentes: @Model.X.Nombre frente a @Model.Y.Nombre">
     <div class="plano">
@@ -31,14 +22,6 @@
             @for (var v = minX; v <= maxX + pasoX / 2; v += pasoX)
             {
                 <line class="rejilla-linea" x1="@C(X(v))" x2="@C(X(v))" y1="0" y2="1000" vector-effect="non-scaling-stroke" />
-            }
-            @if (Model.TotalX is { } tx)
-            {
-                <line class="meta" x1="@C(X(tx))" x2="@C(X(tx))" y1="0" y2="1000" vector-effect="non-scaling-stroke" />
-            }
-            @if (Model.TotalY is { } ty)
-            {
-                <line class="meta" x1="0" x2="1000" y1="@C(Y(ty))" y2="@C(Y(ty))" vector-effect="non-scaling-stroke" />
             }
         </svg>
         @for (var v = minY; v <= maxY + pasoY / 2; v += pasoY)

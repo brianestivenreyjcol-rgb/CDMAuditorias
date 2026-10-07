@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.WebUtilities;
 namespace CDM_Auditorias_Calidad.Models.Gaia;
 
 /// <summary>Las pestañas de GAIA Formación (las páginas del PBI que ya están en la web).</summary>
-public enum PestanaGaia { Resumen, Ranking, Estilo, Rendimiento, Evolucion, Comercial, Motivos, Espanolizacion, Llamadas }
+public enum PestanaGaia { Resumen, RankingEstilo, Rendimiento, Evolucion, Comercial, Motivos, Espanolizacion, Llamadas }
 
 /// <summary>
 /// Lo común a todas las páginas de GAIA Formación: estado de los datos, filtros resueltos y enlaces.
@@ -45,8 +45,7 @@ public abstract class PaginaGaia
 
     public static string Ruta(PestanaGaia p) => p switch
     {
-        PestanaGaia.Ranking => RutaBase + "/ranking",
-        PestanaGaia.Estilo => RutaBase + "/estilo",
+        PestanaGaia.RankingEstilo => RutaBase + "/ranking",
         PestanaGaia.Rendimiento => RutaBase + "/rendimiento",
         PestanaGaia.Evolucion => RutaBase + "/evolucion",
         PestanaGaia.Comercial => RutaBase + "/comercial",
@@ -58,12 +57,11 @@ public abstract class PaginaGaia
 
     public static string Titulo(PestanaGaia p) => p switch
     {
-        PestanaGaia.Ranking => "Ranking",
-        PestanaGaia.Estilo => "Estilo",
+        PestanaGaia.RankingEstilo => "Ranking y Estilo",
         PestanaGaia.Rendimiento => "Rendimiento",
         PestanaGaia.Evolucion => "Evolución",
         PestanaGaia.Comercial => "Comercial",
-        PestanaGaia.Motivos => "Motivos",
+        PestanaGaia.Motivos => "Motivo de contacto",
         PestanaGaia.Espanolizacion => "Españolización",
         PestanaGaia.Llamadas => "Llamadas",
         _ => "Resumen",
@@ -112,57 +110,102 @@ public sealed class PaginaResumenGaia : PaginaGaia
         => Kpi.Clave == CalculadoraGaia.Kpis[0].Clave ? [] : [new("kpi", Kpi.Clave)];
 }
 
-/// <summary>Ranking de agentes con todos los KPI (página «Ranking» del PBI).</summary>
-public sealed class PaginaRankingGaia : PaginaGaia
+/// <summary>Una columna del ranking: cómo se llama, de dónde sale, si más es mejor (1), peor (−1) o sin color (0) y su formato.</summary>
+/// <param name="Formato">«pct» (fracción), «seg» (segundos) o «num» (entero).</param>
+public sealed record ColumnaRankingGaia(string Clave, string Titulo, Func<IndicadoresGaia, double?> Valor, int Sentido, string Formato, string Ayuda);
+
+/// <summary>
+/// «Ranking y Estilo» (pedido del usuario el 07-10-2026, como la pestaña del mismo nombre del portal SOLARIS): la
+/// adherencia con su medidor y los criterios en anillos, la evolución por semana con pestañas de indicador, el
+/// ranking general (por agente, formador, supervisor u oleada) y el ranking tipológico por motivo. Debajo, lo propio
+/// de GAIA: la adherencia por etapa y la matriz agente × etapa.
+/// </summary>
+public sealed class PaginaRankingEstiloGaia : PaginaGaia
 {
-    public override PestanaGaia Pestana => PestanaGaia.Ranking;
+    /// <summary>Umbrales de color de la adherencia (medidor, anillos y matriz).</summary>
+    public const double UmbralBajo = 0.40, UmbralMedio = 0.70;
 
-    public IReadOnlyList<FilaAgenteGaia> Filas { get; init; } = [];
+    /// <summary>Valores del segmento del ranking general y su texto.</summary>
+    public static readonly IReadOnlyList<(string Clave, string Texto)> Agrupaciones =
+        [("supervisor", "Supervisor"), ("formador", "Formador"), ("oleada", "Oleada"), ("agente", "Agente")];
 
-    /// <summary>Clave de <see cref="CalculadoraGaia.Kpis"/>, «llamadas» o «agente».</summary>
-    public string Orden { get; init; } = "adherencia";
+    /// <summary>Las columnas del ranking general y del tipológico, en orden (como el portal).</summary>
+    public static readonly IReadOnlyList<ColumnaRankingGaia> Columnas =
+    [
+        new("llamadas", "Q llamadas", i => i.Llamadas, 0, "num", "Llamadas de los agentes en sus días de formación."),
+        new("tmo", "TMO (s)", i => i.Tmo, -1, "seg", "Duración media de las llamadas."),
+        new("silencio", "Tiempos en silencio (s)", i => i.SilencioMedio, -1, "seg", "Silencio medio por llamada."),
+        new("adherencia", "% Adherencia", i => i.Adherencia, 1, "pct", "Saludo 10 %, claro y fiable 15 %, solucionó 25 %, resumió 20 %, confirmó 20 % y despedida 10 %."),
+        new("rellamada", "% Rellamada", i => i.Rellamada72, -1, "pct", "El cliente volvió a llamar en 72 h."),
+        new("nosolucion", "% No solución", i => i.NoSolucion, -1, "pct", "Encuestas «no resuelto» sobre respondidas."),
+        new("transferencia", "% Transferencia", i => i.Transferencia, -1, "pct", "Llamadas transferidas."),
+        new("churn", "% Churn", i => i.Churn, -1, "pct", "Riesgo de baja alto."),
+        new("ofrecimientos", "% Ofrecimientos", i => i.Ofrecimientos, 1, "pct", "Llamadas con intento de venta."),
+        new("reactivo", "% Reactivo", i => i.Reactivo, 1, "pct", "Ofrecimientos que pidió el cliente."),
+        new("proactivo", "% Proactivo", i => i.Proactivo, 1, "pct", "Ofrecimientos por iniciativa del agente."),
+        new("ventas", "% Ventas", i => i.PorcentajeVentas, 1, "pct", "Llamadas con venta."),
+        new("negativo", "% Negativo final", i => i.SentimientoNegativoFinal, -1, "pct", "Clientes que acaban con sentimiento negativo."),
+        new("positivo", "% Positivo final", i => i.SentimientoPositivoFinal, 1, "pct", "Clientes que acaban con sentimiento positivo."),
+    ];
+
+    public static ColumnaRankingGaia? Columna(string? clave) => Columnas.FirstOrDefault(c => c.Clave == clave);
+
+    public override PestanaGaia Pestana => PestanaGaia.RankingEstilo;
+
+    // --- Estilo ---
+    public IReadOnlyList<GrupoGaia> PorEtapa { get; init; } = [];
+    public IReadOnlyList<GrupoGaia> PorSemana { get; init; } = [];
+    public IReadOnlyList<GrupoGaia> PorDia { get; init; } = [];
+
+    /// <summary>Agentes de la matriz agente × etapa, de menor a mayor adherencia.</summary>
+    public IReadOnlyList<FilaAgenteGaia> AgentesEtapa { get; init; } = [];
+
+    /// <summary>Adherencia de cada agente en cada etapa: [IdAgente][etapa].</summary>
+    public IReadOnlyDictionary<string, IReadOnlyDictionary<string, double?>> MatrizEtapas { get; init; }
+        = new Dictionary<string, IReadOnlyDictionary<string, double?>>();
+    public IReadOnlyList<string> Etapas { get; init; } = [];
+
+    // --- Ranking general ---
+    /// <summary>Clave de <see cref="Agrupaciones"/>.</summary>
+    public string Agrupar { get; init; } = "agente";
+    public IReadOnlyList<FilaRankingGaia> Filas { get; init; } = [];
+
+    /// <summary>«texto» (el nombre) o la clave de una columna de <see cref="Columnas"/>.</summary>
+    public string Orden { get; init; } = "llamadas";
     public bool Descendente { get; init; } = true;
     public string? Busqueda { get; init; }
+
+    // --- Ranking tipológico ---
+    /// <summary>Nivel de motivo (1, 2 o 3) del ranking tipológico.</summary>
+    public int NivelMotivo { get; init; } = 2;
+
+    /// <summary>Los motivos del nivel, con los del nivel siguiente para desplegar (el 3 no despliega).</summary>
+    public IReadOnlyList<NodoMotivo> Tipologico { get; init; } = [];
 
     public override IEnumerable<KeyValuePair<string, string>> ParametrosPropios
     {
         get
         {
-            if (Orden != "adherencia") yield return new("orden", Orden);
+            if (Agrupar != "agente") yield return new("agrupar", Agrupar);
+            if (Orden != "llamadas") yield return new("orden", Orden);
             if (!Descendente) yield return new("dir", "asc");
             if (!string.IsNullOrEmpty(Busqueda)) yield return new("q", Busqueda);
+            if (NivelMotivo != 2) yield return new("motivo", NivelMotivo.ToString());
         }
     }
 
-    /// <summary>Enlace para ordenar por <paramref name="clave"/> (si ya es esa, cambia el sentido).</summary>
+    /// <summary>Enlace para ordenar el ranking por <paramref name="clave"/> (si ya es esa, cambia el sentido).</summary>
     public string UrlOrden(string clave)
     {
-        var desc = clave == Orden ? !Descendente : clave != "agente";
-        return UrlCon(("orden", clave == "adherencia" ? null : clave), ("dir", desc ? null : "asc"));
+        var desc = clave == Orden ? !Descendente : clave != "texto";
+        return UrlCon(("orden", clave == "llamadas" ? null : clave), ("dir", desc ? null : "asc"));
     }
-}
 
-/// <summary>Adherencia al estilo y sus criterios (páginas «Estilo» y «Estilo Tabla» del PBI).</summary>
-public sealed class PaginaEstiloGaia : PaginaGaia
-{
-    public override PestanaGaia Pestana => PestanaGaia.Estilo;
+    /// <summary>Enlace al ranking agrupado de otra forma (conserva el orden si la columna existe).</summary>
+    public string UrlAgrupar(string agrupar) => UrlCon(("agrupar", agrupar == "agente" ? null : agrupar), ("q", null));
 
-    public IReadOnlyList<GrupoGaia> PorEtapa { get; init; } = [];
-    public IReadOnlyList<GrupoGaia> PorDia { get; init; } = [];
-    public IReadOnlyList<GrupoGaia> PorSemana { get; init; } = [];
-
-    /// <summary>Agentes ordenados de menor a mayor adherencia (los que más ayuda necesitan, arriba).</summary>
-    public IReadOnlyList<FilaAgenteGaia> Agentes { get; init; } = [];
-
-    /// <summary>Adherencia de cada agente en cada etapa: [IdAgente][etapa].</summary>
-    public IReadOnlyDictionary<string, IReadOnlyDictionary<string, double?>> MatrizEtapas { get; init; }
-        = new Dictionary<string, IReadOnlyDictionary<string, double?>>();
-
-    /// <summary>Las etapas que tienen llamadas, en orden (columnas de la matriz).</summary>
-    public IReadOnlyList<string> Etapas { get; init; } = [];
-
-    /// <summary>Umbrales de color de la barra de adherencia del PBI.</summary>
-    public const double UmbralBajo = 0.40, UmbralMedio = 0.70;
+    /// <summary>Enlace al tipológico de otro nivel.</summary>
+    public string UrlNivelMotivo(int nivel) => UrlCon(("motivo", nivel == 2 ? null : nivel.ToString()));
 }
 
 /// <summary>Las llamadas una a una (página «Base» del PBI), paginadas.</summary>
@@ -262,33 +305,49 @@ public sealed class PaginaComercialGaia : PaginaGaia
     public IReadOnlyList<FilaAgenteGaia> Agentes { get; init; } = [];
 }
 
-/// <summary>Motivos de contacto y cómo afectan a los KPI (páginas «Motivos de Contacto» y «Mapa de afectación» del PBI).</summary>
+/// <summary>
+/// «Motivo de contacto» (pedido del usuario el 07-10-2026, como la pestaña del mismo nombre del portal SOLARIS):
+/// cuatro indicadores frente al histórico, burbujas rellamada–TMO por agente, sentimiento inicial frente a final,
+/// rellamada por rol, obstáculos, mapa de calor motivo 3 × semana y clientes que más vuelven.
+/// </summary>
 public sealed class PaginaMotivosGaia : PaginaGaia
 {
+    /// <summary>Agentes con menos llamadas no salen en las burbujas.</summary>
+    public const int MinBurbuja = 20;
+
+    /// <summary>Valores del segmento de la rellamada por rol y su texto.</summary>
+    public static readonly IReadOnlyList<(string Clave, string Texto)> Roles =
+        [("supervisor", "Supervisor"), ("formador", "Formador"), ("agente", "Agente")];
+
     public override PestanaGaia Pestana => PestanaGaia.Motivos;
 
-    /// <summary>Motivo 1 → 2 → 3 con su peso y sus indicadores.</summary>
-    public IReadOnlyList<NodoMotivo> Arbol { get; init; } = [];
+    /// <summary>Los mismos filtros sin las fechas: el «histórico» de las tarjetas.</summary>
+    public IndicadoresGaia? Historico { get; init; }
 
-    /// <summary>Nivel de motivo del mapa de afectación (1, 2 o 3).</summary>
-    public int Nivel { get; init; } = 2;
+    /// <summary>Agentes con al menos <see cref="MinBurbuja"/> llamadas: X = TMO, Y = rellamada, tamaño = llamadas.</summary>
+    public IReadOnlyList<FilaAgenteGaia> Burbujas { get; init; } = [];
 
-    /// <summary>Los motivos del nivel elegido con sus indicadores, de más a menos llamadas.</summary>
-    public IReadOnlyList<GrupoGaia> Mapa { get; init; } = [];
+    public IReadOnlyList<FilaSentimientoGaia> Sentimiento { get; init; } = [];
 
-    public IReadOnlyList<RepartoGaia> EstadosResolucion { get; init; } = [];
-    public IReadOnlyList<RepartoGaia> RazonContacto { get; init; } = [];
-    public IReadOnlyList<RepartoGaia> TiposProblema { get; init; } = [];
-    public IReadOnlyList<RepartoGaia> Temas { get; init; } = [];
+    /// <summary>Clave de <see cref="Roles"/>.</summary>
+    public string Rol { get; init; } = "agente";
+
+    /// <summary>Los 20 con más rellamadas del rol elegido.</summary>
+    public IReadOnlyList<FilaRellamadaRolGaia> RellamadaPorRol { get; init; } = [];
 
     /// <summary>Obstáculos de la resolución; fracción sobre todas las llamadas.</summary>
     public IReadOnlyList<RepartoGaia> Obstaculos { get; init; } = [];
 
-    public IReadOnlyList<RepartoGaia> SentimientoInicial { get; init; } = [];
-    public IReadOnlyList<RepartoGaia> SentimientoFinal { get; init; } = [];
+    /// <summary>Motivo 3 × semana (los 25 con más llamadas).</summary>
+    public MatrizSemanasGaia? Tema { get; init; }
+
+    /// <summary>Clientes con 3 llamadas o más en la selección.</summary>
+    public IReadOnlyList<ClienteGaia> Clientes { get; init; } = [];
 
     public override IEnumerable<KeyValuePair<string, string>> ParametrosPropios
-        => Nivel == 2 ? [] : [new("nivel", Nivel.ToString())];
+        => Rol == "agente" ? [] : [new("rol", Rol)];
+
+    public string UrlRol(string rol) => UrlCon(("rol", rol == "agente" ? null : rol));
 }
 
 /// <summary>

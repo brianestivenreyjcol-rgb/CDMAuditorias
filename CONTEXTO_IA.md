@@ -61,6 +61,8 @@
   cada punto en pastilla (piezas en `Views/Shared`), medidor y anillos en GAIA → Estilo; el color de No solución también sigue a la marca.
   Desde el 07-10-2026 las gráficas también siguen a la marca (paleta por marca, guía 2.2 y 9.10), las columnas por etapa van en preconexión /
   aseguramiento y las tablas son compactas (una línea, oleada en pastilla).
+  También: sin líneas de media/meta/umbral en las gráficas ni filas en gris por pocas llamadas; patrón «indicador + volumen» compartido; GAIA tiene
+  «Ranking y Estilo» (unidas) y «Motivo de contacto» nuevas (guía 9.11).
 
 ## Pendientes
 

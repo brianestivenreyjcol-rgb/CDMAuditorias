@@ -70,12 +70,12 @@ public static class AyudasGaia
     /// <summary>Clase de tono de la barra de adherencia según los umbrales del PBI (≤ 40 %, ≤ 70 %, más).</summary>
     public static string TonoAdherencia(double? v)
         => v is not { } a ? "tono-neutro"
-           : a <= PaginaEstiloGaia.UmbralBajo ? "tono-critico" : a <= PaginaEstiloGaia.UmbralMedio ? "tono-atencion" : "tono-bueno";
+           : a <= PaginaRankingEstiloGaia.UmbralBajo ? "tono-critico" : a <= PaginaRankingEstiloGaia.UmbralMedio ? "tono-atencion" : "tono-bueno";
 
     /// <summary>Clase del semáforo pastel de una celda de adherencia.</summary>
     public static string MapaAdherencia(double? v)
         => v is not { } a ? ""
-           : a <= PaginaEstiloGaia.UmbralBajo ? "mapa-rojo" : a <= PaginaEstiloGaia.UmbralMedio ? "mapa-ambar" : "mapa-verde";
+           : a <= PaginaRankingEstiloGaia.UmbralBajo ? "mapa-rojo" : a <= PaginaRankingEstiloGaia.UmbralMedio ? "mapa-ambar" : "mapa-verde";
 
     /// <summary>
     /// Si un valor es mejor o peor que el total del filtro (más alto o más bajo es mejor según el indicador).
@@ -114,6 +114,64 @@ public static class AyudasGaia
             if (lista.Count > 0) yield return lista;
         }
     }
+
+    // ---------------------------------------------------------------------------------------
+    // Indicador + volumen (el patrón del portal): una línea suavizada con su área y las llamadas detrás
+    // ---------------------------------------------------------------------------------------
+
+    /// <summary>Un indicador de la gráfica «indicador + volumen» (una pestaña): cómo se llama y de dónde sale su valor en cada periodo.</summary>
+    /// <param name="Segundos">Los valores son segundos (TMO) y no fracciones.</param>
+    public sealed record IndicadorGaia(string Clave, string Nombre, Func<IndicadoresGaia, double?> Valor, bool Segundos = false);
+
+    /// <summary>Los indicadores (pestañas) con sus semanas y sus días; las llamadas de cada periodo salen de sus indicadores.</summary>
+    /// <param name="Id">Distingue las gráficas de una misma página (sirve para los degradados del SVG).</param>
+    public sealed record IndicadorVolumenGaia(string Id, IReadOnlyList<IndicadorGaia> Indicadores, IReadOnlyList<GrupoGaia> Semanas, IReadOnlyList<GrupoGaia> Dias)
+    {
+        /// <summary>Ancho en píxeles del plano (decide cuántas pastillas caben).</summary>
+        public int AnchoEstimado { get; init; } = 900;
+    }
+
+    /// <summary>
+    /// Una línea suavizada (curva de Catmull-Rom pasada a Bézier) por los puntos con valor, que se corta donde falta un dato, y su área
+    /// hasta el eje. <paramref name="ys"/> son posiciones (0 arriba, 1 abajo) y <paramref name="x"/> la posición horizontal de cada periodo.
+    /// </summary>
+    public static (string Linea, string Area) TrazosSuaves(IReadOnlyList<double?> ys, Func<int, double> x)
+    {
+        var linea = new System.Text.StringBuilder();
+        var area = new System.Text.StringBuilder();
+        var i = 0;
+        while (i < ys.Count)
+        {
+            if (ys[i] is null) { i++; continue; }
+            var tramo = new List<(double X, double Y)>();
+            while (i < ys.Count && ys[i] is { } y) { tramo.Add((x(i), y)); i++; }
+            var curva = new System.Text.StringBuilder($"M{C(tramo[0].X)},{C(tramo[0].Y)} ");
+            for (var k = 0; k + 1 < tramo.Count; k++)
+            {
+                var p0 = tramo[Math.Max(0, k - 1)];
+                var p1 = tramo[k];
+                var p2 = tramo[k + 1];
+                var p3 = tramo[Math.Min(tramo.Count - 1, k + 2)];
+                var c1 = (X: p1.X + (p2.X - p0.X) / 6, Y: p1.Y + (p2.Y - p0.Y) / 6);
+                var c2 = (X: p2.X - (p3.X - p1.X) / 6, Y: p2.Y - (p3.Y - p1.Y) / 6);
+                curva.Append($"C{C(c1.X)},{C(c1.Y)} {C(c2.X)},{C(c2.Y)} {C(p2.X)},{C(p2.Y)} ");
+            }
+            linea.Append(curva);
+            area.Append(curva).Append($"L{C(tramo[^1].X)},1000 L{C(tramo[0].X)},1000 Z ");
+        }
+        return (linea.ToString(), area.ToString());
+    }
+
+    /// <summary>Una celda de una columna del ranking: porcentaje, segundos con dos decimales o entero; «—» sin dato.</summary>
+    public static string CeldaRanking(double? valor, ColumnaRankingGaia columna)
+        => valor is not { } v ? "—"
+           : columna.Formato == "pct" ? Formato.Porcentaje(v)
+           : columna.Formato == "seg" ? Formato.Decimal2(v)
+           : Formato.Entero((int)Math.Round(v));
+
+    /// <summary>Un motivo de contacto legible; «Sin asignar» (lo que no trae motivo) se queda como viene.</summary>
+    public static string MotivoDe(string clave) => clave == "Sin asignar" ? clave : MotivoLegible(clave);
+
 
     public static string DiaLargo(string clave) => DateOnly.TryParse(clave, out var d) ? Formato.Fecha(d) : clave;
 
@@ -161,9 +219,6 @@ public static class AyudasGaia
     /// <param name="Clase">Clase de color fijo (<c>serie-a</c> … <c>serie-e</c>, <c>serie-espana</c>, <c>serie-colombia</c>).</param>
     public sealed record SerieGaia(string Nombre, string Clase, IReadOnlyList<double?> Valores);
 
-    /// <summary>Un elemento de la leyenda que no es una serie (la media, los umbrales): una línea discontinua con su texto.</summary>
-    public sealed record ItemLeyendaGaia(string Texto, string Clase, bool Discontinua);
-
     /// <summary>
     /// Lo que necesitan las gráficas de línea y de columnas: un punto por día, semana o etapa.
     /// <paramref name="Volumen"/> es lo que se enseña en la ficha (llamadas o base).
@@ -175,11 +230,6 @@ public static class AyudasGaia
         /// <summary>Los valores son recuentos (llamadas): enteros con miles.</summary>
         public bool Entero { get; init; }
         public string NombreVolumen { get; init; } = "Llamadas";
-        /// <summary>Línea discontinua de la media (solo con una serie); su cifra va en la leyenda, no sobre los puntos.</summary>
-        public double? Media { get; init; }
-        public IReadOnlyList<double> Referencias { get; init; } = [];
-        /// <summary>Otros elementos de la leyenda (p. ej. «umbrales 40 % y 70 %»).</summary>
-        public IReadOnlyList<ItemLeyendaGaia> Extras { get; init; } = [];
         /// <summary>Etiquetas del eje X (las líneas con el volumen debajo van sin ellas).</summary>
         public bool EjeX { get; init; } = true;
         /// <summary>Gráfica baja (el volumen bajo una línea).</summary>

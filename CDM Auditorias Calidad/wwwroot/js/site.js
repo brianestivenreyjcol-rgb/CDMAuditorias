@@ -19,6 +19,9 @@
 // - Cabecera del portal: Imprimir (window.print), Presentar (pantalla completa del contenido, sin panel) y, en el panel de filtros,
 //   plegar a un raíl vertical (el estado se recuerda en localStorage, con try/catch). La miga de la página actual
 //   (#informe[data-miga]) se actualiza al pasar de pestaña sin recargar.
+// - Indicador + volumen (_IndicadorVolumenGaia): las pestañas de indicador ([data-indicador-boton]) y el selector Semana / Día
+//   ([data-ind-vista]) enseñan el bloque [data-indicador][data-vista] elegido; todas vienen pintadas del servidor.
+// - Ranking tipológico: pulsar una fila con [data-hijos] despliega sus filas hijas (tr[data-padre]).
 // Con «reducir movimiento» no se anima nada.
 (() => {
   'use strict';
@@ -216,6 +219,25 @@
       raiz.classList.add('cargando');
     }
 
+    const boton = e.target.closest('[data-indicador-boton], [data-ind-vista]');
+    if (boton) {
+      const caja = boton.closest('[data-indicadores]');
+      if (caja) {
+        if (boton.dataset.indicadorBoton !== undefined) caja.dataset.indicador = boton.dataset.indicadorBoton;
+        else caja.dataset.vista = boton.dataset.indVista;
+        mostrarIndicador(caja);
+      }
+      return;
+    }
+
+    const fila = e.target.closest('tr[data-hijos]');
+    if (fila && !e.target.closest('a, button')) {
+      const abierta = fila.classList.toggle('abierta');
+      fila.setAttribute('aria-expanded', String(abierta));
+      fila.closest('tbody').querySelectorAll(`tr[data-padre="${CSS.escape(fila.dataset.hijos)}"]`).forEach(h => { h.hidden = !abierta; });
+      return;
+    }
+
     const limpiar = e.target.closest('[data-limpiar]');
     if (limpiar) {
       const d = limpiar.closest('details');
@@ -327,6 +349,18 @@
   window.addEventListener('popstate', () => {
     if (document.getElementById('informe')) cargar(location.href, { empujar: false });
   });
+
+  /** Indicador + volumen: enseña la figura del indicador y la vista elegidos y pone en su sitio las pestañas y el título. */
+  function mostrarIndicador(caja) {
+    const ind = caja.dataset.indicador;
+    const vista = caja.dataset.vista;
+    caja.querySelectorAll('[data-indicador][data-vista]').forEach(f => { f.hidden = !(f.dataset.indicador === ind && f.dataset.vista === vista); });
+    caja.querySelectorAll('[data-indicador-boton]').forEach(b => b.classList.toggle('activo', b.dataset.indicadorBoton === ind));
+    caja.querySelectorAll('[data-ind-vista]').forEach(b => b.classList.toggle('activo', b.dataset.indVista === vista));
+    const nombre = caja.querySelector(`[data-indicador-boton="${CSS.escape(ind)}"]`)?.textContent.trim();
+    const titulo = caja.closest('.tarjeta')?.querySelector('[data-ind-nombre]');
+    if (titulo && nombre) titulo.textContent = nombre;
+  }
 
   // ---------------------------------------------------------------------------------------
   // Panel de filtros plegable, Presentar y barra de carga al navegar
@@ -509,16 +543,18 @@
     cabeceras.forEach((th, columna) => {
       const sentido = Number(th.dataset.sentido || 0);
       if (!sentido) return;
-      const celdas = [...tabla.tBodies[0].rows]
-        .filter(f => !f.classList.contains('pocas') && !f.classList.contains('total'))
-        .map(f => f.cells[columna])
-        .filter(c => c && c.dataset.valor !== '' && !Number.isNaN(Number(c.dataset.valor)));
-      if (celdas.length < 2) return;
-      const valores = celdas.map(c => Number(c.dataset.valor));
+      const conValor = f => {
+        const c = f.cells[columna];
+        return c && c.dataset.valor !== undefined && c.dataset.valor !== '' && !Number.isNaN(Number(c.dataset.valor)) ? c : null;
+      };
+      const filas = [...tabla.tBodies[0].rows].filter(f => !f.classList.contains('total'));
+      // La escala sale de las filas principales; las hijas del ranking tipológico (tr.hija) se colorean con la misma.
+      const valores = filas.filter(f => !f.classList.contains('hija')).map(conValor).filter(Boolean).map(c => Number(c.dataset.valor));
+      if (valores.length < 2) return;
       const min = Math.min(...valores);
       const max = Math.max(...valores);
       if (max === min) return;
-      celdas.forEach(c => {
+      filas.map(conValor).filter(Boolean).forEach(c => {
         let t = (Number(c.dataset.valor) - min) / (max - min);
         if (sentido < 0) t = 1 - t;
         c.classList.add(t >= 2 / 3 ? 'mapa-verde' : t >= 1 / 3 ? 'mapa-ambar' : 'mapa-rojo');

@@ -3,8 +3,7 @@
    banda con su <title> para la ficha.
    Cada columna con su valor en una pastilla (.etiqueta-punto; la de un día parcial, en gris), sin «máx.», «mín.» ni
    «parcial» rotulados (06-10-2026): con tantos días, una de cada pocas y siempre la primera y la última, como en GAIA.
-   La media de los días completos y cerrados va en la leyenda de arriba (la línea discontinua, .meta). Los días
-   provisionales (las encuestas siguen llegando) no cuentan para la media. *@
+   Sin línea de media. *@
 @{
     var serie = Model.Serie;
     var n = Math.Max(1, serie.Count);
@@ -17,20 +16,12 @@
     var pasoX = Math.Max(1, (int)Math.Ceiling(n / 12.0));
     var rotulados = Rotulados(new GraficoGaia(serie.Select(x => x.Dia).ToList(), serie.Select(x => x.Dia).ToList(), Array.Empty<int>(), Array.Empty<SerieGaia>()) { Entero = true, Dia = true, AnchoEstimado = 420 });
 
-    // Media de los días completos y cerrados con encuestas.
-    var completos = serie.Select((x, i) => (x, i))
-        .Where(p => !p.x.Parcial && !Model.Provisionales.Contains(p.x.Dia) && p.x.Encuestadas > 0).ToList();
-    double? media = completos.Count > 0 ? completos.Average(p => (double)p.x.Encuestadas) : null;
 }
 <div class="leyenda-ns centrada">
     <span class="serie-a"><i></i>Encuestadas</span>
     @if (serie.Any(x => x.Parcial))
     {
         <span class="serie-otra"><i></i>día parcial</span>
-    }
-    @if (media is { } mediaLeyenda)
-    {
-        <span><i class="discontinua"></i>media @FormatoNoSolucion.Int(mediaLeyenda)</span>
     }
 </div>
 <figure class="grafica lineas-ns" role="img" aria-label="Encuestas recogidas cada día">
@@ -46,10 +37,6 @@
                 if (x.Encuestadas <= 0) continue;
                 var alto = Math.Max(0.004, 1 - Y(x.Encuestadas));
                 <rect class="columna columna-ns@(x.Parcial ? " parcial" : "")" data-i="@i" x="@C(X(i) - ancho / 2)" y="@C(1 - alto)" width="@C(ancho)" height="@C(alto)" />
-            }
-            @if (media is { } m)
-            {
-                <line class="meta" x1="0" x2="1000" y1="@C(Y(m))" y2="@C(Y(m))" vector-effect="non-scaling-stroke" />
             }
             @for (var i = 0; i < serie.Count; i++)
             {

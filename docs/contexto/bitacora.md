@@ -100,3 +100,7 @@
   fila, nombre con la oleada en una pastilla; Llamadas con marca y etapa en columnas propias). Detalle en la guía, 9.10. Probado en el 5190 (parado al acabar); sin publicar.
 
 - **07-10-2026** — Españolización: la tabla de agentes lleva también la oleada al lado del nombre (`GrupoEspanolizacion.Oleada`). Guía recopiada a la skill y `.skill` regenerado.
+- **07-10-2026** — GAIA: pestañas **Ranking y Estilo** (medidor, anillos, evolución con pestañas de indicador, ranking general y tipológico, etapa y matriz) y
+  **Motivo de contacto** (tarjetas con histórico, burbujas, sentimiento, rellamada por rol, obstáculos, mapa de calor y clientes) como las del portal; patrón «indicador + volumen»
+  compartido (también en el Resumen); fuera todas las líneas de media, meta y umbrales y el gris de las filas con pocas llamadas. Guía, 9.11. 319 pruebas; probado en el 5190; sin publicar.
+

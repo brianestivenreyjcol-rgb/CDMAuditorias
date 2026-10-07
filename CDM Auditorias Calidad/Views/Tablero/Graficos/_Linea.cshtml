@@ -1,6 +1,6 @@
 @model TableroModelo
-@* «Nota promedio de calidad»: línea con las piezas comunes de las gráficas (_LineasGaia): leyenda arriba con la cifra de la
-   «Meta de Calidad» (la línea discontinua ya no se rotula sobre la gráfica), cada punto con su valor en una pastilla y una
+@* «Nota promedio de calidad»: línea con las piezas comunes de las gráficas (_LineasGaia): leyenda arriba (sin la «Meta de
+   Calidad»: ya no hay líneas de meta), cada punto con su valor en una pastilla y una
    banda por periodo con su <title> para la ficha («Etiqueta · Nota X % · Auditorías N»). *@
 @{
     var puntos = Model.Evolucion;
@@ -13,8 +13,6 @@
         Dia = Model.Vista == Vista.Dia,
         AnchoEstimado = 900,
         MaxEtiquetasX = 14,
-        Referencias = [Model.MetaCalidad],
-        Extras = [new ItemLeyendaGaia("meta " + Formato.PorcentajeEntero(Model.MetaCalidad * 100), "", true)],
         Descripcion = "Nota promedio de calidad por " + tituloEje.ToLowerInvariant(),
     };
 }

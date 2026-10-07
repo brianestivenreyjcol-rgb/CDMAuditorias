@@ -11,7 +11,6 @@
     var kpi = Model.Kpi;
     var porDefecto = CalculadoraGaia.Kpis[0].Clave;
     var ayuda = CalculadoraGaia.Kpis.ToDictionary(k => k.Clave, k => k.Ayuda);
-    var mediaKpi = kpi.Valor(t);
     var hoy = DateOnly.FromDateTime(DateTime.Today);
     var progreso = Model.AgentesEnNomina > 0 ? Math.Clamp((double)Model.AgentesConLlamadas / Model.AgentesEnNomina, 0, 1) : 0;
     var columnasMarca = new[] { "adherencia", "rellamada", "nosolucion", "transferencia", "churn", "ofrecimientos", "ventas" };
@@ -117,8 +116,8 @@
                     <h2>Avance por etapa de formación</h2>
                     <span class="tarjeta-nota">@kpi.Nombre</span>
                 </header>
-                @await Html.PartialAsync("_ColumnasGaia", Grafico("etapa", Model.PorEtapa, (kpi.Nombre, "serie-a", kpi.Valor)) with { Media = mediaKpi, AnchoEstimado = 440, Descripcion = kpi.Nombre + " por etapa de formación" })
-                <p class="nota-ns">De la preconexión (1 a 3) al aseguramiento (1 a 6). La línea discontinua es la media de todas las etapas.</p>
+                @await Html.PartialAsync("_ColumnasGaia", Grafico("etapa", Model.PorEtapa, (kpi.Nombre, "serie-a", kpi.Valor)) with { AnchoEstimado = 440, Descripcion = kpi.Nombre + " por etapa de formación" })
+                <p class="nota-ns">De la preconexión (1 a 3) al aseguramiento (1 a 6).</p>
             </section>
             <section class="tarjeta">
                 <header class="tarjeta-cabecera">
@@ -161,21 +160,12 @@
             </section>
         </div>
 
-        <section class="tarjeta" data-vistas>
+        <section class="tarjeta">
             <header class="tarjeta-cabecera">
-                <h2>Evolución</h2>
-                <span class="tarjeta-nota">@kpi.Nombre y llamadas, por semana o por día</span>
-                <partial name="_SelectorVistaGaia" />
+                <h2>Evolución · @kpi.Nombre</h2>
+                <span class="tarjeta-nota">El indicador (línea) por semana o por día y las llamadas de cada periodo (columnas grises)</span>
             </header>
-            <div data-vista="semana">
-                @await Html.PartialAsync("_LineasGaia", Grafico("semana", Model.PorSemana, (kpi.Nombre, "serie-a", kpi.Valor)) with { Media = mediaKpi, EjeX = false, Descripcion = kpi.Nombre + " por semana" })
-                @await Html.PartialAsync("_ColumnasGaia", GraficoVolumen("semana", Model.PorSemana))
-            </div>
-            <div data-vista="dia" hidden>
-                @await Html.PartialAsync("_LineasGaia", Grafico("dia", Model.PorDia, (kpi.Nombre, "serie-a", kpi.Valor)) with { Media = mediaKpi, EjeX = false, Descripcion = kpi.Nombre + " por día" })
-                @await Html.PartialAsync("_ColumnasGaia", GraficoVolumen("dia", Model.PorDia))
-            </div>
-            <p class="nota-ns">Empieza por semanas. Con los días, la pastilla con el valor va en uno de cada pocos puntos (siempre en el primero y el último); la ficha da el de cada día.</p>
+            @await Html.PartialAsync("_IndicadorVolumenGaia", new IndicadorVolumenGaia("resumen", [new IndicadorGaia(kpi.Clave, kpi.Nombre, kpi.Valor)], Model.PorSemana, Model.PorDia))
         </section>
 
         <section class="tarjeta">

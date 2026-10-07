@@ -27,6 +27,11 @@ public sealed record IndicadoresGaia
     public double? SentimientoNegativoFinal { get; init; }
     /// <summary>Duración media en segundos.</summary>
     public double? Tmo { get; init; }
+    /// <summary>Silencio medio por llamada, en segundos («Tiempos en silencio» del portal).</summary>
+    public double? SilencioMedio { get; init; }
+    /// <summary>Llamadas con rellamada en 72 h y llamadas con el dato (la base del porcentaje).</summary>
+    public int Rellamadas { get; init; }
+    public int RellamadaBase { get; init; }
     public double? Menores60 { get; init; }
     public double? Entre60y180 { get; init; }
     public double? SinContexto { get; init; }
@@ -96,7 +101,7 @@ public static partial class CalculadoraGaia
         int intento = 0, reactivo = 0, proactivo = 0, alineados = 0, noAlineados = 0, ventas = 0;
         int sfPos = 0, sfNeg = 0, sfBase = 0, menores60 = 0, entre = 0, sinContexto = 0;
         int resuelto = 0, pendiente = 0, noPuede = 0, noResueltos = 0, ygmm = 0, enviadas = 0;
-        int durN = 0; double durSuma = 0;
+        int durN = 0, silN = 0; double durSuma = 0, silSuma = 0;
 
         foreach (var l in ll)
         {
@@ -132,6 +137,7 @@ public static partial class CalculadoraGaia
             if (l.DuracionSegundos is { } d)
             {
                 durN++; durSuma += d;
+                if (l.TiempoNoHablado is { } sil) { silN++; silSuma += sil; }
                 if (d < 60) menores60++;
                 else if (d <= 180) entre++;
             }
@@ -167,6 +173,9 @@ public static partial class CalculadoraGaia
             SentimientoPositivoFinal = Div(sfPos, sfBase),
             SentimientoNegativoFinal = Div(sfNeg, sfBase),
             Tmo = durN > 0 ? durSuma / durN : null,
+            SilencioMedio = silN > 0 ? silSuma / silN : null,
+            Rellamadas = r72,
+            RellamadaBase = r72Base,
             Menores60 = Div(menores60, n),
             Entre60y180 = Div(entre, n),
             SinContexto = Div(sinContexto, n),

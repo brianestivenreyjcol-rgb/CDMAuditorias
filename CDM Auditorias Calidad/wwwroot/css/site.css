@@ -505,7 +505,7 @@ html[data-presentacion] .pres-salir {
 /* Cobertura (Total agentes): barra de auditados sobre el total en nómina. */
 .resumen-cobertura { grid-area: variacion; display: grid; gap: 5px; }
 .resumen-cobertura-pista { height: 6px; border-radius: 3px; background: var(--superficie-2); overflow: hidden; }
-.resumen-cobertura-relleno { display: block; height: 100%; background: var(--serie-1); transform-origin: left center; animation: crecer-x var(--mov-crecer) var(--mov-curva) both; }
+.resumen-cobertura-relleno { display: block; height: 100%; background: var(--relleno, var(--serie-1)); transform-origin: left center; animation: crecer-x var(--mov-crecer) var(--mov-curva) both; }
 .resumen-cobertura-texto { font-size: 12.5px; font-weight: 500; color: var(--texto-suave); font-variant-numeric: tabular-nums; }
 
 /* --- bloques ----------------------------------------------------------------------------- */
@@ -536,7 +536,6 @@ html[data-presentacion] .pres-salir {
   animation: crecer-y var(--mov-crecer) var(--mov-curva) both; transition: opacity var(--mov-hover) var(--mov-curva);
 }
 .crono-linea { fill: none; stroke-width: 2.5; stroke-linejoin: round; stroke-linecap: round; }
-.meta { stroke: var(--texto-tenue); stroke-width: 1.2; stroke-dasharray: 6 5; }
 .banda { fill: transparent; }
 .eje-y, .eje-x { position: absolute; line-height: 1; white-space: nowrap; pointer-events: none; font-variant-numeric: tabular-nums; }
 .eje-y { right: calc(100% + 8px); transform: translateY(-50%); font-size: 11px; color: var(--texto-tenue); }
@@ -621,7 +620,6 @@ table.ranking { width: 100%; table-layout: fixed; border-collapse: separate; bor
 .ranking td.mapa-ambar { background: var(--mapa-ambar); color: var(--mapa-tinta); }
 .ranking td.mapa-rojo { background: var(--mapa-rojo); color: var(--mapa-tinta); }
 .ranking tr.marcada td:first-child { box-shadow: inset 3px 0 0 var(--acento); }
-.ranking tr.pocas td { color: var(--texto-tenue); }
 .ranking td a { color: inherit; text-decoration: none; }
 .ranking td a::after { content: ""; position: absolute; inset: 0; }
 /* Columna de puesto (1, 2, 3…) en los rankings: un contador, así sigue al orden que se vea. */
@@ -966,6 +964,7 @@ button.segmento.activo { background: var(--acento); color: var(--acento-texto); 
 .pestanas.compactas .pestana { padding: 7px 14px; }
 .pestanas.compactas .estado-ns { white-space: nowrap; }
 
+.relleno-marca { --relleno: var(--serie-1); }
 /* Colores de serie por posición (a, b, c… = --serie-1, --serie-2…) y por lado de la españolización. Las piezas leen --serie. */
 .serie-a { --serie: var(--serie-1); }
 .serie-b { --serie: var(--serie-2); }
@@ -1007,35 +1006,9 @@ button.segmento.activo { background: var(--acento); color: var(--acento-texto); 
 .hbarras.libre.largo .hbarra-pista { padding-top: 2px; }
 .hbarras.libre.largo .hbarra-media-valor { padding-top: 1px; }
 
-/* Barras al 100 % apiladas (estado de resolución, sentimientos) y su leyenda. */
-.apilada { display: flex; height: 16px; border-radius: 4px; overflow: hidden; background: var(--superficie-2); }
-.tabla-mapa-gaia .apilada { height: 14px; }
-.tramo { display: block; height: 100%; min-width: 2px; background: var(--relleno, var(--texto-tenue)); transform-origin: left center; animation: crecer-x var(--mov-crecer) var(--mov-curva) both; }
-.tramo + .tramo { border-left: 1px solid var(--superficie); }
-.apilada-bloque + .apilada-bloque { margin-top: 18px; }
-.apilada-titulo { display: block; margin-bottom: 6px; font-size: 12.5px; font-weight: 600; color: var(--texto-suave); }
-.apilada-bloque .veredicto-ns { margin: 8px 0 0; }
-.sentimientos-gaia { max-width: 760px; }
-
-/* Árbol de motivos: filas que se despliegan hasta tres niveles. */
-.cols-motivo { grid-template-columns: minmax(0, 1fr) 170px 74px 82px 90px 78px; }
-.desplegable-ns.nivel-2 > summary { padding-left: 34px; }
-.desplegable-ns.nivel-3 > summary { padding-left: 56px; }
-.hijos-motivo { border-top: 1px solid var(--borde); background: var(--fondo); }
-.hijos-motivo > .desplegable-ns { border-top: 1px solid var(--borde); }
-.hijos-motivo > .desplegable-ns:first-child { border-top: 0; }
-.filas-ns > .desplegable-ns { border-top: 1px solid var(--borde); }
-.filas-ns > .fila-ns-cabecera + .desplegable-ns { border-top: 0; }
-.sin-chevron { display: inline-block; width: 14px; flex: none; }
-.desplegable-ns.hoja > summary { cursor: default; }
-.desplegable-ns.hoja > summary:hover { background: transparent; }
-.filas-motivos .fila-ns-nombre { font-weight: 500; }
-.nivel-3 .fila-ns-nombre { font-weight: 400; }
-
 /* Tablas de las nuevas pestañas: ancho mínimo y scroll dentro de su contenedor. */
 .tabla-rendimiento-gaia { min-width: 720px; }
 .tabla-comercial-gaia { min-width: 880px; }
-.tabla-mapa-gaia { min-width: 760px; }
 .tabla-pares-gaia { min-width: 780px; }
 .tabla-espanolizacion-gaia { min-width: 780px; }
 
@@ -1044,6 +1017,90 @@ button.segmento.activo { background: var(--acento); color: var(--acento-texto); 
 .resumen-largo .texto-largo { margin: 0; white-space: normal; }
 .rotulo-largo { margin-right: .35em; font-weight: 600; color: var(--texto-suave); }
 .lista-obstaculos { margin: 0; padding-left: 18px; display: grid; gap: 4px; font-size: 13px; line-height: 1.5; }
+
+/* =========================================================================================
+   5 quater. «Ranking y Estilo» y «Motivo de contacto» de GAIA (como las capturas del portal, 07-10-2026)
+   ========================================================================================= */
+
+/* Indicador + volumen: pestañas en pastilla, línea suavizada con su área en degradado y las llamadas como columnas grises detrás. */
+.indicador-barra { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 14px; margin: 0 0 6px; }
+.pastillas-indicador { display: flex; flex-wrap: wrap; gap: 2px; padding: 3px; border: 1px solid var(--borde); border-radius: 12px; background: var(--campo); }
+.pastillas-indicador .segmento { border-radius: 9px; }
+.indicador-barra .pestanas-vista { margin-left: auto; }
+.indicador-fig { height: 320px; }
+.indicador-bloque[hidden] { display: none; }
+.serie-gris { --serie: color-mix(in srgb, var(--texto) 22%, var(--superficie)); }
+.columna-gris { fill: color-mix(in srgb, var(--texto) 7%, transparent); stroke: color-mix(in srgb, var(--texto) 20%, transparent); stroke-width: 1; }
+.degradado-ini { stop-color: var(--serie-1); stop-opacity: .32; }
+.degradado-fin { stop-color: var(--serie-1); stop-opacity: 0; }
+.valor-volumen {
+  position: absolute; transform: translate(-50%, calc(-100% - 2px)); font-size: 10.5px; line-height: 1; color: var(--texto-suave);
+  font-variant-numeric: tabular-nums; white-space: nowrap; pointer-events: none;
+}
+
+/* Ranking general y tipológico: tablas anchas que hacen scroll dentro de su caja, con la barra de segmento y el buscador en la cabecera. */
+.tabla-ranking-estilo { min-width: 1700px; }
+.tabla-ranking-estilo.con-sector { min-width: 1820px; }
+.tabla-tipologico { min-width: 1680px; }
+.tabla-ranking-estilo th:first-child { width: 290px; }
+.tabla-ranking-estilo.con-sector th:nth-child(2) { width: 118px; }
+.tabla-tipologico th:first-child { width: 300px; }
+.tarjeta-cabecera .barra-tarjeta { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 8px; }
+.barra-tarjeta .pestanas-vista { margin-left: 0; }
+.buscar-tarjeta { display: inline-flex; align-items: center; gap: 6px; }
+.buscar-tarjeta input {
+  width: 190px; height: 32px; padding: 0 10px; border: 1px solid var(--borde); border-radius: var(--radio-sm); background: var(--campo);
+  color: var(--texto); font: inherit; font-size: 12.5px;
+}
+.buscar-tarjeta input:focus { outline: none; border-color: var(--acento); }
+.ranking .fila-padre { cursor: pointer; }
+.ranking .fila-padre .mas { display: inline-block; flex: none; width: 1em; font-weight: 600; color: var(--acento-enlace); text-align: center; }
+.ranking .fila-padre .mas::before { content: "+"; }
+.ranking .fila-padre.abierta .mas::before { content: "\2212"; }
+.ranking tr.hija td.celda-nombre .nombre-fila { padding-left: 1.4em; }
+.ranking tr.hija td { background-color: color-mix(in srgb, var(--superficie-2) 45%, transparent); }
+.ranking tr.hija[hidden] { display: none; }
+.ranking .fila-padre .mas.sin::before { content: none; }
+.medidor-pie { margin: 6px 0 0; font-size: 12.5px; color: var(--texto-suave); font-variant-numeric: tabular-nums; }
+
+/* Motivo de contacto: cuatro tarjetas con barra, burbujas, sentimiento, rellamada por rol, obstáculos, mapa de calor y clientes. */
+.resumen-nota { grid-area: variacion; font-size: 12px; color: var(--texto-tenue); font-variant-numeric: tabular-nums; }
+.resumen-nota b { font-weight: 600; }
+.resumen-nota .mejor { color: var(--bueno); }
+.resumen-nota .peor { color: var(--malo); }
+.resumen-barra { grid-area: barra; height: 6px; border-radius: 3px; background: var(--superficie-2); overflow: hidden; }
+.resumen-barra > span { display: block; height: 100%; background: var(--relleno, var(--serie-1)); transform-origin: left center; animation: crecer-x var(--mov-crecer) var(--mov-curva) both; }
+.resumen-dato.con-barra { grid-template-areas: "titulo titulo" "cifra cifra" "variacion variacion" "barra barra"; }
+
+.grafica.burbujas { height: 360px; padding-right: 24px; }
+.punto-disp.burbuja { cursor: default; }
+.titulo-eje-y { position: absolute; left: 0; top: 0; font-size: 11px; color: var(--texto-tenue); }
+
+.sentimientos { display: grid; gap: 10px; }
+.sentimiento-nombre { margin-bottom: 2px; font-size: 12.5px; font-weight: 600; }
+.sentimiento-fila { display: grid; grid-template-columns: 44px minmax(0, 1fr) 118px; align-items: center; gap: 8px; font-size: 12px; color: var(--texto-tenue); }
+.sentimiento-pista { height: 9px; border-radius: 5px; background: var(--superficie-2); overflow: hidden; }
+.sentimiento-pista > span { display: block; height: 100%; min-width: 2px; border-radius: 5px; background: var(--relleno, var(--serie-1)); transform-origin: left center; animation: crecer-x var(--mov-crecer) var(--mov-curva) both; }
+.sentimiento-inicial { --relleno: var(--texto-tenue); }
+.sentimiento-cifra { text-align: right; font-variant-numeric: tabular-nums; }
+.sentimiento-cifra b { color: var(--texto); font-weight: 600; }
+
+.roles { display: grid; gap: 4px; }
+.rol-fila { display: grid; grid-template-columns: minmax(120px, 34%) minmax(0, 1fr) 108px; align-items: center; gap: 10px; font-size: 12.5px; }
+.rol-nombre { text-align: right; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rol-pista { position: relative; height: 12px; border-radius: 3px; background: var(--superficie-2); overflow: hidden; }
+.rol-base, .rol-rellamadas { position: absolute; left: 0; top: 0; bottom: 0; transform-origin: left center; animation: crecer-x var(--mov-crecer) var(--mov-curva) both; }
+.rol-base { background: var(--mapa-verde); }
+.rol-rellamadas { background: var(--malo); }
+.rol-cifra { font-variant-numeric: tabular-nums; color: var(--texto-tenue); font-size: 11.5px; }
+.rol-cifra b { color: var(--texto); font-weight: 600; font-size: 12.5px; }
+
+.tabla-calor { min-width: 960px; }
+.tabla-calor td.calor { background-color: color-mix(in srgb, var(--serie-1) calc(var(--i, 0) * 55%), transparent); }
+.tabla-calor th.num .cab-columna { text-align: right; }
+.tabla-calor td.total-fila { font-weight: 600; }
+
+.tabla-clientes { min-width: 780px; }
 
 /* =========================================================================================
    6. Portada: módulos del portal SOLARIS (tarjetas de informe con icono, etiqueta, estado de los datos y flecha)
@@ -1149,8 +1206,12 @@ button.segmento.activo { background: var(--acento); color: var(--acento-texto); 
   .resumen.en-4, .detalle-gaia, .calificaciones-gaia { grid-template-columns: minmax(0, 1fr); }
   .barra-kpi details.multi { width: 100%; }
   .anillos { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .sentimiento-fila, .rol-fila { grid-template-columns: minmax(0, 1fr); }
+  .tarjeta-cabecera > .barra-tarjeta { justify-self: stretch; justify-content: flex-start; min-width: 0; }
+  .barra-tarjeta .pestanas-vista { flex-wrap: wrap; max-width: 100%; border-radius: 16px; }
+  .buscar-tarjeta, .buscar-tarjeta input { width: 100%; }
+  .rol-nombre { text-align: left; }
   .grafica.dispersion { height: 360px; padding-right: 60px; }
-  .cols-motivo { grid-template-columns: minmax(0, 1fr) 130px 70px 78px 84px 74px; }
   .selector-campo { flex-wrap: wrap; }
   .barra-kpi .selector-campo details.multi { width: 100%; }
   .hbarras.libre.largo .hbarra { grid-template-columns: minmax(0, 1fr); }
@@ -1158,7 +1219,7 @@ button.segmento.activo { background: var(--acento); color: var(--acento-texto); 
 }
 
 /* Al filtrar (recarga parcial) no se repiten las animaciones de entrada: solo al cargar la página. */
-.actualizado :is(.resumen-dato, .tarjeta, .columna, .hbarra-relleno, .hbarra-media-relleno, .resumen-cobertura-relleno, .medidor-relleno, .tramo, .desplegable) { animation: none; }
+.actualizado :is(.resumen-dato, .tarjeta, .columna, .hbarra-relleno, .hbarra-media-relleno, .resumen-cobertura-relleno, .medidor-relleno, .desplegable) { animation: none; }
 
 /* Con «reducir movimiento» no se anima nada. */
 @media (prefers-reduced-motion: reduce) {

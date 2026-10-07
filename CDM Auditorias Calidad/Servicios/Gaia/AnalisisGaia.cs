@@ -39,6 +39,36 @@ public sealed record FilaPalabraGaia(PalabraGaia Palabra, int Llamadas, int Base
 /// <summary>Un agente (o día, o etapa) con su españolización. <paramref name="Oleada"/>, solo en las filas de agente.</summary>
 public sealed record GrupoEspanolizacion(string Clave, string Texto, EspanolizacionGaia Espanolizacion, IndicadoresGaia Indicadores, string Oleada = "");
 
+/// <summary>Una fila del ranking general: un agente, formador, supervisor u oleada con sus indicadores.</summary>
+/// <param name="Oleada">Solo en las filas de agente (va al lado del nombre).</param>
+/// <param name="Sector">Solo en las filas de agente.</param>
+public sealed record FilaRankingGaia(string Clave, string Texto, string Oleada, string Sector, IndicadoresGaia Indicadores);
+
+/// <summary>Sentimiento al empezar y al terminar, en llamadas (página «Motivo de contacto» del portal).</summary>
+public sealed record FilaSentimientoGaia(string Texto, int Inicial, int Final, int Llamadas)
+{
+    public double FraccionInicial => Llamadas == 0 ? 0 : (double)Inicial / Llamadas;
+    public double FraccionFinal => Llamadas == 0 ? 0 : (double)Final / Llamadas;
+}
+
+/// <summary>Rellamadas de un agente, formador o supervisor sobre sus llamadas con el dato («438 de 2.537»).</summary>
+public sealed record FilaRellamadaRolGaia(string Texto, int Rellamadas, int Base)
+{
+    public double? Fraccion => Base == 0 ? null : (double)Rellamadas / Base;
+}
+
+/// <summary>Una semana ISO de una matriz (clave «2026-W37», texto «S37»).</summary>
+public sealed record SemanaGaia(string Clave, string Texto);
+
+/// <summary>Una fila de una matriz motivo × semana: llamadas de cada semana y su total.</summary>
+public sealed record FilaMatrizGaia(string Motivo, IReadOnlyList<int> Valores, int Total);
+
+/// <summary>Mapa de calor motivo 3 × semana («Tema de contacto» del portal). <see cref="Maximo"/> da la intensidad.</summary>
+public sealed record MatrizSemanasGaia(IReadOnlyList<SemanaGaia> Semanas, IReadOnlyList<FilaMatrizGaia> Filas, int Maximo, IReadOnlyList<int> TotalesSemana, int Total);
+
+/// <summary>Un cliente que vuelve a llamar («Clientes que más vuelven»).</summary>
+public sealed record ClienteGaia(string IdCliente, int Llamadas, int Rellamadas, double? PorcentajeRellamada, string Motivo2, DateTime UltimaLlamada);
+
 /// <summary>Los análisis de las fases 3 y 4: repartos, motivos, obstáculos, semanas y españolización.</summary>
 public static partial class CalculadoraGaia
 {
@@ -145,6 +175,122 @@ public static partial class CalculadoraGaia
              .GroupBy(l => Motivo(l, nivel))
              .Select(g => new GrupoGaia(g.Key, g.Key, Calcular(g.ToList())))
              .OrderByDescending(g => g.Indicadores.Llamadas).ThenBy(g => g.Clave)
+             .Take(maximo).ToList();
+
+    // ------------------------------------------------------------------
+    // Ranking y Estilo, Motivo de contacto (pantallas copiadas del portal SOLARIS, 07-10-2026)
+    // ------------------------------------------------------------------
+
+    /// <summary>
+    /// El ranking general agrupado por agente (por defecto), formador, supervisor u oleada (el segmento
+    /// «Super / Team / Agente» del portal).
+    /// </summary>
+    public static List<FilaRankingGaia> Ranking(IEnumerable<LlamadaGaia> ll, string agrupar)
+    {
+        static string O(string v, string sin) => v.Length > 0 ? v : sin;
+        return agrupar switch
+        {
+            "formador" => ll.GroupBy(l => O(l.Formador, "Sin formador"))
+                .Select(g => new FilaRankingGaia(g.Key, g.Key, "", "", Calcular(g.ToList()))).ToList(),
+            "supervisor" => ll.GroupBy(l => O(l.Supervisor, "Sin supervisor"))
+                .Select(g => new FilaRankingGaia(g.Key, g.Key, "", "", Calcular(g.ToList()))).ToList(),
+            "oleada" => ll.GroupBy(l => O(l.Oleada, "Sin oleada"))
+                .Select(g => new FilaRankingGaia(g.Key, g.Key == "Sin oleada" ? g.Key : "Oleada " + g.Key, "", "", Calcular(g.ToList()))).ToList(),
+            _ => ll.GroupBy(l => l.IdAgente)
+                .Select(g => { var p = g.First(); return new FilaRankingGaia(g.Key, p.Agente, p.Oleada, p.Sector, Calcular(g.ToList())); }).ToList(),
+        };
+    }
+
+    /// <summary>
+    /// El ranking tipológico: los motivos de un nivel (1, 2 o 3) de más a menos llamadas, cada uno con sus
+    /// motivos del nivel siguiente (para desplegar la fila). Sin motivo → «Sin asignar».
+    /// </summary>
+    public static List<NodoMotivo> Tipologico(IReadOnlyCollection<LlamadaGaia> ll, int nivel, int maximoHijos = 20)
+    {
+        List<NodoMotivo> Nivel(IReadOnlyCollection<LlamadaGaia> grupo, int n, bool conHijos)
+            => grupo.GroupBy(l => TieneValor(Motivo(l, n)) ? Motivo(l, n) : "Sin asignar")
+                .Select(g => g.ToList())
+                .OrderByDescending(g => g.Count)
+                .Take(conHijos ? int.MaxValue : maximoHijos)
+                .Select(g =>
+                {
+                    var clave = TieneValor(Motivo(g[0], n)) ? Motivo(g[0], n) : "Sin asignar";
+                    var hijos = conHijos && n < 3 && clave != "Sin asignar" ? Nivel(g, n + 1, false) : [];
+                    return new NodoMotivo(clave, n, Calcular(g), grupo.Count == 0 ? 0 : (double)g.Count / grupo.Count, hijos);
+                })
+                .ToList();
+        return Nivel(ll, Math.Clamp(nivel, 1, 3), true);
+    }
+
+    /// <summary>Sentimiento inicial frente a final por categoría, de más a menos llamadas al empezar.</summary>
+    public static List<FilaSentimientoGaia> SentimientoInicialFinal(IReadOnlyCollection<LlamadaGaia> ll)
+    {
+        var categorias = ll.Select(l => l.SentimientoInicial).Concat(ll.Select(l => l.SentimientoFinal))
+            .Where(s => s.Length > 0).Distinct();
+        return categorias
+            .Select(c => new FilaSentimientoGaia(c, ll.Count(l => l.SentimientoInicial == c), ll.Count(l => l.SentimientoFinal == c), ll.Count))
+            .OrderBy(f => f.Texto == "No disponible").ThenByDescending(f => f.Inicial).ThenByDescending(f => f.Final)
+            .ToList();
+    }
+
+    /// <summary>Los <paramref name="maximo"/> agentes, formadores o supervisores con más rellamadas.</summary>
+    public static List<FilaRellamadaRolGaia> RellamadaPorRol(IEnumerable<LlamadaGaia> ll, string rol, int maximo = 20)
+    {
+        Func<LlamadaGaia, string> clave = rol switch
+        {
+            "formador" => l => l.Formador.Length > 0 ? l.Formador : "Sin formador",
+            "supervisor" => l => l.Supervisor.Length > 0 ? l.Supervisor : "Sin supervisor",
+            _ => l => l.Agente,
+        };
+        return ll.GroupBy(clave)
+            .Select(g => new FilaRellamadaRolGaia(g.Key, g.Count(l => l.Rellamada72h == 1), g.Count(l => l.Rellamada72h is 0 or 1)))
+            .Where(f => f.Base > 0)
+            .OrderByDescending(f => f.Rellamadas).ThenByDescending(f => f.Base)
+            .Take(maximo).ToList();
+    }
+
+    /// <summary>Mapa de calor de los <paramref name="maximo"/> motivos 3 con más llamadas, por semana ISO.</summary>
+    public static MatrizSemanasGaia MotivoPorSemana(IReadOnlyCollection<LlamadaGaia> ll, int maximo = 25)
+    {
+        var semanas = ll.Select(l => Lunes(l.Fecha)).Distinct().Order().ToList();
+        var indice = semanas.Select((s, i) => (s, i)).ToDictionary(x => x.s, x => x.i);
+        var filas = ll.Where(l => TieneValor(l.Motivo3))
+            .GroupBy(l => l.Motivo3)
+            .Select(g =>
+            {
+                var valores = new int[semanas.Count];
+                foreach (var l in g) valores[indice[Lunes(l.Fecha)]]++;
+                return new FilaMatrizGaia(g.Key, valores, g.Count());
+            })
+            .OrderByDescending(f => f.Total).ThenBy(f => f.Motivo)
+            .Take(maximo).ToList();
+        var totales = Enumerable.Range(0, semanas.Count).Select(i => filas.Sum(f => f.Valores[i])).ToList();
+        var etiquetas = semanas.Select(s =>
+        {
+            var d = s.ToDateTime(TimeOnly.MinValue);
+            return new SemanaGaia($"{ISOWeek.GetYear(d)}-W{ISOWeek.GetWeekOfYear(d):00}", $"S{ISOWeek.GetWeekOfYear(d)}");
+        }).ToList();
+        return new MatrizSemanasGaia(etiquetas, filas, filas.Count == 0 ? 0 : filas.Max(f => f.Valores.DefaultIfEmpty(0).Max()),
+            totales, filas.Sum(f => f.Total));
+    }
+
+    /// <summary>
+    /// Clientes con al menos <paramref name="minimo"/> llamadas en la selección, de más a menos llamadas: sus
+    /// rellamadas, el motivo 2 más frecuente y la última llamada.
+    /// </summary>
+    public static List<ClienteGaia> ClientesQueVuelven(IEnumerable<LlamadaGaia> ll, int minimo = 3, int maximo = 50)
+        => ll.Where(l => TieneValor(l.IdCliente))
+             .GroupBy(l => l.IdCliente)
+             .Where(g => g.Count() >= minimo)
+             .Select(g =>
+             {
+                 var rell = g.Count(l => l.Rellamada72h == 1);
+                 var conDato = g.Count(l => l.Rellamada72h is 0 or 1);
+                 var motivo = g.Where(l => TieneValor(l.Motivo2)).GroupBy(l => l.Motivo2)
+                     .OrderByDescending(m => m.Count()).Select(m => m.Key).FirstOrDefault() ?? "";
+                 return new ClienteGaia(g.Key, g.Count(), rell, conDato == 0 ? null : (double)rell / conDato, motivo, g.Max(l => l.FechaHora));
+             })
+             .OrderByDescending(c => c.Llamadas).ThenByDescending(c => c.Rellamadas)
              .Take(maximo).ToList();
 
     // ------------------------------------------------------------------
