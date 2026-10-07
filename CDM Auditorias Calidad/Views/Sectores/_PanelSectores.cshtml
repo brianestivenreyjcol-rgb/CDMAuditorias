@@ -1,0 +1,47 @@
+@model PaginaSectores
+@* Panel de filtros de «Rellamada y No solución por sector»: Marca y Sector (en cascada, se filtran al marcar). El mes de
+   referencia va en la barra de pestañas y viaja en un campo oculto para no perderlo al filtrar. En el pie, el CSV y el
+   estado de los datos. *@
+@{
+    var r = Model.R!;
+    var volver = Context.Request.Path + Context.Request.QueryString;
+    var enCurso = Model.Cargando || Model.Actualizacion == "en-curso";
+}
+<aside class="panel-filtros" aria-label="Filtros">
+    <partial name="_PanelCabecera" />
+    <form method="get" action="@PaginaSectores.Ruta(Model.Indicador)" data-tablero-filtros>
+        @if (!r.MesPorDefecto)
+        {
+            <input type="hidden" name="mes" value="@r.Mes.Clave" />
+        }
+        <div class="grupo-filtros">
+            @foreach (var g in r.Desplegables.Where(g => g.Visible))
+            {
+                <partial name="_Desplegable" model="g" />
+            }
+        </div>
+        <noscript><button type="submit" class="boton-aplicar">Aplicar filtros</button></noscript>
+    </form>
+
+    <div class="panel-pie">
+        <div class="acciones-filtros">
+            <a class="btn-panel primario" href="@Model.UrlCsv" title="Rellamada y no solución de cada sector y mes con estos filtros, en CSV para Excel">
+                @Iconos.Svg("hoja") Descargar CSV
+            </a>
+            <a class="btn-panel" href="@Model.UrlLimpiar" data-parcial>@Iconos.Svg("borrar-filtros") Borrar filtros</a>
+        </div>
+        <form method="post" action="@(PaginaSectores.RutaBase)/actualizar" class="estado-datos">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="volver" value="@volver" />
+            <span>@Iconos.Svg("reloj") Se actualiza sola cada 6 h</span>
+            @if (Model.Datos is { } d && d.Generado != default)
+            {
+                <span>Datos traídos el @Formato.FechaHora(d.Generado)</span>
+            }
+            <button type="submit" class="enlace" disabled="@enCurso"
+                    title="Vuelve a lanzar las consultas de BigQuery y SQL Server sin esperar. Tarda unos segundos.">
+                @(enCurso ? "Trayendo datos…" : "Actualizar ahora")
+            </button>
+        </form>
+    </div>
+</aside>

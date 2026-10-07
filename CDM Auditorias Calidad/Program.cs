@@ -3,6 +3,7 @@ using CDM_Auditorias_Calidad.Servicios.Configuracion;
 using CDM_Auditorias_Calidad.Servicios.Datos;
 using CDM_Auditorias_Calidad.Servicios.Gaia;
 using CDM_Auditorias_Calidad.Servicios.NoSolucion;
+using CDM_Auditorias_Calidad.Servicios.Sectores;
 
 // Números y fechas como en el Power BI (es-ES). Las coordenadas de los gráficos se
 // escriben siempre con cultura invariable (Formato.Coord).
@@ -26,6 +27,11 @@ builder.Services.AddSingleton(sp => new ServicioCdm(sp.GetRequiredService<Servic
 builder.Services.Configure<OpcionesGaia>(builder.Configuration.GetSection(OpcionesGaia.Seccion));
 builder.Services.AddSingleton<ServicioGaia>();
 builder.Services.AddHostedService<RevisionGaia>();
+
+// Rellamada y No solución por sector: YGMM de BigQuery y Jazztel, Orange y WhatsApp de SQL Server, por mes.
+builder.Services.Configure<OpcionesSectores>(builder.Configuration.GetSection(OpcionesSectores.Seccion));
+builder.Services.AddSingleton<ServicioSectores>();
+builder.Services.AddHostedService<RevisionSectores>();
 
 var app = builder.Build();
 

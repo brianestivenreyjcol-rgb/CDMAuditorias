@@ -1,0 +1,87 @@
+@model PaginaSectores
+@* #informe de «Rellamada y No solución por sector»: pestañas (una por indicador) con el mes de referencia a la derecha,
+   avisos, panel de filtros y la pestaña. Al filtrar, site.js lo pide con la cabecera X-Parcial y el controlador lo devuelve
+   sin la página alrededor; data-marca-pagina lleva la marca de color para que site.js la copie a <html>. Mientras no hay
+   datos, «preparando», y la página se vuelve a pedir sola cada 10 s (salvo que el último intento fallara y no se esté
+   reintentando: entonces se enseña el error y un botón). *@
+@{
+    Layout = ViewData["Parcial"] is true ? null : "_LayoutSectores";
+    var r = Model.R;
+    var volver = Context.Request.Path + Context.Request.QueryString;
+    var enCurso = Model.Cargando || Model.Actualizacion == "en-curso";
+}
+<div id="informe" data-miga="@Model.Indicador.Titulo" data-marca-pagina="@Model.MarcaPagina" data-titulo="@Model.Indicador.Titulo por sector · CDM Auditorías Calidad">
+    <nav class="pestanas" aria-label="Indicador">
+        @foreach (var i in IndicadorSectores.Todos)
+        {
+            <a class="pestana@(i == Model.Indicador ? " activa" : "")" href="@Model.UrlIndicador(i)" data-parcial
+               aria-current="@(i == Model.Indicador ? "page" : null)">@i.Titulo</a>
+        }
+        @if (r is not null && r.Meses.Count > 1)
+        {
+            <div class="pestanas-vista" role="group" aria-label="Mes de referencia de las tarjetas y las barras">
+                @foreach (var m in r.Meses)
+                {
+                    <a class="segmento@(m.Clave == r.Mes.Clave ? " activo" : "")" href="@Model.UrlMes(m.Clave)" data-parcial
+                       aria-current="@(m.Clave == r.Mes.Clave ? "true" : null)" title="@m.TextoLargo@(m.EnCurso ? " (en curso)" : "")">@m.Texto</a>
+                }
+            </div>
+        }
+    </nav>
+
+    <div class="contenedor">
+    @if (Model.Actualizacion == "en-curso")
+    {
+        <div class="aviso aviso-info" role="status">@Iconos.Svg("refrescar") <span>Trayendo los datos de BigQuery y de SQL Server. Tarda unos segundos; mientras tanto se sigue viendo lo de antes. Vuelve a cargar la página cuando termine.</span></div>
+    }
+    else if (Model.Actualizacion == "ya-en-curso")
+    {
+        <div class="aviso aviso-info" role="status">@Iconos.Svg("reloj") <span>Ya hay una descarga en curso o acaba de terminar una: espera un poco antes de volver a pedirla.</span></div>
+    }
+
+    @if (Model.Preparando)
+    {
+        IgnoreBody();
+        var fallo = !Model.Cargando && !string.IsNullOrEmpty(Model.Error);
+        <div class="preparando-ns" data-recargar-en="@(fallo ? null : "10")" aria-live="polite">
+            @if (!fallo)
+            {
+                <div class="girando" aria-hidden="true"></div>
+                <h2>Preparando los datos</h2>
+                <p>Se están trayendo la rellamada y la no solución de cada sector: YGMM de BigQuery y Jazztel, Orange y WhatsApp de SQL Server. Tarda unos segundos; después queda guardado y entra al instante. Esta página se vuelve a cargar sola.</p>
+                @if (!string.IsNullOrEmpty(Model.Error))
+                {
+                    <p class="texto-tenue">El último intento falló: @Model.Error</p>
+                }
+            }
+            else
+            {
+                <h2>No se han podido traer los datos</h2>
+                <p>@Model.Error</p>
+                <form method="post" action="@(PaginaSectores.RutaBase)/actualizar">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="volver" value="@volver" />
+                    <button type="submit" class="boton-aplicar" disabled="@enCurso">Volver a intentarlo</button>
+                </form>
+            }
+        </div>
+    }
+    else
+    {
+        @if (!string.IsNullOrEmpty(Model.Error))
+        {
+            <div class="aviso" role="alert">@Iconos.Svg("alerta") <span>El último intento de actualizar falló y se sigue viendo la última versión guardada. <small>@Model.Error</small></span></div>
+        }
+        @foreach (var aviso in Model.Avisos)
+        {
+            <div class="aviso" role="alert">@Iconos.Svg("alerta") <span>@aviso</span></div>
+        }
+        <div class="tablero">
+            <partial name="_PanelSectores" model="Model" />
+            <main class="contenido">
+                @RenderBody()
+            </main>
+        </div>
+    }
+    </div>
+</div>

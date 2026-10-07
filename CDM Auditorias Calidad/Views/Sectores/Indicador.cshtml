@@ -1,0 +1,299 @@
+@model PaginaSectores
+@* Una pestaña de «Rellamada y No solución por sector» (las dos tienen la misma forma): la tira con el mes de referencia
+   frente al anterior, la evolución mensual (línea con la base en columnas grises detrás), los sectores del mes en barras
+   del color de su marca y la tabla sector × mes con el semáforo (más es peor) y el TOTAL al pie. *@
+@{
+    Layout = "_InformeSectores";
+}
+@if (Model.R is { } r)
+{
+    var ind = r.Indicador;
+    var mes = r.Mes;
+    var total = r.Total(mes.Clave);
+    var dif = r.Variacion;
+    var tono = PaginaSectores.Tono(dif);
+    var masAlto = r.PorSectorDelMes.FirstOrDefault();
+    var icono = ind == IndicadorSectores.Rellamada ? "refrescar" : "no-resuelta";
+    var marcasEnTabla = r.Tabla.Select(f => f.Marca).Distinct().OrderBy(CalculadoraSectores.OrdenMarca).ToList();
+
+    // La evolución solo con meses cerrados: un mes en curso (y en rellamada, sus últimos 3 días sin dato) bajaría la línea sin motivo.
+    var cerrados = r.Meses.Where(m => !m.EnCurso).ToList();
+    if (cerrados.Count == 0) cerrados = r.Meses.ToList();
+    var grafico = new GraficoGaia(
+        cerrados.Select(m => m.Texto).ToList(),
+        cerrados.Select(m => m.TextoLargo).ToList(),
+        cerrados.Select(m => (int)Math.Min(int.MaxValue, r.Total(m.Clave).Base)).ToList(),
+        [new SerieGaia("% " + ind.Titulo, "serie-a", cerrados.Select(m => r.Total(m.Clave).Pct).ToList())])
+    {
+        NombreVolumen = ind.NombreBase,
+        AnchoEstimado = 400,
+        Descripcion = "% " + ind.Titulo + " de cada mes",
+    };
+    // Por marca: la suma de sus sectores en el mes elegido y en el anterior.
+    var porMarca = r.Tabla.GroupBy(f => f.Marca).OrderBy(g => CalculadoraSectores.OrdenMarca(g.Key))
+        .Select(g => (Marca: g.Key,
+                      Actual: g.Aggregate(CifraSector.Cero, (c, f) => c.Mas(f.En(mes.Clave))),
+                      Antes: r.MesAnterior is { } an ? g.Aggregate(CifraSector.Cero, (c, f) => c.Mas(f.En(an.Clave))) : CifraSector.Cero))
+        .Where(x => x.Actual.Base > 0).ToList();
+    var barras = new CDM_Auditorias_Calidad.Models.NoSolucion.BarrasNs(r.PorSectorDelMes.Select(f =>
+    {
+        var c = f.En(mes.Clave);
+        return new CDM_Auditorias_Calidad.Models.NoSolucion.BarraNs(f.Sector, CalculadoraSectores.TextoMarca(f.Marca), c.Pct ?? 0,
+            Formato.Porcentaje(c.Pct), PaginaSectores.DeCuantos(c), "relleno-serie " + PaginaSectores.ClaseMarca(f.Marca));
+    }).ToList());
+
+    @if (mes.EnCurso)
+    {
+        <div class="aviso aviso-info" role="note">
+            @Iconos.Svg("reloj")
+            <span>
+                <b>@mes.TextoLargo</b> aún no está completo@(ind.DiasCierre > 0 ? " (la rellamada de un día se conoce 72 horas después)" : ""):
+                su cifra irá cambiando. Para comparar, elige un mes cerrado arriba a la derecha.
+            </span>
+        </div>
+    }
+
+    <section class="resumen en-4" aria-label="Indicadores de @mes.TextoLargo">
+        <div class="resumen-dato destacada" title="@ind.Formula">
+            <span class="resumen-icono">@Iconos.Svg(icono)</span>
+            <span class="resumen-titulo">% @ind.Titulo · @mes.Texto</span>
+            <span class="resumen-cifra" data-contar="@Formato.Crudo(total.Pct)" data-formato="porcentaje">@Formato.Porcentaje(total.Pct)</span>
+            <span class="resumen-variacion @tono.Clase">
+                @if (dif is { } d)
+                {
+                    @Iconos.Tendencia(tono.Icono)
+                    <span>@PaginaSectores.Diferencia(d) vs. @r.MesAnterior!.Texto</span>
+                }
+                else
+                {
+                    <span>sin mes anterior para comparar</span>
+                }
+            </span>
+        </div>
+        <div class="resumen-dato">
+            <span class="resumen-icono">@Iconos.Svg(ind == IndicadorSectores.Rellamada ? "telefono" : "portapapeles")</span>
+            <span class="resumen-titulo">@ind.NombreBase</span>
+            <span class="resumen-cifra" data-contar="@total.Base" data-formato="entero">@PaginaSectores.Entero(total.Base)</span>
+            <span class="resumen-variacion neutra">en @mes.TextoLargo</span>
+        </div>
+        <div class="resumen-dato">
+            <span class="resumen-icono">@Iconos.Svg(icono)</span>
+            <span class="resumen-titulo">@ind.NombreCasos</span>
+            <span class="resumen-cifra" data-contar="@total.Casos" data-formato="entero">@PaginaSectores.Entero(total.Casos)</span>
+            <span class="resumen-variacion neutra">@r.PorSectorDelMes.Count @(r.PorSectorDelMes.Count == 1 ? "sector" : "sectores") con dato</span>
+        </div>
+        <div class="resumen-dato" title="El sector con el porcentaje más alto en @mes.TextoLargo">
+            <span class="resumen-icono">@Iconos.Svg("alerta")</span>
+            <span class="resumen-titulo">El más alto</span>
+            <span class="resumen-cifra" data-contar="@Formato.Crudo(masAlto?.En(mes.Clave).Pct)" data-formato="porcentaje">@Formato.Porcentaje(masAlto?.En(mes.Clave).Pct)</span>
+            <span class="resumen-variacion neutra">@(masAlto?.Sector ?? "sin datos")</span>
+        </div>
+    </section>
+
+    <div class="rejilla-2">
+        <div class="pila-tarjetas">
+        <section class="tarjeta crono-tarjeta">
+            <header class="tarjeta-cabecera">
+                <h2>Cómo evoluciona</h2>
+                <span class="tarjeta-nota">% @ind.Titulo.ToLowerInvariant() de cada mes, con las @ind.NombreBase.ToLowerInvariant() detrás</span>
+            </header>
+            @if (r.Meses.Count > 0)
+            {
+                <partial name="_LineasGaia" model="grafico" />
+            }
+            <p class="nota-ns">
+                El total junta los sectores marcados en los filtros.
+                @if (r.Meses.Where(m => m.EnCurso).ToList() is { Count: > 0 } abiertos)
+                {
+                    <text>Solo meses cerrados: @string.Join(" y ", abiertos.Select(m => m.TextoLargo)) @(abiertos.Count == 1 ? "está" : "están") en curso y solo sale en la tabla.</text>
+                }
+            </p>
+        </section>
+        @* Con una sola marca no aporta nada: sería una fila igual al TOTAL. *@
+        @if (porMarca.Count > 1)
+        {
+            <section class="tarjeta">
+                <header class="tarjeta-cabecera">
+                    <h2>Por marca · @mes.TextoLargo</h2>
+                    <span class="tarjeta-nota">la suma de sus sectores@(r.MesAnterior is { } am ? ", frente a " + am.TextoLargo : "")</span>
+                </header>
+                <div class="tabla-contenedor">
+                    <table class="ranking">
+                        <thead>
+                            <tr>
+                                <th scope="col"><button type="button" class="ordenar">Marca</button></th>
+                                <th scope="col" class="num"><button type="button" class="ordenar">% @ind.Titulo</button></th>
+                                @if (r.MesAnterior is not null)
+                                {
+                                    <th scope="col" class="num"><button type="button" class="ordenar">Variación</button></th>
+                                }
+                                <th scope="col" class="num"><button type="button" class="ordenar">@ind.NombreCasos</button></th>
+                                <th scope="col" class="num"><button type="button" class="ordenar">@ind.NombreBase</button></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var x in porMarca)
+                            {
+                                var dm = x.Actual.Pct is { } pa && x.Antes.Pct is { } pb ? pa - pb : (double?)null;
+                                <tr>
+                                    <td class="celda-nombre" data-valor="@x.Marca"><div class="nombre-fila"><span class="marca-punto @PaginaSectores.ClaseMarca(x.Marca)" aria-hidden="true"></span><span class="nombre-texto">@CalculadoraSectores.TextoMarca(x.Marca)</span></div></td>
+                                    <td class="num" data-valor="@Formato.Crudo(x.Actual.Pct)">@Formato.Porcentaje(x.Actual.Pct)</td>
+                                    @if (r.MesAnterior is not null)
+                                    {
+                                        <td class="num" data-valor="@Formato.Crudo(dm)">
+                                            @if (dm is { } dd)
+                                            {
+                                                <span class="chip @PaginaSectores.Tono(dd).Chip">@PaginaSectores.Diferencia(dd)</span>
+                                            }
+                                            else
+                                            {
+                                                <text>—</text>
+                                            }
+                                        </td>
+                                    }
+                                    <td class="num" data-valor="@x.Actual.Casos">@PaginaSectores.Entero(x.Actual.Casos)</td>
+                                    <td class="num barra-volumen" data-valor="@x.Actual.Base">@PaginaSectores.Entero(x.Actual.Base)</td>
+                                </tr>
+                            }
+                        </tbody>
+                        <tfoot>
+                            <tr class="total">
+                                <td>TOTAL</td>
+                                <td class="num">@Formato.Porcentaje(total.Pct)</td>
+                                @if (r.MesAnterior is not null)
+                                {
+                                    <td class="num">@(dif is { } dt2 ? PaginaSectores.Diferencia(dt2) : "—")</td>
+                                }
+                                <td class="num">@PaginaSectores.Entero(total.Casos)</td>
+                                <td class="num">@PaginaSectores.Entero(total.Base)</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </section>
+        }
+        </div>
+        <section class="tarjeta">
+            <header class="tarjeta-cabecera">
+                <h2>Por sector · @mes.TextoLargo</h2>
+                <span class="tarjeta-nota">del más alto al más bajo; al lado, @ind.NombreCasos.ToLowerInvariant() de @ind.NombreBase.ToLowerInvariant()</span>
+            </header>
+            @if (marcasEnTabla.Count > 1)
+            {
+                <div class="leyenda-ns">
+                    @foreach (var m in marcasEnTabla)
+                    {
+                        <span class="@PaginaSectores.ClaseMarca(m)"><i></i>@CalculadoraSectores.TextoMarca(m)</span>
+                    }
+                </div>
+            }
+            @if (barras.Barras.Count > 0)
+            {
+                <partial name="~/Views/NoSolucion/_BarrasNs.cshtml" model="barras" />
+            }
+            else
+            {
+                <p class="vacio">Ningún sector tiene dato en @mes.TextoLargo con estos filtros.</p>
+            }
+        </section>
+    </div>
+
+    <section class="tarjeta">
+        <header class="tarjeta-cabecera">
+            <h2>Sector por mes</h2>
+            <span class="tarjeta-nota">% @ind.Titulo.ToLowerInvariant() · el semáforo compara los sectores de cada mes (rojo, el más alto) · pulsa una cabecera para ordenar</span>
+        </header>
+        <div class="tabla-contenedor alta">
+            <table class="ranking tabla-sectores" data-mapa>
+                <thead>
+                    <tr>
+                        <th scope="col"><button type="button" class="ordenar">Sector</button></th>
+                        @foreach (var m in r.Meses)
+                        {
+                            <th scope="col" class="num" data-sentido="-1" title="@m.TextoLargo@(m.EnCurso ? " (en curso)" : "")">
+                                <button type="button" class="ordenar">@m.Texto@(m.EnCurso ? " · en curso" : "")</button>
+                            </th>
+                        }
+                        @if (r.MesAnterior is { } ant)
+                        {
+                            <th scope="col" class="num" title="@mes.Texto frente a @ant.Texto, en puntos"><button type="button" class="ordenar">Variación</button></th>
+                        }
+                        <th scope="col" class="num" title="@ind.NombreBase en @mes.TextoLargo"><button type="button" class="ordenar">@ind.NombreBase · @mes.Texto</button></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var f in r.Tabla)
+                    {
+                        var actual = f.En(mes.Clave);
+                        <tr>
+                            <td class="celda-nombre" data-valor="@f.Sector">
+                                <div class="nombre-fila">
+                                    <span class="nombre-texto">@f.Sector</span>
+                                    <span class="pastilla-dato" title="@CalculadoraSectores.TextoMarca(f.Marca) · @f.Fuente">@(f.Marca == "YGMM" ? "YGMM" : Formato.Mayuscula(f.Marca.ToLowerInvariant()))</span>
+                                </div>
+                            </td>
+                            @foreach (var m in r.Meses)
+                            {
+                                var c = f.En(m.Clave);
+                                <td class="num" data-valor="@Formato.Crudo(c.Pct)" title="@(c.Base > 0 ? PaginaSectores.DeCuantos(c) : "sin dato")">@Formato.Porcentaje(c.Pct)</td>
+                            }
+                            @if (r.MesAnterior is { } a)
+                            {
+                                var dv = actual.Pct is { } x && f.En(a.Clave).Pct is { } y ? x - y : (double?)null;
+                                var tv = PaginaSectores.Tono(dv);
+                                <td class="num" data-valor="@Formato.Crudo(dv)">
+                                    @if (dv is { } dd)
+                                    {
+                                        <span class="chip @tv.Chip">@PaginaSectores.Diferencia(dd)</span>
+                                    }
+                                    else
+                                    {
+                                        <text>—</text>
+                                    }
+                                </td>
+                            }
+                            <td class="num barra-volumen" data-valor="@actual.Base">@PaginaSectores.Entero(actual.Base)</td>
+                        </tr>
+                    }
+                </tbody>
+                @* Total al pie (nunca arriba): el de los sectores filtrados, mes a mes. *@
+                <tfoot>
+                    <tr class="total">
+                        <td>TOTAL</td>
+                        @foreach (var m in r.Meses)
+                        {
+                            var c = r.Total(m.Clave);
+                            <td class="num" title="@(c.Base > 0 ? PaginaSectores.DeCuantos(c) : "sin dato")">@Formato.Porcentaje(c.Pct)</td>
+                        }
+                        @if (r.MesAnterior is not null)
+                        {
+                            <td class="num">@(dif is { } dt ? PaginaSectores.Diferencia(dt) : "—")</td>
+                        }
+                        <td class="num">@PaginaSectores.Entero(total.Base)</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </section>
+
+    <section class="tarjeta">
+        <header class="tarjeta-cabecera"><h2>De dónde sale cada cifra</h2></header>
+        <ul class="lista-ns">
+            <li><b>% @ind.Titulo</b> = @ind.Formula.</li>
+            @if (ind == IndicadorSectores.Rellamada)
+            {
+                <li><b>YOIGO · MASMOVIL</b>: BigQuery, tabla corporativa <code>ALL_LLAMADAS_EJECUTIVO_BRUTOS_RELLAMADA</code> (la del PBI de Atención YGMM), entrantes de Bogotá (agencia JAZZBOG). El sector sale del servicio: Comercial, Fidelización y General son Atención YGMM; Retención, Retención YGMM; Averías, Técnico MasMovil.</li>
+                <li><b>Jazztel</b> (todos los sectores FRONT de Bogotá) y <b>Orange</b> (Masivo Orange): SQL Server, <code>PD_JAZZTEL_FCR_72h</code> y <code>Pd_R72_Orange</code>, llamadas malas sobre llamadas; el sector sale del skill.</li>
+                <li><b>CO Whatsapp JZZ</b>: recontacto en 72 h de <code>VW_Recontacto</code> (hay datos desde agosto de 2026).</li>
+                <li>Un mes se cierra 3 días después de acabar: la rellamada de una llamada se conoce a las 72 horas.</li>
+            }
+            else
+            {
+                <li><b>YOIGO · MASMOVIL</b>: BigQuery, la misma tabla corporativa (<code>no_solucion_kpi</code>, que es la respuesta 2 de la encuesta), con los mismos sectores por servicio.</li>
+                <li><b>Jazztel</b> y <b>Orange</b> (Masivo Orange): SQL Server, <code>PD_Encuesta2</code> y <code>Pd_Encuesta_Orange2</code>, respuestas «no» sobre respuestas «sí» + «no»; el sector sale del skill.</li>
+                <li>WhatsApp no está: aún no hay una fuente fiable de su encuesta de solución.</li>
+            }
+            <li>Las diferencias entre dos porcentajes son una <b>resta</b> («+0,58 %»), no una variación relativa. Más es peor: lo que sube va en rojo.</li>
+        </ul>
+    </section>
+}

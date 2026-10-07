@@ -523,3 +523,21 @@ llamadas entrantes en columnas grises detrás) usan el mismo trazo. Las gráfica
 Los textos que no son de tabla y se cortaban (nombres de barras `.hbarra-nombre`, `.rol-nombre`, `.recorta` de las llamadas, `.detalle` de la portada) ahora se parten en dos líneas; en Llamadas el agente tiene
 una columna de 270 px. `.recorta` ya no se usa en `td` (un `td` con `display: block` deja de ser celda).
 
+
+### 9.13 Rellamada y No solución por sector (`/sectores`, 07-10-2026)
+
+Informe pequeño hecho **solo con piezas que ya existían**: cabecera, `.pestanas` (Rellamada 72 h / No solución) con `.pestanas-vista` de meses a la
+derecha (el mes de referencia, `?mes=`), panel con `_Desplegable` (Marca y Sector), `.resumen.en-4` con `.resumen-variacion` (más es peor), `_LineasGaia`
+(evolución mensual, solo meses cerrados), `_BarrasNs` de No solución (por sector), `table.ranking[data-mapa]` con `.chip` en la variación, `td.barra-volumen` y
+TOTAL al pie, `.marca-punto` y `.leyenda-ns` con `.serie-*` por marca. El color de la página sigue a la marca filtrada (YGMM → `ygmm`, Jazztel → `jazztel`,
+Orange → `orange`). Lo nuevo:
+
+| Pieza | Clase | Notas |
+|---|---|---|
+| Barra del color de su marca | `.relleno-serie` junto a `.serie-yoigo` / `.serie-jazztel` / `.serie-orange` | pasa `--serie` a `--relleno`; cuando cada barra es de una marca (guía 2.2) |
+| Dos tarjetas en una columna | `.pila-tarjetas` | dentro de `.rejilla-2`: la evolución y «Por marca» frente a las barras por sector, para que la columna izquierda no quede vacía |
+| Tabla sin recorte | `.tabla-contenedor.alta` (ya existía, 620 px) | la tabla sector × mes cabe entera |
+
+- **Portada a cuatro tarjetas**: `.modulos` pasa a `repeat(4, …)` (dos por fila por debajo de 1.100 px, una en móvil) y `.portada` a 1.320 px.
+- Las diferencias se escriben como resta con signo (`PaginaSectores.Diferencia`: «+0,58 %», «−1,15 %»), como en No solución.
+

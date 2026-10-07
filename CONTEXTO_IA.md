@@ -11,6 +11,8 @@
 - El Power BI «CDM Auditorías Calidad» pasado a web ASP.NET Core MVC (.NET 8, Razor): **General** y
   **Formación & Calidad**. Desde el 05-10-2026, también **CDM No solución** (`/nosolucion`), traído de
   ranking-mvc (son dos copias independientes del motor).
+- Desde el 07-10-2026, **Rellamada y No solución por sector** (`/sectores`): la cifra mensual de cada sector de Bogotá;
+  YGMM de BigQuery (tabla corporativa) y Jazztel, Orange y WhatsApp de SQL Server (consultas del usuario). Ver `docs/contexto/sectores.md`.
 - Proyecto: `C:\Proyectos\CDM Auditorias Calidad\` (`CDM Auditorias Calidad.sln`: web + pruebas).
 - GitHub privado `brianestivenreyjcol-rgb/CDMAuditorias`, rama `main` (commit y push tras cada tanda,
   sin `.env`, `publicacion\`, capturas ni cachés). Si pasara a público, quitar antes lo interno.
@@ -26,6 +28,8 @@
   Las tablas WEB empiezan el 01/08: **el usuario avisará** cuando traigan 4 meses; no investigar.
 - No solución: BigQuery por ODBC (DSN de usuario `BQCOL`), cubo de 90 días en disco (`App_Data` en
   desarrollo, `publicacion\datos` en producción), se renueva solo cada 12 h. Formato del cubo: **v3**.
+- Por sector: `Consultas/SectoresYgmm.sql` (BigQuery) y `SectoresRellamada.sql` / `SectoresNoSolucion.sql` (SQL Server, mismo `.env`);
+  caché pequeña `cache_sectores.json` (v1), se renueva cada 6 h. **De GAMMA no se saca nada** aquí (lo dijo el usuario).
 - Credenciales en `CDM Auditorias Calidad\.env` y `publicacion\.env` (login personal del usuario;
   nunca decirlas en el chat).
 
@@ -77,6 +81,8 @@
   BigQuery filtradas por el Excel de nómina de la compartida (filtro exacto agente + día, fallos del PBI
   corregidos; se recarga sola al guardar el Excel). Las 9 pestañas (Resumen, Ranking, Estilo,
   Rendimiento, Evolución, Comercial, Motivos, Españolización, Llamadas) hechas y **publicadas en el 5180 el 07-10-2026**. Todo en `docs/contexto/gaia-formacion.md`.
+- **Por sector** (`/sectores`, 07-10-2026, probado en el 5190, **sin publicar**): confirmar con el usuario los sectores de YGMM por servicio
+  (Retención → CO Retención YGMM, Averías → CO Técnico MasMovil), la fuente de no solución de WhatsApp y si entra CO Técnico Convergente Orange.
 - Detalle de todo esto: `docs/contexto/pendientes.md`.
 
 ## Dónde está el detalle (`docs/contexto/`)
@@ -86,6 +92,7 @@
 | `gaia-formacion.md` | toques la vista GAIA Formación (análisis de su PBI, Excel de nómina, plan por fases) |
 | `power-bi.md` | toques medidas, fechas DAX o la consulta de auditorías (análisis del PBI y cómo se pasó cada medida) |
 | `decisiones.md` | toques el informe de Auditorías: filtros, tarjetas, top 10, Excel, estilo aplicado |
+| `sectores.md` | toques «Rellamada y No solución por sector»: fuentes, consultas, decisiones y pantalla |
 | `no-solucion.md` | toques No solución: fuente, cubo, pestañas, causas atención/proceso, palabras clave |
 | `estructura-y-ejecucion.md` | necesites saber qué hay en cada carpeta o cómo se ejecuta y publica con detalle |
 | `verificacion.md` | quieras cuadrar cifras con lo que ya se comprobó contra SQL o BigQuery |

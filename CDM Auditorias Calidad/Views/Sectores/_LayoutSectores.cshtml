@@ -1,0 +1,14 @@
+@model PaginaSectores
+@* La página entera de «Rellamada y No solución por sector»: el documento base y la cabecera común. Lo de dentro
+   (#informe) es _InformeSectores, que es lo único que se pide al filtrar. *@
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = Model.Indicador.Titulo + " por sector";
+    // El color de la página sigue a la marca filtrada (solo YGMM, solo JAZZTEL, solo ORANGE); si no, el de por defecto.
+    ViewData["Marca"] = Model.MarcaPagina;
+    ViewData["Area"] = "Sectores";
+    ViewData["Migas"] = new[] { "Por sector", Model.Indicador.Titulo };
+    var cabecera = new CabeceraModelo(PaginaSectores.Titulo, "Cifra mensual de cada sector de Bogotá");
+}
+<partial name="_Cabecera" model="cabecera" />
+@RenderBody()
