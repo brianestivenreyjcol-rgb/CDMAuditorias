@@ -87,7 +87,7 @@
   Rendimiento, Evolución, Comercial, Motivos, Españolización, Llamadas) hechas y **publicadas en el 5180 el 07-10-2026**. Todo en `docs/contexto/gaia-formacion.md`.
 - **Por sector** (`/sectores`, **publicado en el 5180 el 07-10-2026**): sectores de YGMM confirmados; Técnico Convergente
   Orange y la no solución de WhatsApp (desde sep-2026) añadidos el 07-10-2026, **sin publicar** todavía. Siguiente: más KPIs (productividad, reitero, retención): lo investigado está en `docs/contexto/kpis-servicios.md` (aún no en la web).
-- **Pesos** (`/pesos`, 07-10-2026, probado en el 5190, **sin publicar**): faltan los .xlsb (que los guarden como .xlsm) y, si el usuario lo pide,
+- **Pesos** (`/pesos`, **publicado en el 5180 el 07-10-2026**; solo la hoja principal de agentes de cada sector): faltan los .xlsb (que los guarden como .xlsm) y, si el usuario lo pide,
   comparar los pesos con el mes anterior.
 - Detalle de todo esto: `docs/contexto/pendientes.md`.
 

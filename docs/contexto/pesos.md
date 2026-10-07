@@ -44,7 +44,7 @@ Los bloques «Indicador | Objetivo | Peso» de TL/SP son aceleradores y no entra
   `Controllers/PesosController.cs` (`/pesos`, POST `/pesos/analizar`, `/pesos/csv`), `Views/Pesos/`. Pruebas: `PesosTests.cs`.
 - Caché `App_Data\cache_pesos.json` / `publicacion\datos\cache_pesos.json` (versión 1), un análisis por mes. Un mes sin analizar se
   analiza solo al abrirlo; «Analizar y validar» lo repite (tarda un par de minutos; la página enseña el progreso y se recarga sola).
-- Filtros: Sector, Nivel, Responsable y «Todo / Para revisar». Meses: los 6 últimos en la barra (`?mes=2026-09`, la carpeta).
+- Filtros: Sector, Responsable y «Todo / Para revisar» (el de Nivel se quitó: solo agentes). Meses: los 6 últimos en la barra (`?mes=2026-09`, la carpeta).
 
 ## Cambios pedidos por el usuario (07-10-2026, tarde)
 
@@ -52,7 +52,8 @@ Los bloques «Indicador | Objetivo | Peso» de TL/SP son aceleradores y no entra
   caché) pero no salen. Un fichero sin bloques de agente sale como «Sin agentes» y con una nota. Ya no hay filtro de nivel.
 - **Meses como la carpeta**: la barra enseña «09. SEPTIEMBRE» (la ficha y la nota dicen de qué mes son los datos).
 - **Ruta para validar**: cada fila lleva «Copiar ruta» y la tabla de ficheros enseña la ruta relativa con «Copiar». La ruta se escribe con la
-  unidad del usuario (`Pesos:RutaVisible` = `Y:\INCENTIVOS JAZZPLAT`) aunque se lea por la ruta de red; también va en el CSV.- **Una sola hoja por sector** (`ExtractorPesos.HojaPrincipal`): la que se llame «Ranking AG Universal», «Ranking AG» o «Ranking AGENTE»
+  unidad del usuario (`Pesos:RutaVisible` = `Y:\INCENTIVOS JAZZPLAT`) aunque se lea por la ruta de red; también va en el CSV.
+- **Una sola hoja por sector** (`ExtractorPesos.HojaPrincipal`): la que se llame «Ranking AG Universal», «Ranking AG» o «Ranking AGENTE»
   (por ese orden, sin mirar mayúsculas, tildes ni espacios) y, si no hay, la primera hoja de agentes del libro («CO Atención YGMM», «Senior»).
   Fuera «Mes 1», «Mes 2», «TLT», «Traspasos», «Neuro Chat»… La tabla de ficheros dice qué hoja se leyó. Septiembre (carpeta 09): 26 sectores, 147 KPI.
-
+- **Publicado en el 5180 el 07-10-2026** (con la caché de 2026-08, 09 y 10 copiada a `publicacion\datos`).
