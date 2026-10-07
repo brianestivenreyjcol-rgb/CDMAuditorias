@@ -45,3 +45,12 @@ Los bloques «Indicador | Objetivo | Peso» de TL/SP son aceleradores y no entra
 - Caché `App_Data\cache_pesos.json` / `publicacion\datos\cache_pesos.json` (versión 1), un análisis por mes. Un mes sin analizar se
   analiza solo al abrirlo; «Analizar y validar» lo repite (tarda un par de minutos; la página enseña el progreso y se recarga sola).
 - Filtros: Sector, Nivel, Responsable y «Todo / Para revisar». Meses: los 6 últimos en la barra (`?mes=2026-09`, la carpeta).
+
+## Cambios pedidos por el usuario (07-10-2026, tarde)
+
+- **Solo agentes**: se enseñan solo los bloques de hojas de nivel Agente; los de TL, supervisor y jefe de servicio se leen (siguen en la
+  caché) pero no salen. Un fichero sin bloques de agente sale como «Sin agentes» y con una nota. Ya no hay filtro de nivel.
+- **Meses como la carpeta**: la barra enseña «09. SEPTIEMBRE» (la ficha y la nota dicen de qué mes son los datos).
+- **Ruta para validar**: cada fila lleva «Copiar ruta» y la tabla de ficheros enseña la ruta relativa con «Copiar». La ruta se escribe con la
+  unidad del usuario (`Pesos:RutaVisible` = `Y:\INCENTIVOS JAZZPLAT`) aunque se lea por la ruta de red; también va en el CSV.
+

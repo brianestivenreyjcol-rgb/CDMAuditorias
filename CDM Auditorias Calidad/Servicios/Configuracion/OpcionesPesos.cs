@@ -13,6 +13,12 @@ public sealed class OpcionesPesos
     /// </summary>
     public string RutaRaiz { get; set; } = @"\\172.16.232.102\incentivos\INCENTIVOS JAZZPLAT";
 
+    /// <summary>
+    /// La misma carpeta como la abre el usuario (con su unidad <c>Y:</c>): es la ruta que enseña la vista para copiarla y
+    /// abrir el fichero. Vacío: se enseña <see cref="RutaRaiz"/>.
+    /// </summary>
+    public string RutaVisible { get; set; } = @"Y:\INCENTIVOS JAZZPLAT";
+
     /// <summary>Lo analizado, en disco. Relativo a la carpeta de la aplicación.</summary>
     public string RutaCache { get; set; } = Path.Combine("App_Data", "cache_pesos.json");
 

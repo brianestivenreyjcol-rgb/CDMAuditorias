@@ -11,7 +11,9 @@
     var revisar = Model.Comprobaciones.Count(c => c.Correcto == false);
     var notas = Model.Comprobaciones.Count(c => c.Correcto is null);
     var noLegibles = Model.Archivos.Count(x => x.Estado is "xlsb" or "error");
-    var conPesos = Model.Archivos.Count(x => x.Estado == "ok");
+    // Solo cuentan los bloques de agentes (pedido del usuario): un fichero sin ninguno es de TL, supervisor o jefe de servicio.
+    int Agentes(ArchivoAnalizado x) => x.Bloques.Count(b => b.Nivel == "Agente");
+    var conPesos = Model.Archivos.Count(x => x.Estado == "ok" && Agentes(x) > 0);
     var miga = Model.Mes is { } mm ? PaginaPesos.TextoMes(mm) : "Sin datos";
 }
 <div id="informe" data-miga="@miga" data-marca-pagina="orange" data-titulo="Pesos y metas por sector · CDM Auditorías Calidad">
@@ -23,7 +25,7 @@
                 @foreach (var m in Model.Meses.Take(6).Reverse())
                 {
                     <a class="segmento@(m == Model.Mes ? " activo" : "")" href="@Model.UrlMes(m)" data-parcial
-                       aria-current="@(m == Model.Mes ? "true" : null)" title="@PaginaPesos.TextoMes(m) (carpeta @m.Carpeta)">@PaginaPesos.TextoMesCorto(m)</a>
+                       aria-current="@(m == Model.Mes ? "true" : null)" title="@PaginaPesos.TextoMes(m) · datos de @PaginaPesos.TextoDatos(m)">@PaginaPesos.TextoMesCorto(m)</a>
                 }
             </div>
         }
@@ -149,7 +151,7 @@
                 <section class="tarjeta">
                     <header class="tarjeta-cabecera">
                         <h2>Pesos y metas · @PaginaPesos.TextoMes(Model.Mes)</h2>
-                        <span class="tarjeta-nota">un KPI por fila, tal como está en el bloque de objetivos de cada hoja de ranking · pulsa una cabecera para ordenar</span>
+                        <span class="tarjeta-nota">solo las hojas de agentes · datos de @PaginaPesos.TextoDatos(Model.Mes) · un KPI por fila, tal como está en el bloque de objetivos · «Copiar ruta» para abrir el Excel y validar</span>
                         <div class="pestanas-vista" role="group" aria-label="Qué filas enseñar">
                             <a class="segmento@(Model.Peticion.Ver != "revisar" ? " activo" : "")" href="@Model.UrlVer(null)" data-parcial>Todo</a>
                             <a class="segmento@(Model.Peticion.Ver == "revisar" ? " activo" : "")" href="@Model.UrlVer("revisar")" data-parcial>Para revisar</a>
@@ -176,6 +178,7 @@
                                         }
                                         <th scope="col" class="num"><button type="button" class="ordenar">Meta 100 %</button></th>
                                         <th scope="col" class="num"><button type="button" class="ordenar">Meta 150 %</button></th>
+                                        <th scope="col" class="cab-columna">Fichero</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -186,7 +189,7 @@
                                                 {
                                                     <span class="pastilla-dato" title="Responsable del Excel">@f.Responsable</span>
                                                 }</div></td>
-                                            <td data-valor="@f.Hoja" title="@f.Nivel">@f.Hoja <span class="pastilla-dato">@f.Nivel</span></td>
+                                            <td data-valor="@f.Hoja">@f.Hoja</td>
                                             <td data-valor="@f.Kpi">@f.Kpi@if (f.ConAvisos)
                                                 {
                                                     <text> </text><span class="chip chip-atencion">Revisar</span>
@@ -199,6 +202,7 @@
                                             }
                                             <td class="num" data-valor="@Formato.Crudo(f.Meta100)">@PaginaPesos.Meta(f.Meta100, f.EnPorcentaje)</td>
                                             <td class="num" data-valor="@Formato.Crudo(f.Meta150)">@PaginaPesos.Meta(f.Meta150, f.EnPorcentaje)</td>
+                                            <td><button type="button" class="enlace" data-copiar="@f.Ruta" title="@f.Ruta">@Iconos.Svg("copiar") Copiar ruta</button></td>
                                         </tr>
                                     }
                                 </tbody>
@@ -215,6 +219,7 @@
                                         }
                                         <td class="num"></td>
                                         <td class="num"></td>
+                                        <td></td>
                                     </tr>
                                 </tfoot>
                             </table>
@@ -223,67 +228,72 @@
                     <p class="nota-ns">Las metas salen en % si todas las de la fila caben en ±150 %; si no (TMO, horas, notas de calidad…), con su cifra. «Sin peso» es un requisito o una llave: no puntúa.</p>
                 </section>
 
-                <div class="rejilla-2">
-                    <section class="tarjeta">
-                        <header class="tarjeta-cabecera">
-                            <h2>Validación</h2>
-                            <span class="tarjeta-nota">que los pesos sumen 100 %, que cada KPI con peso tenga sus metas y que vayan en un solo sentido</span>
-                        </header>
-                        <ul class="comprobaciones-ns">
-                            @foreach (var c in Model.Comprobaciones)
-                            {
-                                <li>@FormatoNoSolucion.ChipComprobacion(c.Correcto) <span><b>@c.Sector</b>: @c.Texto</span></li>
-                            }
-                        </ul>
-                    </section>
-                    <section class="tarjeta">
-                        <header class="tarjeta-cabecera">
-                            <h2>Ficheros leídos</h2>
-                            <span class="tarjeta-nota">de cada sector, la versión más reciente: carpeta VF, V2, V1 o precierre y, dentro, la marca VF, V3, V2 o V1 del nombre</span>
-                        </header>
-                        <div class="tabla-contenedor alta">
-                            <table class="ranking">
-                                <thead>
-                                    <tr>
-                                        <th scope="col"><button type="button" class="ordenar">Sector</button></th>
-                                        <th scope="col"><button type="button" class="ordenar">Versión</button></th>
-                                        <th scope="col" class="num"><button type="button" class="ordenar">Bloques</button></th>
-                                        <th scope="col"><button type="button" class="ordenar">Estado</button></th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach (var x in Model.Archivos)
+                <section class="tarjeta">
+                    <header class="tarjeta-cabecera">
+                        <h2>Ficheros leídos</h2>
+                        <span class="tarjeta-nota">de cada sector, la versión más reciente: carpeta VF, V2, V1 o precierre y, dentro, la marca VF, V3, V2 o V1 del nombre · la ruta, para abrirlo y validar</span>
+                    </header>
+                    <div class="tabla-contenedor alta">
+                        <table class="ranking">
+                            <thead>
+                                <tr>
+                                    <th scope="col"><button type="button" class="ordenar">Sector</button></th>
+                                    <th scope="col"><button type="button" class="ordenar">Versión</button></th>
+                                    <th scope="col" class="num"><button type="button" class="ordenar">Bloques</button></th>
+                                    <th scope="col"><button type="button" class="ordenar">Estado</button></th>
+                                    <th scope="col"><button type="button" class="ordenar">Ruta</button></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var x in Model.Archivos)
+                                {
+                                    var agentes = Agentes(x);
+                                    var ruta = Model.RutaVisible(x.Archivo.Ruta);
+                                    var (chip, texto) = x.Estado switch
                                     {
-                                        var (chip, texto) = x.Estado switch
-                                        {
-                                            "ok" => ("chip-bueno", "Leído"),
-                                            "sin-bloques" => ("chip-atencion", "Sin bloques"),
-                                            "xlsb" => ("chip-critico", ".xlsb"),
-                                            _ => ("chip-critico", "Error"),
-                                        };
-                                        <tr title="@x.Archivo.RutaRelativa · modificado el @Formato.FechaHora(x.Archivo.Modificado) · @x.Archivo.Versiones @(x.Archivo.Versiones == 1 ? "versión" : "versiones") en el mes">
-                                            <td class="celda-nombre" data-valor="@x.Archivo.Sector"><div class="nombre-fila"><span class="nombre-texto">@x.Archivo.Sector</span>@if (x.Archivo.Responsable.Length > 0)
-                                                {
-                                                    <span class="pastilla-dato">@x.Archivo.Responsable</span>
-                                                }</div></td>
-                                            <td data-valor="@x.Archivo.Version">@x.Archivo.Version</td>
-                                            <td class="num" data-valor="@x.Bloques.Count">@x.Bloques.Count</td>
-                                            <td data-valor="@x.Estado"><span class="chip @chip">@texto</span></td>
-                                        </tr>
-                                    }
-                                </tbody>
-                                <tfoot>
-                                    <tr class="total">
-                                        <td>TOTAL</td>
-                                        <td>@Formato.Entero(Model.Archivos.Count) ficheros</td>
-                                        <td class="num">@Formato.Entero(Model.Archivos.Sum(x => x.Bloques.Count))</td>
-                                        <td>@Formato.Entero(conPesos) leídos</td>
+                                        "ok" when agentes == 0 => ("", "Sin agentes"),
+                                        "ok" => ("chip-bueno", "Leído"),
+                                        "sin-bloques" => ("chip-atencion", "Sin bloques"),
+                                        "xlsb" => ("chip-critico", ".xlsb"),
+                                        _ => ("chip-critico", "Error"),
+                                    };
+                                    <tr title="@ruta · modificado el @Formato.FechaHora(x.Archivo.Modificado) · @x.Archivo.Versiones @(x.Archivo.Versiones == 1 ? "versión" : "versiones") en el mes">
+                                        <td class="celda-nombre" data-valor="@x.Archivo.Sector"><div class="nombre-fila"><span class="nombre-texto">@x.Archivo.Sector</span>@if (x.Archivo.Responsable.Length > 0)
+                                            {
+                                                <span class="pastilla-dato">@x.Archivo.Responsable</span>
+                                            }</div></td>
+                                        <td data-valor="@x.Archivo.Version">@x.Archivo.Version</td>
+                                        <td class="num" data-valor="@agentes">@agentes</td>
+                                        <td data-valor="@texto"><span class="chip @chip">@texto</span></td>
+                                        <td class="celda-ruta" data-valor="@ruta"><span class="ruta-texto">@x.Archivo.RutaRelativa</span> <button type="button" class="enlace" data-copiar="@ruta" title="Copiar @ruta">@Iconos.Svg("copiar") Copiar</button></td>
                                     </tr>
-                                </tfoot>
-                            </table>
-                        </div>
-                    </section>
-                </div>
+                                }
+                            </tbody>
+                            <tfoot>
+                                <tr class="total">
+                                    <td>TOTAL</td>
+                                    <td>@Formato.Entero(Model.Archivos.Count) ficheros</td>
+                                    <td class="num">@Formato.Entero(Model.Archivos.Sum(Agentes))</td>
+                                    <td>@Formato.Entero(conPesos) leídos</td>
+                                    <td></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </section>
+
+                <section class="tarjeta">
+                    <header class="tarjeta-cabecera">
+                        <h2>Validación</h2>
+                        <span class="tarjeta-nota">que los pesos sumen 100 %, que cada KPI con peso tenga sus metas y que vayan en un solo sentido</span>
+                    </header>
+                    <ul class="comprobaciones-ns">
+                        @foreach (var c in Model.Comprobaciones)
+                        {
+                            <li>@FormatoNoSolucion.ChipComprobacion(c.Correcto) <span><b>@c.Sector</b>: @c.Texto</span></li>
+                        }
+                    </ul>
+                </section>
             </main>
         </div>
     }

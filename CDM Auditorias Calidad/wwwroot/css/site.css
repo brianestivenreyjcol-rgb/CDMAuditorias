@@ -969,6 +969,9 @@ button.segmento.activo { background: var(--acento); color: var(--acento-texto); 
 .relleno-serie { --relleno: var(--serie); }
 /* Dos tarjetas apiladas en una columna de .rejilla-2 (la evolución y «Por marca» frente a las barras por sector). */
 .pila-tarjetas { display: grid; gap: 16px; align-content: start; min-width: 0; }
+/* Pesos y metas: la ruta del Excel, pequeña y en gris, partida donde haga falta (es larga). */
+.celda-ruta { white-space: normal; min-width: 280px; }
+.ruta-texto { font-size: 12px; color: var(--texto-suave); overflow-wrap: anywhere; }
 /* Colores de serie por posición (a, b, c… = --serie-1, --serie-2…) y por lado de la españolización. Las piezas leen --serie. */
 .serie-a { --serie: var(--serie-1); }
 .serie-b { --serie: var(--serie-2); }

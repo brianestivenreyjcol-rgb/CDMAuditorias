@@ -10,20 +10,23 @@ public sealed class PeticionPesos
 {
     public string? Mes { get; set; }
     public List<string> Sector { get; set; } = new();
-    public List<string> Nivel { get; set; } = new();
     public List<string> Responsable { get; set; } = new();
     /// <summary>«revisar»: solo lo que tiene avisos.</summary>
     public string? Ver { get; set; }
 }
 
 /// <summary>Una fila de la tabla: un KPI de un bloque, con sus metas en las cuatro columnas fijas (0 %, 60 %, 100 %, 150 %).</summary>
-public sealed record FilaTablaPesos(string Sector, string Responsable, string Hoja, string Nivel, string Kpi, double? Peso,
-    double? Meta0, double? Meta60, double? Meta100, double? Meta150, bool EnPorcentaje, bool ConAvisos);
+/// <param name="Ruta">La ruta del Excel como la abre el usuario (<c>Y:\…</c>), para copiarla y validar.</param>
+public sealed record FilaTablaPesos(string Sector, string Responsable, string Hoja, string Kpi, double? Peso,
+    double? Meta0, double? Meta60, double? Meta100, double? Meta150, bool EnPorcentaje, bool ConAvisos, string Ruta);
 
 /// <summary>Una comprobación: <c>Correcto</c> verde, <c>false</c> «Revisar», nulo «Nota».</summary>
 public sealed record ComprobacionPesos(bool? Correcto, string Sector, string Texto);
 
-/// <summary>«Pesos y metas por sector»: lo analizado de un mes, filtrado, con sus comprobaciones.</summary>
+/// <summary>
+/// «Pesos y metas por sector»: lo analizado de un mes, filtrado, con sus comprobaciones. Solo los bloques de las hojas de
+/// agentes (pedido del usuario el 07-10-2026): los de TL, supervisor y jefe de servicio se leen pero no se enseñan.
+/// </summary>
 public sealed class PaginaPesos
 {
     public const string Ruta = "/pesos";
@@ -40,6 +43,9 @@ public sealed class PaginaPesos
     public string? Aviso { get; init; }
     public string Raiz { get; init; } = "";
 
+    /// <summary>La ruta de un fichero como la abre el usuario (<c>Y:\…</c>).</summary>
+    public Func<string, string> RutaVisible { get; init; } = r => r;
+
     public IReadOnlyList<GrupoFiltro> Desplegables { get; init; } = [];
     public IReadOnlyList<FilaTablaPesos> Filas { get; init; } = [];
     public IReadOnlyList<ComprobacionPesos> Comprobaciones { get; init; } = [];
@@ -48,15 +54,17 @@ public sealed class PaginaPesos
     public bool HayMeta60 => Filas.Any(f => f.Meta60 is not null);
     public bool AnalizandoEsteMes => Analizando && Mes is not null && MesEnCurso == Mes.Clave;
 
-    /// <summary>«Agosto 2026» (el mes de los datos) para un mes de carpeta.</summary>
-    public static string TextoMes(MesIncentivos m) => Formato.MesLargo(m.MesDatos.Year, m.MesDatos.Month);
-    public static string TextoMesCorto(MesIncentivos m) => Formato.Mayuscula(Formato.MesCorto(m.MesDatos.Year, m.MesDatos.Month)) + " " + m.MesDatos.Year;
+    /// <summary>El mes como está en la carpeta (pedido del usuario): «09. SEPTIEMBRE 2026»; corto, «09. SEPTIEMBRE».</summary>
+    public static string TextoMes(MesIncentivos m) => $"{m.Carpeta} {m.Año}";
+    public static string TextoMesCorto(MesIncentivos m) => m.Carpeta;
+
+    /// <summary>El mes de los datos (el anterior al de la carpeta): «agosto de 2026».</summary>
+    public static string TextoDatos(MesIncentivos m) => m.MesDatos.ToString("MMMM 'de' yyyy", Formato.Es);
 
     public IEnumerable<KeyValuePair<string, string>> Parametros(bool conMes = true)
     {
         if (conMes && Mes is not null && Mes != Meses.FirstOrDefault()) yield return new("mes", Mes.Clave);
         foreach (var s in Peticion.Sector) yield return new("sector", s);
-        foreach (var n in Peticion.Nivel) yield return new("nivel", n);
         foreach (var r in Peticion.Responsable) yield return new("responsable", r);
         if (Peticion.Ver == "revisar") yield return new("ver", "revisar");
     }
@@ -77,8 +85,9 @@ public sealed class PaginaPesos
 
     /// <summary>Las filas de la tabla, las comprobaciones y los desplegables de un análisis con estos filtros.</summary>
     public static (List<FilaTablaPesos> Filas, List<ComprobacionPesos> Comprobaciones, List<GrupoFiltro> Desplegables, List<ArchivoAnalizado> Archivos)
-        Construir(AnalisisPesos analisis, PeticionPesos p)
+        Construir(AnalisisPesos analisis, PeticionPesos p, Func<string, string>? rutaVisible = null)
     {
+        rutaVisible ??= r => r;
         bool Pasa(string valor, List<string> marcados) => marcados.Count == 0 || marcados.Contains(valor);
         var todas = new List<(FilaTablaPesos Fila, ArchivoAnalizado Archivo)>();
         var comprobaciones = new List<ComprobacionPesos>();
@@ -94,10 +103,16 @@ public sealed class PaginaPesos
                     comprobaciones.Add(new(false, sector, (a.Error ?? "No se pudo leer.") + " (" + a.Archivo.RutaRelativa + ")"));
                     continue;
             }
+            var bloquesAgente = a.Bloques.Where(b => b.Nivel == "Agente").ToList();
+            if (bloquesAgente.Count == 0)
+            {
+                comprobaciones.Add(new(null, sector, "Solo tiene bloques de team leader, supervisor o jefe de servicio: no es un ranking de agentes."));
+                continue;
+            }
             var avisosArchivo = 0;
             // La suma de pesos se mira por hoja: algunas reparten el 100 % entre varios bloques (uno por skill).
             var hojasMal = new HashSet<string>();
-            foreach (var hoja in a.Bloques.GroupBy(b => b.Hoja))
+            foreach (var hoja in bloquesAgente.GroupBy(b => b.Hoja))
             {
                 if (ValidarSuma(hoja.ToList(), sector) is { } aviso)
                 {
@@ -106,7 +121,7 @@ public sealed class PaginaPesos
                     avisosArchivo++;
                 }
             }
-            foreach (var b in a.Bloques)
+            foreach (var b in bloquesAgente)
             {
                 var avisosBloque = Validar(b, sector);
                 comprobaciones.AddRange(avisosBloque);
@@ -121,30 +136,28 @@ public sealed class PaginaPesos
                     var metas = f.Metas.Where(m => m is not null).Select(m => m!.Value).ToList();
                     var enPorcentaje = metas.Count > 0 && metas.All(m => Math.Abs(m) <= 1.5);
                     var conAvisos = hojasMal.Contains(b.Hoja) || avisosBloque.Any(c => c.Correcto == false && c.Texto.Contains($"«{f.Kpi}»"));
-                    todas.Add((new FilaTablaPesos(sector, a.Archivo.Responsable, b.Hoja, b.Nivel, f.Kpi, f.Peso,
-                        MetaEn(0), MetaEn(0.6), MetaEn(1), MetaEn(1.5), enPorcentaje, conAvisos), a));
+                    todas.Add((new FilaTablaPesos(sector, a.Archivo.Responsable, b.Hoja, f.Kpi, f.Peso,
+                        MetaEn(0), MetaEn(0.6), MetaEn(1), MetaEn(1.5), enPorcentaje, conAvisos, rutaVisible(a.Archivo.Ruta)), a));
                 }
             }
-            if (avisosArchivo == 0) comprobaciones.Add(new(true, sector, $"{a.Bloques.Count} {(a.Bloques.Count == 1 ? "bloque" : "bloques")} sin nada que revisar ({a.Archivo.Version})."));
+            if (avisosArchivo == 0) comprobaciones.Add(new(true, sector, $"{bloquesAgente.Count} {(bloquesAgente.Count == 1 ? "bloque" : "bloques")} de agentes sin nada que revisar ({a.Archivo.Version})."));
         }
 
-        var filtradas = todas.Where(x => Pasa(x.Fila.Sector, p.Sector) && Pasa(x.Fila.Nivel, p.Nivel) && Pasa(x.Fila.Responsable, p.Responsable)
+        var filtradas = todas.Where(x => Pasa(x.Fila.Sector, p.Sector) && Pasa(x.Fila.Responsable, p.Responsable)
                                          && (p.Ver != "revisar" || x.Fila.ConAvisos)).Select(x => x.Fila).ToList();
         var sectoresVisibles = analisis.Archivos.Where(a => Pasa(a.Archivo.Sector, p.Sector) && Pasa(a.Archivo.Responsable, p.Responsable)).Select(a => a.Archivo.Sector).ToHashSet();
 
         GrupoFiltro Grupo(string campo, string titulo, IEnumerable<string> valores, List<string> marcados, Func<FilaTablaPesos, bool> otros, Func<FilaTablaPesos, string> de)
             => new(campo, titulo, valores.Distinct().Concat(marcados).Distinct()
-                .OrderBy(v => campo == "nivel" ? OrdenNivel(v) : 0).ThenBy(v => v, StringComparer.CurrentCulture)
+                .OrderBy(v => v, StringComparer.CurrentCulture)
                 .Select(v => new OpcionFiltro(v, v, todas.Count(x => otros(x.Fila) && de(x.Fila) == v), marcados.Contains(v))).ToList());
 
         var desplegables = new List<GrupoFiltro>
         {
-            Grupo("sector", "Sector", analisis.Archivos.Where(a => Pasa(a.Archivo.Responsable, p.Responsable)).Select(a => a.Archivo.Sector), p.Sector,
-                f => Pasa(f.Responsable, p.Responsable) && Pasa(f.Nivel, p.Nivel), f => f.Sector),
-            Grupo("nivel", "Nivel", todas.Select(x => x.Fila.Nivel), p.Nivel,
-                f => Pasa(f.Sector, p.Sector) && Pasa(f.Responsable, p.Responsable), f => f.Nivel),
-            Grupo("responsable", "Responsable", analisis.Archivos.Select(a => a.Archivo.Responsable).Where(r => r.Length > 0), p.Responsable,
-                f => Pasa(f.Sector, p.Sector) && Pasa(f.Nivel, p.Nivel), f => f.Responsable),
+            Grupo("sector", "Sector", todas.Where(x => Pasa(x.Fila.Responsable, p.Responsable)).Select(x => x.Fila.Sector), p.Sector,
+                f => Pasa(f.Responsable, p.Responsable), f => f.Sector),
+            Grupo("responsable", "Responsable", todas.Select(x => x.Fila.Responsable).Where(r => r.Length > 0), p.Responsable,
+                f => Pasa(f.Sector, p.Sector), f => f.Responsable),
         };
 
         return (filtradas,
@@ -153,11 +166,6 @@ public sealed class PaginaPesos
             desplegables,
             analisis.Archivos.Where(a => sectoresVisibles.Contains(a.Archivo.Sector)).ToList());
     }
-
-    public static int OrdenNivel(string nivel) => nivel switch
-    {
-        "Agente" => 0, "Team leader" => 1, "Supervisor" => 2, "Jefe de servicio" => 3, _ => 4,
-    };
 
     /// <summary>
     /// Lo que se revisa de cada bloque: que los pesos sumen 100 %, que cada KPI con peso tenga todas sus metas y que las

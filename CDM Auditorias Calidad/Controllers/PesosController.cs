@@ -33,7 +33,7 @@ public sealed class PesosController : Controller
         }
         else
         {
-            var (filas, comprobaciones, desplegables, archivos) = PaginaPesos.Construir(analisis, p);
+            var (filas, comprobaciones, desplegables, archivos) = PaginaPesos.Construir(analisis, p, _pesos.RutaVisible);
             modelo = Modelo(meses, mes, analisis, p, filas, comprobaciones, desplegables, archivos);
         }
         ViewData["Parcial"] = Request.Headers["X-Parcial"] == "1";
@@ -58,22 +58,22 @@ public sealed class PesosController : Controller
         var meses = _pesos.Meses();
         var mes = meses.FirstOrDefault(m => m.Clave == p.Mes) ?? meses.FirstOrDefault();
         if (mes is null || _pesos.Analisis(mes.Clave) is not { } analisis) return NotFound();
-        var (filas, _, _, _) = PaginaPesos.Construir(analisis, p);
+        var (filas, _, _, _) = PaginaPesos.Construir(analisis, p, _pesos.RutaVisible);
         Response.Headers.CacheControl = "private, no-store";
         string N(double? v) => v is { } x ? x.ToString("0.######", CultureInfo.GetCultureInfo("es-ES")) : "";
         var columnas = new List<ColumnaCsv<FilaTablaPesos>>
         {
-            new("Mes de los datos", _ => PaginaPesos.TextoMes(mes)),
+            new("Carpeta", _ => PaginaPesos.TextoMes(mes)),
             new("Sector", f => f.Sector),
             new("Responsable", f => f.Responsable),
             new("Hoja", f => f.Hoja),
-            new("Nivel", f => f.Nivel),
             new("KPI", f => f.Kpi),
             new("Peso", f => N(f.Peso)),
             new("Meta 0%", f => N(f.Meta0)),
             new("Meta 60%", f => N(f.Meta60)),
             new("Meta 100%", f => N(f.Meta100)),
             new("Meta 150%", f => N(f.Meta150)),
+            new("Fichero", f => f.Ruta),
         };
         return File(ExportacionCsv.Generar(filas, columnas), ExportacionCsv.TipoContenido, $"pesos_por_sector_{mes.Clave}.csv");
     }
@@ -84,7 +84,7 @@ public sealed class PesosController : Controller
         {
             Meses = meses, Mes = mes, Analisis = analisis, Peticion = p,
             Analizando = _pesos.Analizando, MesEnCurso = _pesos.MesEnCurso, Progreso = _pesos.Progreso, Error = _pesos.UltimoError,
-            Aviso = TempData[ClaveAviso] as string, Raiz = _pesos.Raiz,
+            Aviso = TempData[ClaveAviso] as string, Raiz = _pesos.Raiz, RutaVisible = _pesos.RutaVisible,
             Filas = filas, Comprobaciones = comprobaciones, Desplegables = desplegables, Archivos = archivos,
         };
 }

@@ -48,6 +48,12 @@ public sealed class ServicioPesos
 
     public string Raiz => _op.RutaRaiz;
 
+    /// <summary>La ruta de un fichero como la abre el usuario (<c>Y:\…</c> en vez de la ruta de red).</summary>
+    public string RutaVisible(string ruta)
+        => !string.IsNullOrWhiteSpace(_op.RutaVisible) && ruta.StartsWith(_op.RutaRaiz, StringComparison.OrdinalIgnoreCase)
+            ? _op.RutaVisible.TrimEnd('\\') + ruta[_op.RutaRaiz.TrimEnd('\\').Length..]
+            : ruta;
+
     /// <summary>El mes que se está analizando ahora y por dónde va («12 de 38: CO Retención»), o nulo.</summary>
     public string? MesEnCurso { get; private set; }
     public string? Progreso { get; private set; }
