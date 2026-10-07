@@ -32,7 +32,7 @@
 ## Producción y pruebas (una sola dirección: el 5180)
 
 - `http://10.148.223.143:5180` (compañeros) = `http://localhost:5180`: ventana «CDM Auditorias Calidad
-  (5180)» que abre `arrancar.cmd` sobre `publicacion\app`. Al día desde el **06-10-2026**.
+  (5180)» que abre `arrancar.cmd` sobre `publicacion\app`. Al día desde el **07-10-2026** (GAIA y rediseño).
 - **Publicar** (solo si el usuario lo pide): cerrar esa ventana → `cmd /c "C:\Proyectos\CDM Auditorias
   Calidad\publicar.cmd"` → `arrancar.cmd` con ruta completa. Si cambia el formato del cubo de No
   solución o de la caché de GAIA (`DatosGaia.VersionActual`), copiar antes la caché de `App_Data` a
