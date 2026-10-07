@@ -36,7 +36,7 @@
 ## Producción y pruebas (una sola dirección: el 5180)
 
 - `http://10.148.223.143:5180` (compañeros) = `http://localhost:5180`: ventana «CDM Auditorias Calidad
-  (5180)» que abre `arrancar.cmd` sobre `publicacion\app`. Al día desde el **07-10-2026** (GAIA, rediseño, Ranking y Estilo, Motivo de contacto, tablas y gráficas).
+  (5180)» que abre `arrancar.cmd` sobre `publicacion\app`. Al día desde el **07-10-2026** (GAIA, rediseño, Ranking y Estilo, Motivo de contacto, tablas y gráficas y Rellamada y No solución por sector).
 - **Publicar** (solo si el usuario lo pide): cerrar esa ventana → `cmd /c "C:\Proyectos\CDM Auditorias
   Calidad\publicar.cmd"` → `arrancar.cmd` con ruta completa. Si cambia el formato del cubo de No
   solución o de la caché de GAIA (`DatosGaia.VersionActual`), copiar antes la caché de `App_Data` a
@@ -81,7 +81,7 @@
   BigQuery filtradas por el Excel de nómina de la compartida (filtro exacto agente + día, fallos del PBI
   corregidos; se recarga sola al guardar el Excel). Las 9 pestañas (Resumen, Ranking, Estilo,
   Rendimiento, Evolución, Comercial, Motivos, Españolización, Llamadas) hechas y **publicadas en el 5180 el 07-10-2026**. Todo en `docs/contexto/gaia-formacion.md`.
-- **Por sector** (`/sectores`, 07-10-2026, probado en el 5190, **sin publicar**): confirmar con el usuario los sectores de YGMM por servicio
+- **Por sector** (`/sectores`, **publicado en el 5180 el 07-10-2026**): confirmar con el usuario los sectores de YGMM por servicio
   (Retención → CO Retención YGMM, Averías → CO Técnico MasMovil), la fuente de no solución de WhatsApp y si entra CO Técnico Convergente Orange.
 - Detalle de todo esto: `docs/contexto/pendientes.md`.
 

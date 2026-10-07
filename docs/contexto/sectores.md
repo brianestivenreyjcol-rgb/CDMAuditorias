@@ -1,4 +1,4 @@
-# Rellamada y No solución por sector (`/sectores`, 07-10-2026)
+# Rellamada y No solución por sector (`/sectores`, 07-10-2026, publicado en el 5180 el mismo día)
 
 > Parte del contexto de CDM Auditorías Calidad: el resumen está en `CONTEXTO_IA.md` (raíz del proyecto).
 
