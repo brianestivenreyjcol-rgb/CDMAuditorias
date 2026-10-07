@@ -81,6 +81,18 @@
                         </div>
                     </details>
                 }
+                @* Total al pie (nunca arriba): la suma de las tipologías de la lista. *@
+                @{
+                    var totEnc = r.N3.Sum(x => (double)x.Encuestadas);
+                    var totNosol = r.N3.Sum(x => (double)x.Nosol);
+                }
+                <div class="fila-ns fila-total cols-n3">
+                    <span class="fila-ns-nombre">TOTAL</span>
+                    <span class="num">@FormatoNoSolucion.Int(totEnc)</span>
+                    <span class="num">@FormatoNoSolucion.Int(totNosol)</span>
+                    <span class="num">@FormatoNoSolucion.Pct(totEnc == 0 ? null : 100.0 * totNosol / totEnc)</span>
+                    <span class="num">@FormatoNoSolucion.Pct(r.N3.Sum(x => x.Peso ?? 0))</span>
+                </div>
             </div>
         }
         else

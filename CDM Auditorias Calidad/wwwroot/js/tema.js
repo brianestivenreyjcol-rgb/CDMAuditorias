@@ -1,6 +1,7 @@
 // Tema claro / oscuro (guía de estilos, 2.3). Pone data-tema="claro|oscuro" en <html> y
 // data-tema-preferido="auto|claro|oscuro" (lo que eligió la persona; se guarda en el
-// navegador). Se carga en <head>, antes de la hoja de estilos, para que no parpadee.
+// navegador). Se carga en <head>, antes de la hoja de estilos, para que no parpadee. También recuerda si el panel de
+// filtros está plegado (clave cdm-panel).
 (() => {
   'use strict';
 
@@ -32,10 +33,17 @@
     document.querySelectorAll('[data-boton-tema]').forEach(b => {
       b.setAttribute('aria-label', texto);
       b.title = texto;
+      const rotulo = b.querySelector('[data-tema-texto]');
+      if (rotulo) rotulo.textContent = 'Tema: ' + NOMBRES[preferido];
     });
   }
 
   aplicar(leer());
+
+  // Panel de filtros plegado a un raíl (lo pliega site.js): se recuerda y se aplica aquí para que no parpadee al cargar.
+  try {
+    if (localStorage.getItem('cdm-panel') === 'plegado') document.documentElement.dataset.panel = 'plegado';
+  } catch { /* sin almacenamiento: siempre desplegado */ }
 
   sistemaOscuro.addEventListener('change', () => { if (leer() === 'auto') aplicar('auto'); });
 

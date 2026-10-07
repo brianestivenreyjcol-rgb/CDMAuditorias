@@ -55,6 +55,9 @@
   (06-10-2026, sustituye a las etiquetas de impacto). Tablas: **total al pie** (`tfoot`, «TOTAL», pegado
   abajo), nunca arriba. El color de la página **sigue a la marca filtrada**: Orange naranja, YOIGO/MASMOVIL
   morado, Jazztel `#FFD200`. Reglas en la skill frontend-solaris y en la guía (2.1, 4 y 9.4).
+- **Aspecto = el del portal SOLARIS** (06-10-2026, guía 9.9): cabecera con migas, Imprimir / Presentar / Tema, pestañas en barra, panel
+  de filtros plegable (`cdm-panel`), tarjetas con cabecera y pie, tablas con puesto, barrita de volumen y TOTAL al pie, gráficas con
+  cada punto en pastilla (piezas en `Views/Shared`), medidor y anillos en GAIA → Estilo; el color de No solución también sigue a la marca.
 
 ## Pendientes
 

@@ -1,8 +1,8 @@
 @model PaginaEstiloGaia
-@* Estilo: la adherencia al estilo de atención y sus criterios. Arriba la nota con su barra de umbrales (≤ 40 %
-   baja, ≤ 70 % media, más alta: PaginaEstiloGaia.UmbralBajo y UmbralMedio) y la adherencia por etapa; después
-   los ocho criterios, la evolución por día y la matriz de cada agente por etapa de formación (de peor a mejor
-   adherencia, con el color del umbral). *@
+@* Estilo: la adherencia al estilo de atención y sus criterios. Arriba, como en el portal, la adherencia en un medidor de
+   medio arco con aguja (zonas ≤ 40 % baja, ≤ 70 % media, más alta: PaginaEstiloGaia.UmbralBajo y UmbralMedio) y los ocho
+   criterios en anillos con la cifra dentro (alto / medio / bajo con esos mismos umbrales); después la adherencia por
+   etapa, por semana o día y la matriz de cada agente por etapa de formación (de peor a mejor, con el color del umbral). *@
 @{
     Layout = "_InformeGaia";
 }
@@ -33,33 +33,76 @@
     Func<IndicadoresGaia, double?> adherencia = i => i.Adherencia;
     var umbrales = new[] { bajo, medio };
 
+    // Medidor de medio arco: centro (110, 110) y radio 90 en un lienzo de 220 × 125; la aguja gira de 0 % (izquierda) a 100 % (derecha).
+    var fraccion = Math.Clamp(e.Adherencia ?? 0, 0, 1);
+    string K(double v) => Formato.Coord(v);
+    double Px(double radio, double fr) => 110 + radio * Math.Cos(Math.PI * (1 - fr));
+    double Py(double radio, double fr) => 110 - radio * Math.Sin(Math.PI * (1 - fr));
+    string PosX(double radio, double fr) => K(Px(radio, fr) / 220 * 100) + "%";
+    string PosY(double radio, double fr) => K(Py(radio, fr) / 125 * 100) + "%";
+    string ClaseAnillo(double? v) => v is not { } a ? "" : a <= bajo ? "bajo" : a <= medio ? "medio" : "alto";
+
     if (t.Llamadas == 0)
     {
         <p class="vacio">Ninguna llamada cumple estos filtros.</p>
     }
     else
     {
-            <section class="tarjeta adherencia-gaia">
-                <header class="tarjeta-cabecera">
-                    <h2>Adherencia al estilo</h2>
-                    <span class="tarjeta-nota">@Formato.Entero(t.Llamadas) llamadas</span>
-                </header>
-                <div class="adherencia-gaia-cifra">
-                    <span class="adherencia-cifra">@Formato.Porcentaje(e.Adherencia)</span>
-                    <span class="chip @chipNivel">@nivel</span>
-                </div>
-                <div class="medidor" role="meter" aria-label="Adherencia al estilo" aria-valuemin="0" aria-valuemax="100" aria-valuenow="@Math.Round((e.Adherencia ?? 0) * 100)">
-                    <span class="medidor-pista"><span class="medidor-relleno @tono" style="--fraccion:@Formato.Coord(Math.Clamp(e.Adherencia ?? 0, 0, 1))"></span></span>
-                    <span class="medidor-marca" style="left:@P(bajo)"><b>@Formato.PorcentajeEntero(bajo * 100)</b></span>
-                    <span class="medidor-marca" style="left:@P(medio)"><b>@Formato.PorcentajeEntero(medio * 100)</b></span>
-                </div>
-                <div class="leyenda-ns leyenda-umbrales">
-                    <span class="tono-critico"><i></i>baja, hasta @Formato.PorcentajeEntero(bajo * 100)</span>
-                    <span class="tono-atencion"><i></i>media, hasta @Formato.PorcentajeEntero(medio * 100)</span>
-                    <span class="tono-bueno"><i></i>alta, por encima</span>
-                </div>
-                <p class="nota-ns">@CalculadoraGaia.Kpis[0].Ayuda Cada criterio es «sí» sobre «sí + no» de las llamadas que lo tienen calificado.</p>
-            </section>
+            <div class="rejilla-estilo">
+                <section class="tarjeta">
+                    <header class="tarjeta-cabecera">
+                        <h2>Adherencia al estilo</h2>
+                        <span class="tarjeta-nota">@Formato.Entero(t.Llamadas) llamadas</span>
+                    </header>
+                    <div class="medidor" role="meter" aria-label="Adherencia al estilo" aria-valuemin="0" aria-valuemax="100" aria-valuenow="@Math.Round((e.Adherencia ?? 0) * 100)">
+                        <div class="medidor-arco">
+                            <svg viewBox="0 0 220 125" aria-hidden="true" focusable="false">
+                                <path class="medidor-zona zona-baja" d="M 20 110 A 90 90 0 0 1 200 110" pathLength="100" stroke-dasharray="@K(bajo * 100) 100" />
+                                <path class="medidor-zona zona-media" d="M 20 110 A 90 90 0 0 1 200 110" pathLength="100" stroke-dasharray="0 @K(bajo * 100) @K((medio - bajo) * 100) 100" />
+                                <path class="medidor-zona zona-alta" d="M 20 110 A 90 90 0 0 1 200 110" pathLength="100" stroke-dasharray="0 @K(medio * 100) @K((1 - medio) * 100) 100" />
+                                <line class="medidor-aguja" x1="110" y1="110" x2="@K(Px(72, fraccion))" y2="@K(Py(72, fraccion))" />
+                                <circle class="medidor-eje" cx="110" cy="110" r="5.5" />
+                            </svg>
+                            <span class="medidor-umbral" style="left:@PosX(112, bajo);top:@PosY(112, bajo)">@Formato.PorcentajeEntero(bajo * 100)</span>
+                            <span class="medidor-umbral" style="left:@PosX(112, medio);top:@PosY(112, medio)">@Formato.PorcentajeEntero(medio * 100)</span>
+                        </div>
+                        <p class="medidor-titulo">Adherencia</p>
+                        <p class="medidor-cifra">@Formato.Porcentaje(e.Adherencia)</p>
+                        <div class="medidor-extremos"><span>0 %</span><span class="chip @chipNivel">@nivel</span><span>100 %</span></div>
+                    </div>
+                    <div class="leyenda-ns leyenda-umbrales centrada">
+                        <span class="tono-critico"><i></i>baja, hasta @Formato.PorcentajeEntero(bajo * 100)</span>
+                        <span class="tono-atencion"><i></i>media, hasta @Formato.PorcentajeEntero(medio * 100)</span>
+                        <span class="tono-bueno"><i></i>alta, por encima</span>
+                    </div>
+                    <p class="nota-ns">@CalculadoraGaia.Kpis[0].Ayuda</p>
+                </section>
+                <section class="tarjeta">
+                    <header class="tarjeta-cabecera">
+                        <h2>Cumplimiento por criterio</h2>
+                        <span class="tarjeta-nota">«sí» sobre «sí + no» de las llamadas con el criterio calificado</span>
+                    </header>
+                    <div class="anillos">
+                        @foreach (var c in criterios)
+                        {
+                            var fr = Math.Clamp(c.Valor ?? 0, 0, 1);
+                            <div class="anillo @ClaseAnillo(c.Valor)" title="@c.Ayuda">
+                                <span class="anillo-nombre">@c.Nombre</span>
+                                <div class="anillo-aro">
+                                    <svg viewBox="0 0 100 100" aria-hidden="true" focusable="false">
+                                        <circle class="anillo-pista" cx="50" cy="50" r="42" />
+                                        <circle class="anillo-valor" cx="50" cy="50" r="42" pathLength="100" stroke-dasharray="@K(fr * 100) 100" />
+                                    </svg>
+                                    <span class="anillo-cifra">@Formato.Porcentaje(c.Valor)</span>
+                                </div>
+                                <span class="anillo-peso">@(c.Peso is { } peso ? "peso " + Formato.PorcentajeEntero(peso * 100) : sinPeso)</span>
+                            </div>
+                        }
+                    </div>
+                    <p class="nota-ns">En verde, por encima del @Formato.PorcentajeEntero(medio * 100); en ámbar, hasta el @Formato.PorcentajeEntero(medio * 100); en rojo, hasta el @Formato.PorcentajeEntero(bajo * 100).</p>
+                </section>
+            </div>
+
             <section class="tarjeta">
                 <header class="tarjeta-cabecera">
                     <h2>Adherencia por etapa</h2>
@@ -68,32 +111,25 @@
                 @await Html.PartialAsync("_ColumnasGaia", Grafico("etapa", enEtapa, ("Adherencia", "serie-a", adherencia)) with { Media = media, PorUmbral = true, Descripcion = "Adherencia por etapa de formación" })
             </section>
 
-        <section class="resumen en-4" aria-label="Criterios del estilo">
-            @foreach (var c in criterios)
-            {
-                <div class="resumen-dato sin-icono" title="@c.Ayuda">
-                    <span class="resumen-titulo">@c.Nombre</span>
-                    <span class="resumen-cifra" data-contar="@Formato.Crudo(c.Valor)" data-formato="porcentaje">@Formato.Porcentaje(c.Valor)</span>
-                    <span class="resumen-cobertura">
-                        <span class="resumen-cobertura-pista" aria-hidden="true">
-                            <span class="resumen-cobertura-relleno" style="width:@(Formato.Coord(Math.Clamp(c.Valor ?? 0, 0, 1) * 100))%"></span>
-                        </span>
-                        <span class="resumen-cobertura-texto">@(c.Peso is { } peso ? "peso " + Formato.PorcentajeEntero(peso * 100) + " de la nota" : sinPeso)</span>
-                    </span>
-                </div>
-            }
-        </section>
-
-        <section class="tarjeta">
+        <section class="tarjeta" data-vistas>
             <header class="tarjeta-cabecera">
-                <h2>Adherencia por día</h2>
-                <span class="tarjeta-nota">y llamadas de cada día</span>
+                <h2>Adherencia por semana o por día</h2>
+                <span class="tarjeta-nota">y llamadas de cada semana o día</span>
+                <partial name="_SelectorVistaGaia" />
             </header>
-            @await Html.PartialAsync("_LineasGaia", Grafico("dia", Model.PorDia, ("Adherencia", "serie-a", adherencia))
-                with { Media = media, EjeX = false, Referencias = umbrales, Descripcion = "Adherencia por día",
-                       Extras = [new ItemLeyendaGaia(Formato.PorcentajeEntero(bajo * 100) + " y " + Formato.PorcentajeEntero(medio * 100) + ", los umbrales", "", true)] })
-            @await Html.PartialAsync("_ColumnasGaia", GraficoVolumen("dia", Model.PorDia))
-            <p class="nota-ns">Con tantos días, la pastilla con el valor va en uno de cada pocos puntos (siempre en el primero y el último); la ficha da el de cada día.</p>
+            <div data-vista="semana">
+                @await Html.PartialAsync("_LineasGaia", Grafico("semana", Model.PorSemana, ("Adherencia", "serie-a", adherencia))
+                    with { Media = media, EjeX = false, Referencias = umbrales, Descripcion = "Adherencia por semana",
+                           Extras = [new ItemLeyendaGaia(Formato.PorcentajeEntero(bajo * 100) + " y " + Formato.PorcentajeEntero(medio * 100) + ", los umbrales", "", true)] })
+                @await Html.PartialAsync("_ColumnasGaia", GraficoVolumen("semana", Model.PorSemana))
+            </div>
+            <div data-vista="dia" hidden>
+                @await Html.PartialAsync("_LineasGaia", Grafico("dia", Model.PorDia, ("Adherencia", "serie-a", adherencia))
+                    with { Media = media, EjeX = false, Referencias = umbrales, Descripcion = "Adherencia por día",
+                           Extras = [new ItemLeyendaGaia(Formato.PorcentajeEntero(bajo * 100) + " y " + Formato.PorcentajeEntero(medio * 100) + ", los umbrales", "", true)] })
+                @await Html.PartialAsync("_ColumnasGaia", GraficoVolumen("dia", Model.PorDia))
+            </div>
+            <p class="nota-ns">Empieza por semanas. Con los días, la pastilla con el valor va en uno de cada pocos puntos (siempre en el primero y el último); la ficha da el de cada día.</p>
         </section>
 
         <section class="tarjeta">
@@ -108,7 +144,7 @@
                 <span class="muestra-tinte mapa-verde">por encima</span>
             </p>
             <div class="tabla-contenedor alta">
-                <table class="ranking tabla-matriz-gaia">
+                <table class="ranking con-puesto tabla-matriz-gaia">
                     <thead>
                         <tr>
                             <th scope="col"><span class="cab-columna">Agente</span></th>
@@ -129,7 +165,7 @@
                                     @fila.Agente
                                     <span class="sub-ns">@fila.Sector · oleada @fila.Oleada</span>
                                 </td>
-                                <td class="num">@Formato.Entero(fila.Indicadores.Llamadas)</td>
+                                <td class="num barra-volumen" data-valor="@fila.Indicadores.Llamadas">@Formato.Entero(fila.Indicadores.Llamadas)</td>
                                 <td class="num @MapaAdherencia(fila.Indicadores.Adherencia)">@Formato.Porcentaje(fila.Indicadores.Adherencia)</td>
                                 @foreach (var etapa in Model.Etapas)
                                 {

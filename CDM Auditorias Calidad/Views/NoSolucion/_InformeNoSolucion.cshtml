@@ -7,7 +7,7 @@
     var ctx = Model.Contexto;
     var meta = Model.Meta;
 }
-<div id="informe" class="contenedor" data-titulo="CDM No solución · @PaginaNoSolucion.Texto(Model.Pestana) · CDM Auditorías Calidad">
+<div id="informe" data-miga="@PaginaNoSolucion.Texto(Model.Pestana)" data-marca-pagina="@MarcaDePagina(Model.Filtros?.Marca)" data-titulo="CDM No solución · @PaginaNoSolucion.Texto(Model.Pestana) · CDM Auditorías Calidad">
     <nav class="pestanas" aria-label="Pestañas de No solución">
         @foreach (var p in Enum.GetValues<PestanaNoSolucion>())
         {
@@ -23,6 +23,7 @@
         </span>
     </nav>
 
+    <div class="contenedor">
     @if (Model.Actualizacion == "en-curso")
     {
         <div class="aviso aviso-info" role="status">@Iconos.Svg("refrescar") <span>Trayendo los últimos 3 meses de BigQuery. Tarda alrededor de un minuto; mientras tanto se sigue viendo lo de antes. Vuelve a cargar la página cuando termine.</span></div>
@@ -76,4 +77,5 @@
             @FormatoNoSolucion.FechaLarga(meta.DiaMax).
         </p>
     }
+    </div>
 </div>

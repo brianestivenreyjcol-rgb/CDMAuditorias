@@ -1,100 +1,29 @@
 @model TableroModelo
-@* «Nota promedio de calidad»: línea suavizada (crono-linea principal) con su área, la «Meta de
-   Calidad» discontinua y el mismo eje X que las columnas. Bandas con <title> para la ficha. *@
+@* «Nota promedio de calidad»: línea con las piezas comunes de las gráficas (_LineasGaia): leyenda arriba con la cifra de la
+   «Meta de Calidad» (la línea discontinua ya no se rotula sobre la gráfica), cada punto con su valor en una pastilla y una
+   banda por periodo con su <title> para la ficha («Etiqueta · Nota X % · Auditorías N»). *@
 @{
     var puntos = Model.Evolucion;
-    var n = Math.Max(1, puntos.Count);
-    var conNota = puntos.Select((p, i) => (p, i)).Where(x => x.p.Nota is not null).ToList();
-    var (min, max, paso) = EscalaGrafico.Porcentaje(conNota.Select(x => x.p.Nota!.Value).Append(Model.MetaCalidad));
-    double X(int i) => (i + 0.5) / n;
-    double Y(double v) => (max - v) / (max - min);
-    string C(double fr) => Formato.Coord(fr * 1000);
-    string P(double fr) => Formato.Coord(fr * 100) + "%";
-    var conValores = n <= 24;
-    var pasoX = Math.Max(1, (int)Math.Ceiling(n / 16.0));
     var tituloEje = Model.Vista switch { Vista.Dia => "Día", Vista.Semana => "Semana", _ => "Mes" };
-
-    // Curva de Catmull-Rom pasada a Bézier; un periodo sin nota corta la línea. El área baja
-    // de cada tramo hasta el eje.
-    var linea = new System.Text.StringBuilder();
-    var area = new System.Text.StringBuilder();
-    var tramo = new List<(double X, double Y)>();
-    void Cerrar()
+    var grafico = new GraficoGaia(
+        puntos.Select(p => p.Etiqueta).ToList(), puntos.Select(p => p.Detalle).ToList(), puntos.Select(p => p.Cantidad).ToList(),
+        [new SerieGaia("Nota promedio", "serie-a", puntos.Select(p => p.Nota).ToList())])
     {
-        if (tramo.Count == 0) return;
-        var curva = new System.Text.StringBuilder($"M{C(tramo[0].X)},{C(tramo[0].Y)} ");
-        for (var k = 0; k + 1 < tramo.Count; k++)
-        {
-            var p0 = tramo[Math.Max(0, k - 1)];
-            var p1 = tramo[k];
-            var p2 = tramo[k + 1];
-            var p3 = tramo[Math.Min(tramo.Count - 1, k + 2)];
-            var c1 = (X: p1.X + (p2.X - p0.X) / 6, Y: p1.Y + (p2.Y - p0.Y) / 6);
-            var c2 = (X: p2.X - (p3.X - p1.X) / 6, Y: p2.Y - (p3.Y - p1.Y) / 6);
-            curva.Append($"C{C(c1.X)},{C(c1.Y)} {C(c2.X)},{C(c2.Y)} {C(p2.X)},{C(p2.Y)} ");
-        }
-        linea.Append(curva);
-        area.Append(curva).Append($"L{C(tramo[^1].X)},1000 L{C(tramo[0].X)},1000 Z ");
-        tramo.Clear();
-    }
-    for (var i = 0; i < puntos.Count; i++)
-    {
-        if (puntos[i].Nota is { } v) tramo.Add((X(i), Y(v)));
-        else Cerrar();
-    }
-    Cerrar();
-    var metaVisible = Model.MetaCalidad >= min && Model.MetaCalidad <= max;
+        NombreVolumen = "Auditorías",
+        Dia = Model.Vista == Vista.Dia,
+        AnchoEstimado = 900,
+        MaxEtiquetasX = 14,
+        Referencias = [Model.MetaCalidad],
+        Extras = [new ItemLeyendaGaia("meta " + Formato.PorcentajeEntero(Model.MetaCalidad * 100), "", true)],
+        Descripcion = "Nota promedio de calidad por " + tituloEje.ToLowerInvariant(),
+    };
 }
-@if (conNota.Count == 0)
+@if (!puntos.Any(p => p.Nota is not null))
 {
     <p class="vacio">Sin notas con estos filtros</p>
 }
 else
 {
-    <figure class="grafica linea" role="img" aria-label="Nota promedio de calidad por @tituloEje.ToLowerInvariant()">
-        <div class="plano">
-            <svg viewBox="0 0 1000 1000" preserveAspectRatio="none" aria-hidden="true">
-                @for (var v = min; v <= max + paso / 2; v += paso)
-                {
-                    <line class="rejilla-linea" x1="0" x2="1000" y1="@C(Y(v))" y2="@C(Y(v))" vector-effect="non-scaling-stroke" />
-                }
-                <path class="crono-area" d="@area" />
-                @if (metaVisible)
-                {
-                    <line class="meta" x1="0" x2="1000" y1="@C(Y(Model.MetaCalidad))" y2="@C(Y(Model.MetaCalidad))" vector-effect="non-scaling-stroke" />
-                }
-                <path class="crono-linea principal" d="@linea" vector-effect="non-scaling-stroke" />
-                @for (var i = 0; i < puntos.Count; i++)
-                {
-                    var p = puntos[i];
-                    <rect class="banda" data-i="@i" data-x="@Formato.Coord(X(i))" x="@C((double)i / n)" y="0" width="@C(1.0 / n)" height="1000"><title>@p.Detalle · Nota @Formato.Porcentaje(p.Nota) · Auditorías @Formato.Entero(p.Cantidad)</title></rect>
-                }
-            </svg>
-            @for (var v = min; v <= max + paso / 2; v += paso)
-            {
-                <span class="eje-y" style="top:@P(Y(v))">@Formato.PorcentajeEntero(Math.Round(v * 100))</span>
-            }
-            @if (metaVisible)
-            {
-                <span class="meta-texto" style="top:@P(Y(Model.MetaCalidad))">Meta @Formato.PorcentajeEntero(Model.MetaCalidad * 100)</span>
-            }
-            @foreach (var (p, i) in conNota)
-            {
-                var v = p.Nota!.Value;
-                <span class="punto" data-i="@i" style="left:@P(X(i));top:@P(Y(v))"></span>
-                if (conValores)
-                {
-                    <span class="valor@(n > 16 ? " pequeno" : "")" style="left:@P(X(i));top:@P(Y(v))">@Formato.Porcentaje(v)</span>
-                }
-            }
-            @for (var i = 0; i < puntos.Count; i++)
-            {
-                if (i % pasoX == 0 || i == puntos.Count - 1)
-                {
-                    <span class="eje-x" style="left:@P(X(i))">@puntos[i].Etiqueta</span>
-                }
-            }
-        </div>
-    </figure>
+    @await Html.PartialAsync("_LineasGaia", grafico)
     <div class="titulo-eje">@tituloEje</div>
 }

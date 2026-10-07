@@ -1,9 +1,10 @@
 @model RespuestaResumen
 @* Columnas con las encuestas recogidas cada día; los días parciales, en gris. Cada día lleva una
    banda con su <title> para la ficha.
-   Etiquetas de impacto: la media de los días completos y cerrados (línea discontinua, .meta, con su cifra
-   a la derecha), el día más alto y el más bajo con su cifra, y «parcial» sobre los días parciales. Los
-   días provisionales (las encuestas siguen llegando) no cuentan para la media ni para máximo y mínimo. *@
+   Cada columna con su valor en una pastilla (.etiqueta-punto; la de un día parcial, en gris), sin «máx.», «mín.» ni
+   «parcial» rotulados (06-10-2026): con tantos días, una de cada pocas y siempre la primera y la última, como en GAIA.
+   La media de los días completos y cerrados va en la leyenda de arriba (la línea discontinua, .meta). Los días
+   provisionales (las encuestas siguen llegando) no cuentan para la media. *@
 @{
     var serie = Model.Serie;
     var n = Math.Max(1, serie.Count);
@@ -14,15 +15,25 @@
     string C(double fr) => Formato.Coord(fr * 1000);
     string P(double fr) => Formato.Coord(fr * 100) + "%";
     var pasoX = Math.Max(1, (int)Math.Ceiling(n / 12.0));
+    var rotulados = Rotulados(new GraficoGaia(serie.Select(x => x.Dia).ToList(), serie.Select(x => x.Dia).ToList(), Array.Empty<int>(), Array.Empty<SerieGaia>()) { Entero = true, Dia = true, AnchoEstimado = 420 });
 
-    // Media, máximo y mínimo de los días completos y cerrados con encuestas.
+    // Media de los días completos y cerrados con encuestas.
     var completos = serie.Select((x, i) => (x, i))
         .Where(p => !p.x.Parcial && !Model.Provisionales.Contains(p.x.Dia) && p.x.Encuestadas > 0).ToList();
     double? media = completos.Count > 0 ? completos.Average(p => (double)p.x.Encuestadas) : null;
-    var diaAlto = completos.Count > 0 ? completos.MaxBy(p => p.x.Encuestadas).i : -1;
-    var diaBajo = completos.Count > 1 ? completos.MinBy(p => p.x.Encuestadas).i : -1;
 }
-<figure class="grafica con-meta" role="img" aria-label="Encuestas recogidas cada día">
+<div class="leyenda-ns centrada">
+    <span class="serie-a"><i></i>Encuestadas</span>
+    @if (serie.Any(x => x.Parcial))
+    {
+        <span class="serie-otra"><i></i>día parcial</span>
+    }
+    @if (media is { } mediaLeyenda)
+    {
+        <span><i class="discontinua"></i>media @FormatoNoSolucion.Int(mediaLeyenda)</span>
+    }
+</div>
+<figure class="grafica lineas-ns" role="img" aria-label="Encuestas recogidas cada día">
     <div class="plano">
         <svg viewBox="0 0 1000 1000" preserveAspectRatio="none" aria-hidden="true">
             @for (var v = 0.0; v <= tope + paso / 2; v += paso)
@@ -50,21 +61,11 @@
         {
             <span class="eje-y" style="top:@P(Y(v))">@FormatoNoSolucion.Int(v)</span>
         }
-        @if (media is { } mt)
-        {
-            <span class="meta-texto" style="top:@P(Y(mt))">media @FormatoNoSolucion.Int(mt)</span>
-        }
         @for (var i = 0; i < serie.Count; i++)
         {
             var x = serie[i];
-            if (i == diaAlto || i == diaBajo)
-            {
-                <span class="valor pequeno con-fondo" style="left:@P(X(i));top:@P(Y(x.Encuestadas))">@(i == diaAlto ? "máx. " : "mín. ")@FormatoNoSolucion.Int(x.Encuestadas)</span>
-            }
-            else if (x.Parcial)
-            {
-                <span class="valor pequeno con-fondo texto-tenue" style="left:@P(X(i));top:@P(Y(x.Encuestadas))">parcial</span>
-            }
+            if (!rotulados.Contains(i) || x.Encuestadas <= 0) continue;
+            <span class="etiqueta-punto @(x.Parcial ? "serie-otra" : "serie-a") arriba@(i == 0 ? " al-inicio" : i == serie.Count - 1 ? " al-final" : "")" style="left:@P(X(i));top:@P(Y(x.Encuestadas))">@FormatoNoSolucion.Int(x.Encuestadas)</span>
         }
         @for (var i = 0; i < serie.Count; i++)
         {

@@ -34,7 +34,10 @@
             <span class="resumen-titulo">No solución</span>
             <span class="resumen-cifra" data-contar="@Formato.Crudo(t.Pct / 100)" data-formato="porcentaje">@FormatoNoSolucion.Pct(t.Pct)</span>
             <span class="resumen-variacion @claseDelta">
-                @Iconos.Svg(iconoDelta)
+                @if (d is not null)
+                {
+                    @Iconos.Tendencia(iconoDelta)
+                }
                 @(d is null ? "sin periodo previo comparable" : $"{FormatoNoSolucion.Pp(Math.Abs(d.Value)).TrimStart('+')} vs. los {r.Ventana.Dias} días previos")
             </span>
         </div>
@@ -82,7 +85,7 @@
                 <h2>Cómo evoluciona</h2>
                 <span class="tarjeta-nota">% de no solución diario, por marca</span>
             </header>
-            <div class="leyenda-ns">
+            <div class="leyenda-ns centrada">
                 @foreach (var m in r.Marcas)
                 {
                     <span class="@PaginaNoSolucion.ClaseMarca(m)"><i></i>@m</span>
@@ -115,14 +118,14 @@
         <section class="tarjeta">
             <header class="tarjeta-cabecera">
                 <h2>Los días que peor cerraron</h2>
-                <span class="tarjeta-nota">media del rango: @FormatoNoSolucion.Pct(t.Pct)</span>
+                <span class="tarjeta-nota">el total es el de todo el rango</span>
             </header>
             <p class="nota-ns">Días completos con al menos <b>@r.SueloDia encuestas</b>.</p>
             @if (r.Peores.Count > 0)
             {
                 <div class="tabla-contenedor">
                     <table class="ranking">
-                        <colgroup><col style="width:34%" /><col style="width:18%" /><col style="width:13%" /><col style="width:35%" /></colgroup>
+                        <colgroup><col style="width:40%" /><col style="width:17%" /><col style="width:12%" /><col style="width:31%" /></colgroup>
                         <thead>
                             <tr>
                                 <th scope="col"><button type="button" class="ordenar">Día</button></th>
@@ -143,6 +146,15 @@
                                 </tr>
                             }
                         </tbody>
+                        @* Total al pie (nunca arriba): el del rango entero, con todos sus días. *@
+                        <tfoot>
+                            <tr class="total">
+                                <td>TOTAL</td>
+                                <td class="num">@FormatoNoSolucion.Int(t.Encuestadas)</td>
+                                <td class="num">@FormatoNoSolucion.Int(t.Nosol)</td>
+                                <td class="num">@FormatoNoSolucion.Pct(t.Pct)</td>
+                            </tr>
+                        </tfoot>
                     </table>
                 </div>
             }

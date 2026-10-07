@@ -87,7 +87,7 @@
                                     <span class="puesto-ns">@x.Puesto</span>@f.Nombre
                                     <span class="sub-ns">@x.Detalle</span>
                                 </td>
-                                <td class="num">@FormatoNoSolucion.Int(f.Llamadas)</td>
+                                <td class="num barra-volumen" data-valor="@f.Llamadas">@FormatoNoSolucion.Int(f.Llamadas)</td>
                                 <td class="num">@FormatoNoSolucion.Int(f.Encuestadas)</td>
                                 <td class="num texto-suave">@FormatoNoSolucion.Pct(f.Cobertura)</td>
                                 <td class="num">@FormatoNoSolucion.Int(f.Nosol)</td>
@@ -101,6 +101,23 @@
                             </tr>
                         }
                     </tbody>
+                    @* Total al pie (nunca arriba): la suma de las filas que se ven, con su % y su cobertura. *@
+                    <tfoot>
+                        @{
+                            var totLlamadas = e.Filas.Sum(x => x.Fila.Llamadas);
+                            var totEncuestadas = e.Filas.Sum(x => x.Fila.Encuestadas);
+                            var totNosol = e.Filas.Sum(x => x.Fila.Nosol);
+                        }
+                        <tr class="total">
+                            <td>TOTAL</td>
+                            <td class="num">@FormatoNoSolucion.Int(totLlamadas)</td>
+                            <td class="num">@FormatoNoSolucion.Int(totEncuestadas)</td>
+                            <td class="num">@FormatoNoSolucion.Pct(totLlamadas == 0 ? null : 100.0 * totEncuestadas / totLlamadas)</td>
+                            <td class="num">@FormatoNoSolucion.Int(totNosol)</td>
+                            <td class="num">@FormatoNoSolucion.Pct(totEncuestadas == 0 ? null : 100.0 * totNosol / totEncuestadas)</td>
+                            <td class="num"></td>
+                        </tr>
+                    </tfoot>
                 </table>
             </div>
         }

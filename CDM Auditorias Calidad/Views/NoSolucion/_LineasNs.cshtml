@@ -2,10 +2,11 @@
 @* El % de no solución diario por marca con las piezas de la guía (crono-linea y punto): una línea por
    marca (color fijo por marca, --serie), los tramos que tocan un día parcial con línea discontinua y,
    por día, una banda con su <title> para la ficha («27 sep 2026 · YOIGO 19,60 % · …»). Mismo sistema
-   que las gráficas de Auditorías.
-   Etiquetas de impacto (no cada punto, que serían más de cien): la media del rango (línea discontinua,
-   .meta; su cifra va en la leyenda), el pico del periodo sobre su punto y, a la derecha, el último valor
-   de cada marca con su color, separados para que no se pisen. *@
+   que las gráficas de Auditorías y GAIA.
+   Cada punto con su valor en una pastilla (.etiqueta-punto) del color de su marca (06-10-2026; sustituye al pico y a los
+   últimos valores): con tantos días se rotula uno de cada pocos (siempre el primero y el último, como en GAIA) y, como
+   hay hasta cuatro marcas en cada día, las pastillas de un mismo día se separan para que no se pisen. La media va en la
+   leyenda (la línea discontinua, .meta). *@
 @{
     var n = Math.Max(1, Model.Etiquetas.Count);
     var max = Model.Maximo;
@@ -16,31 +17,36 @@
     string P(double fr) => Formato.Coord(fr * 100) + "%";
     var pasoX = Math.Max(1, (int)Math.Ceiling(n / 12.0));
     var conPuntos = n <= 45;
+    var rotulados = Rotulados(new GraficoGaia(Model.Etiquetas, Model.Detalles, Array.Empty<int>(), Array.Empty<SerieGaia>()) { Dia = true, AnchoEstimado = 420 });
 
-    // El pico: el valor más alto de un día completo y cerrado (ni parcial ni provisional: esos aún no
-    // son comparables).
-    var pico = Model.Series
-        .SelectMany(s => s.Valores.Select((v, i) => (Serie: s, I: i, V: v)))
-        .Where(p => p.V is not null && !Model.Discontinuos.Contains(p.I) && Model.Provisionales?.Contains(p.I) != true)
-        .OrderByDescending(p => p.V)
-        .Select(p => ((SerieNs Serie, int I, double V)?)(p.Serie, p.I, p.V!.Value))
-        .FirstOrDefault();
-
-    // El último valor de cada marca, a la derecha. Si dos quedan a menos de 8 % del alto, se separan
-    // (de arriba abajo y, si se salen por abajo, de abajo arriba).
-    var finales = Model.Series
-        .Select(s => (Serie: s, I: s.Valores.Select((v, i) => (v, i)).LastOrDefault(p => p.v is not null).i))
-        .Where(f => f.Serie.Valores.ElementAtOrDefault(f.I) is not null)
-        .Select(f => (f.Serie, V: f.Serie.Valores[f.I]!.Value, Y: Y(f.Serie.Valores[f.I]!.Value)))
-        .OrderBy(f => f.Y)
-        .ToList();
-    const double separacion = 0.08;
-    var posY = finales.Select(f => f.Y).ToArray();
-    for (var k = 1; k < posY.Length; k++) posY[k] = Math.Max(posY[k], posY[k - 1] + separacion);
-    if (posY.Length > 0 && posY[^1] > 1)
+    // Las pastillas de cada día rotulado: con una o dos marcas, la mayor encima y la menor debajo; con más, apiladas en el
+    // orden de sus puntos con una separación mínima (8,5 % del alto) para que no se tapen.
+    const double separacion = 0.085;
+    var pastillas = new List<(string Clase, string Texto, double Y, bool Arriba, bool Centrada, int I)>();
+    foreach (var i in rotulados.OrderBy(i => i))
     {
-        posY[^1] = 1;
-        for (var k = posY.Length - 2; k >= 0; k--) posY[k] = Math.Min(posY[k], posY[k + 1] - separacion);
+        var dia = Model.Series.Where(s => s.Valores.ElementAtOrDefault(i) is not null)
+            .Select(s => (Serie: s, V: s.Valores[i]!.Value, Y: Y(s.Valores[i]!.Value))).OrderBy(x => x.Y).ToList();
+        if (dia.Count <= 2)
+        {
+            for (var k = 0; k < dia.Count; k++)
+            {
+                var arriba = dia.Count == 1 || k == 0;
+                var y = dia[k].Y;
+                if (!arriba && y > 0.9) arriba = true;
+                else if (arriba && y < 0.06 && dia.Count == 2) arriba = false;
+                pastillas.Add((dia[k].Serie.Clase, FormatoNoSolucion.Pct(dia[k].V), y, arriba, false, i));
+            }
+            continue;
+        }
+        var pos = dia.Select(x => x.Y).ToArray();
+        for (var k = 1; k < pos.Length; k++) pos[k] = Math.Max(pos[k], pos[k - 1] + separacion);
+        if (pos[^1] > 1)
+        {
+            pos[^1] = 1;
+            for (var k = pos.Length - 2; k >= 0; k--) pos[k] = Math.Min(pos[k], pos[k + 1] - separacion);
+        }
+        for (var k = 0; k < dia.Count; k++) pastillas.Add((dia[k].Serie.Clase, FormatoNoSolucion.Pct(dia[k].V), pos[k], false, true, i));
     }
 }
 <figure class="grafica lineas-ns" role="img" aria-label="Porcentaje de no solución diario por marca">
@@ -93,13 +99,9 @@
                 }
             }
         }
-        @if (pico is { } p)
+        @foreach (var p in pastillas)
         {
-            <span class="valor pequeno con-fondo valor-serie @p.Serie.Clase" style="left:@P(X(p.I));top:@P(Y(p.V))">@p.Serie.Nombre @FormatoNoSolucion.Pct(p.V)</span>
-        }
-        @for (var k = 0; k < finales.Count; k++)
-        {
-            <span class="fin-serie @finales[k].Serie.Clase" style="top:@P(posY[k])" title="@finales[k].Serie.Nombre, último día con dato">@FormatoNoSolucion.Pct(finales[k].V)</span>
+            <span class="etiqueta-punto @p.Clase@(p.Centrada ? " centro" : p.Arriba ? " arriba" : " abajo")@(p.I == 0 ? " al-inicio" : p.I == n - 1 ? " al-final" : "")" style="left:@P(X(p.I));top:@P(p.Y)">@p.Texto</span>
         }
         @for (var i = 0; i < Model.Etiquetas.Count; i++)
         {

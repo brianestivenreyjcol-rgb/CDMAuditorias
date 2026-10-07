@@ -120,7 +120,7 @@
                             var i = g.Indicadores;
                             <tr>
                                 <td>@g.Texto</td>
-                                <td class="num">@Formato.Entero(i.Llamadas)</td>
+                                <td class="num barra-volumen" data-valor="@i.Llamadas">@Formato.Entero(i.Llamadas)</td>
                                 <td class="num">@Duracion(i.Tmo)</td>
                                 <td class="num">@Formato.Porcentaje(i.Menores60)</td>
                                 <td class="num">@Formato.Porcentaje(i.Entre60y180)</td>
@@ -151,7 +151,7 @@
             </header>
             <p class="nota-ns">En gris, los agentes con menos de <b>@MinLlamadasFiable llamadas</b>: sus promedios no son fiables.</p>
             <div class="tabla-contenedor alta">
-                <table class="ranking tabla-rendimiento-gaia">
+                <table class="ranking con-puesto tabla-rendimiento-gaia">
                     <colgroup>
                         <col style="width:27%" /><col style="width:11%" /><col style="width:11%" /><col style="width:13%" /><col style="width:12%" /><col style="width:13%" /><col style="width:13%" />
                     </colgroup>
@@ -176,7 +176,7 @@
                                     <span class="sub-ns">@fila.Sector · oleada @fila.Oleada</span>
                                 </td>
                                 <td class="num">@Duracion(i.Tmo)</td>
-                                <td class="num">@Formato.Entero(i.Llamadas)</td>
+                                <td class="num barra-volumen" data-valor="@i.Llamadas">@Formato.Entero(i.Llamadas)</td>
                                 <td class="num">@Formato.Porcentaje(i.Menores60)</td>
                                 <td class="num">@Formato.Porcentaje(i.Entre60y180)</td>
                                 <td class="num">@Formato.Porcentaje(i.SinContexto)</td>

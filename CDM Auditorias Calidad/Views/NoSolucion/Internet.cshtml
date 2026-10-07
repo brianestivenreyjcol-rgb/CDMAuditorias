@@ -380,6 +380,14 @@
                         </div>
                     </details>
                 }
+                @* Total al pie (nunca arriba): el de todas las llamadas de sinAccesoInternet con estos filtros. *@
+                <div class="fila-ns fila-total cols-averia">
+                    <span class="fila-ns-nombre">TOTAL</span>
+                    <span class="num">@FormatoNoSolucion.Int(t.Llamadas)</span>
+                    <span class="num">@FormatoNoSolucion.Int(t.Encuestadas)</span>
+                    <span class="num">@FormatoNoSolucion.Int(t.Nosol)</span>
+                    <span class="num">@FormatoNoSolucion.Pct(t.Pct)</span>
+                </div>
             </div>
         </section>
     }

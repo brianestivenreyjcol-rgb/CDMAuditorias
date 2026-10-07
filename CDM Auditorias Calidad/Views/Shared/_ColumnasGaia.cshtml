@@ -46,8 +46,7 @@
             }
             @for (var i = 0; i < Model.Etiquetas.Count; i++)
             {
-                var partes = series.Select(s => $"{NombreFicha(s.Nombre)} {Valor(s.Valores[i], Model)}");
-                <rect class="banda" data-i="@i" data-x="@Formato.Coord(X(i))" x="@C((double)i / n)" y="0" width="@C(1.0 / n)" height="1000"><title>@Model.Titulos[i] · @string.Join(" · ", partes) · @Model.NombreVolumen @Formato.Entero(Model.Volumen[i])</title></rect>
+                <rect class="banda" data-i="@i" data-x="@Formato.Coord(X(i))" x="@C((double)i / n)" y="0" width="@C(1.0 / n)" height="1000"><title>@Ficha(Model, i)</title></rect>
             }
         </svg>
         @foreach (var v in escalas[0].Marcas())
@@ -76,7 +75,7 @@
                 // Una pastilla «debajo» de un punto pegado al eje X pisaría sus fechas; una «encima» de uno pegado al techo se saldría.
                 if (!arriba && y > 0.9) arriba = true;
                 else if (arriba && y < 0.06 && series.Count == 2) arriba = false;
-                <span class="etiqueta-punto @series[k].Clase@(Model.PorUmbral ? " " + TonoAdherencia(v) : "") @(arriba ? "arriba" : "abajo")" style="left:@P(X(i));top:@P(y)">@Valor(v, Model)</span>
+                <span class="etiqueta-punto @series[k].Clase@(Model.PorUmbral ? " " + TonoAdherencia(v) : "") @(arriba ? "arriba" : "abajo")@(i == 0 ? " al-inicio" : i == n - 1 ? " al-final" : "")" style="left:@P(X(i));top:@P(y)">@Valor(v, Model)</span>
             }
         }
         @if (Model.EjeX)

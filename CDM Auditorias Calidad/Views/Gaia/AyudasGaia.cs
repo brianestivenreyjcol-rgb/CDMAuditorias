@@ -1,6 +1,7 @@
 using System.Text.RegularExpressions;
 using CDM_Auditorias_Calidad.Infraestructura;
 using CDM_Auditorias_Calidad.Servicios.Gaia;
+using CDM_Auditorias_Calidad.Models;
 using CDM_Auditorias_Calidad.Models.Gaia;
 
 namespace CDM_Auditorias_Calidad.Views.Gaia;
@@ -98,6 +99,22 @@ public static class AyudasGaia
         "YOIGO" => "serie-yoigo", "MASMOVIL" => "serie-masmovil", "JAZZTEL" => "serie-jazztel", "ORANGE" => "serie-orange", _ => "serie-otra",
     };
 
+    /// <summary>
+    /// Reparte los desplegables visibles del panel de filtros en grupos separados por una línea: cada «bloque» es una lista de
+    /// campos; los visibles que no estén en ninguno van al último grupo y los grupos vacíos no salen.
+    /// </summary>
+    public static IEnumerable<List<GrupoFiltro>> EnBloques(IEnumerable<GrupoFiltro> grupos, params string[][] bloques)
+    {
+        var visibles = grupos.Where(g => g.Visible).ToList();
+        var nombrados = bloques.SelectMany(b => b).ToHashSet();
+        for (var i = 0; i < bloques.Length; i++)
+        {
+            var lista = visibles.Where(g => bloques[i].Contains(g.Campo)).ToList();
+            if (i == bloques.Length - 1) lista.AddRange(visibles.Where(g => !nombrados.Contains(g.Campo)));
+            if (lista.Count > 0) yield return lista;
+        }
+    }
+
     public static string DiaLargo(string clave) => DateOnly.TryParse(clave, out var d) ? Formato.Fecha(d) : clave;
 
     public static string P(double fraccion) => Formato.Coord(fraccion * 100) + "%";
@@ -176,6 +193,20 @@ public static class AyudasGaia
         public int AnchoEstimado { get; init; } = 800;
         public int MaxEtiquetasX { get; init; } = 12;
         public string Descripcion { get; init; } = "";
+        /// <summary>Sin «Llamadas N» (o <see cref="NombreVolumen"/>) al final de la ficha: cuando el volumen ya es una de las series.</summary>
+        public bool SinVolumen { get; init; }
+        /// <summary>Un texto más al final de la ficha de cada periodo (p. ej. «Nota 85,20 %»), en el orden de los puntos.</summary>
+        public IReadOnlyList<string>? FichaExtra { get; init; }
+    }
+
+    /// <summary>El texto de la ficha de un periodo: «Etiqueta · Serie valor · … · Llamadas N» (la ficha de site.js lo parte por « · »).</summary>
+    public static string Ficha(GraficoGaia g, int i)
+    {
+        var partes = new List<string> { g.Titulos[i] };
+        partes.AddRange(g.Series.Select(s => $"{NombreFicha(s.Nombre)} {Valor(s.Valores[i], g)}"));
+        if (!g.SinVolumen) partes.Add($"{g.NombreVolumen} {Formato.Entero(g.Volumen[i])}");
+        if (g.FichaExtra is { } extra && i < extra.Count) partes.Add(extra[i]);
+        return string.Join(" · ", partes);
     }
 
     /// <summary>Un valor de un gráfico escrito como se lee: m:ss, entero o porcentaje.</summary>

@@ -16,6 +16,9 @@
 // - CDM No solución (/nosolucion) usa todo lo anterior y además: el buscador de Equipos
 //   (form[data-parcial]), «Copiar ID» de las llamadas de ejemplo ([data-copiar]) y, mientras se
 //   traen los datos de BigQuery, la recarga sola de la página ([data-recargar-en]).
+// - Cabecera del portal: Imprimir (window.print), Presentar (pantalla completa del contenido, sin panel) y, en el panel de filtros,
+//   plegar a un raíl vertical (el estado se recuerda en localStorage, con try/catch). La miga de la página actual
+//   (#informe[data-miga]) se actualiza al pasar de pestaña sin recargar.
 // Con «reducir movimiento» no se anima nada.
 (() => {
   'use strict';
@@ -63,6 +66,9 @@
       // El color de la página sigue a la marca filtrada (GAIA): el servidor la deja en #informe y aquí pasa a <html>.
       const marca = nuevo.dataset.marcaPagina;
       if (marca) raiz.dataset.marca = marca;
+      const miga = nuevo.dataset.miga;
+      const migaActual = document.querySelector('.miga-actual');
+      if (miga && migaActual) migaActual.textContent = miga;
       preparar(nuevo, cifrasAntes);
       if (reabrir) reabrirDesplegable(nuevo, reabrir);
       if (nuevo.dataset.titulo) document.title = nuevo.dataset.titulo;
@@ -196,6 +202,20 @@
       return;
     }
 
+    if (e.target.closest('[data-imprimir]')) { window.print(); return; }
+    if (e.target.closest('[data-presentar]')) { presentar(true); return; }
+    if (e.target.closest('[data-presentar-salir]')) { presentar(false); return; }
+    if (e.target.closest('[data-panel-plegar]')) { plegarPanel(true); return; }
+    if (e.target.closest('[data-panel-abrir]')) { plegarPanel(false); return; }
+
+    // Navegar a otra página (sin recarga parcial): la barra de carga se ve mientras llega.
+    const destino = e.target.closest('a[href]');
+    if (destino && !destino.hasAttribute('data-parcial') && e.button === 0 && !e.ctrlKey && !e.metaKey && !e.shiftKey && !e.altKey
+        && destino.origin === location.origin && !destino.hasAttribute('download') && destino.target !== '_blank'
+        && destino.pathname + destino.search !== location.pathname + location.search && !/\/(csv|descargar)$/.test(destino.pathname)) {
+      raiz.classList.add('cargando');
+    }
+
     const limpiar = e.target.closest('[data-limpiar]');
     if (limpiar) {
       const d = limpiar.closest('details');
@@ -309,6 +329,40 @@
   });
 
   // ---------------------------------------------------------------------------------------
+  // Panel de filtros plegable, Presentar y barra de carga al navegar
+  // ---------------------------------------------------------------------------------------
+
+  /** Pliega el panel a un raíl vertical (o lo despliega) y recuerda la elección; tema.js la lee al cargar. */
+  function plegarPanel(plegar) {
+    if (plegar) raiz.dataset.panel = 'plegado'; else delete raiz.dataset.panel;
+    try { localStorage.setItem('cdm-panel', plegar ? 'plegado' : 'abierto'); } catch { /* sin almacenamiento */ }
+  }
+
+  /** Presentar: el contenido a pantalla completa, sin panel ni botones. Se sale con el botón, con Esc o saliendo de la pantalla completa. */
+  function presentar(entrar) {
+    if (entrar) {
+      raiz.dataset.presentacion = '';
+      raiz.requestFullscreen?.().catch(() => { /* si no deja, queda la vista limpia sin pantalla completa */ });
+    } else {
+      delete raiz.dataset.presentacion;
+      if (document.fullscreenElement) document.exitFullscreen?.().catch(() => { });
+    }
+  }
+  document.addEventListener('fullscreenchange', () => {
+    if (!document.fullscreenElement) delete raiz.dataset.presentacion;
+  });
+  // Imprimir siempre en claro: con el tema oscuro, el texto claro saldría invisible sobre el papel.
+  let temaAntes = null;
+  window.addEventListener('beforeprint', () => {
+    if (raiz.dataset.tema === 'oscuro') { temaAntes = 'oscuro'; raiz.dataset.tema = 'claro'; }
+  });
+  window.addEventListener('afterprint', () => {
+    if (temaAntes) { raiz.dataset.tema = temaAntes; temaAntes = null; }
+  });
+  // Al volver con «atrás» desde otra página (caché del navegador), la barra de carga no se queda a medias.
+  window.addEventListener('pageshow', () => raiz.classList.remove('cargando'));
+
+  // ---------------------------------------------------------------------------------------
   // Fichas al pasar el ratón
   // ---------------------------------------------------------------------------------------
 
@@ -407,7 +461,7 @@
       t.parentElement.dataset.ficha = t.textContent.trim();
       t.remove();
     });
-    contenedor.querySelectorAll('.resumen-dato[title], .hbarra[title], .apilada[title]').forEach(el => {
+    contenedor.querySelectorAll('.resumen-dato[title], .hbarra[title], .apilada[title], .anillo[title]').forEach(el => {
       el.dataset.ficha = el.title;
       el.removeAttribute('title');
     });
@@ -472,6 +526,21 @@
     });
   }
 
+  /** Barrita de volumen (td.barra-volumen): su largo (--v, de 0 a 1) es la cifra frente a la mayor de su columna. */
+  function ponerBarras(tabla) {
+    const filas = [...(tabla.tBodies[0]?.rows ?? [])];
+    const columnas = new Set();
+    filas.forEach(f => [...f.cells].forEach((c, i) => { if (c.classList.contains('barra-volumen')) columnas.add(i); }));
+    columnas.forEach(i => {
+      const celdas = filas.map(f => f.cells[i]).filter(c => c?.classList.contains('barra-volumen'));
+      const mayor = Math.max(0, ...celdas.map(c => Number(c.dataset.valor)).filter(Number.isFinite));
+      celdas.forEach(c => {
+        const v = Number(c.dataset.valor);
+        c.style.setProperty('--v', mayor > 0 && Number.isFinite(v) ? String(Math.max(0.02, v / mayor)) : '0');
+      });
+    });
+  }
+
   // ---------------------------------------------------------------------------------------
   // Cifras que cuentan
   // ---------------------------------------------------------------------------------------
@@ -508,6 +577,7 @@
   function preparar(contenedor, cifrasAntes = []) {
     prepararFichas(contenedor);
     contenedor.querySelectorAll('table.ranking[data-mapa]').forEach(colorearTabla);
+    contenedor.querySelectorAll('table.ranking').forEach(ponerBarras);
     contarCifras(contenedor, cifrasAntes);
     programarRecarga(contenedor);
   }

@@ -44,7 +44,8 @@
     {
         var maxPar = Math.Max(1e-9, Model.Pares.SelectMany(p => new[] { p.Espana ?? 0, p.Colombia ?? 0 }).DefaultIfEmpty(0).Max());
         var etapa = GraficoEspanolizacion("etapa", Model.PorEtapa) with { Descripcion = "Españolización por etapa de formación" };
-        var dia = GraficoEspanolizacion("dia", Model.PorDia) with { Descripcion = "Españolización por día" };
+        GraficoGaia PorTiempo(string escala, IReadOnlyList<GrupoEspanolizacion> grupos)
+            => GraficoEspanolizacion(escala, grupos) with { Descripcion = "Españolización por " + escala };
         IReadOnlyList<RepartoGaia> Palabras(bool espana)
             => Model.Palabras.Where(p => p.Palabra.EsEspana == espana && p.Llamadas > 0)
                 .Select(p => new RepartoGaia(p.Palabra.Texto, p.Llamadas, p.Fraccion ?? 0)).ToList();
@@ -175,12 +176,14 @@
             @await Html.PartialAsync("_ColumnasGaia", etapa)
         </section>
 
-        <section class="tarjeta">
+        <section class="tarjeta" data-vistas>
             <header class="tarjeta-cabecera">
-                <h2>Por día</h2>
-                <span class="tarjeta-nota">% de las llamadas analizadas de cada día</span>
+                <h2>Por semana o por día</h2>
+                <span class="tarjeta-nota">% de las llamadas analizadas de cada semana o día</span>
+                <partial name="_SelectorVistaGaia" />
             </header>
-            @await Html.PartialAsync("_LineasGaia", dia)
+            <div data-vista="semana">@await Html.PartialAsync("_LineasGaia", PorTiempo("semana", Model.PorSemana))</div>
+            <div data-vista="dia" hidden>@await Html.PartialAsync("_LineasGaia", PorTiempo("dia", Model.PorDia))</div>
         </section>
 
         <section class="tarjeta">
@@ -190,7 +193,7 @@
             </header>
             <p class="nota-ns">Los que más ayuda necesitan, arriba. En gris y al final, los agentes con menos de <b>@PaginaEspanolizacionGaia.MinBase llamadas analizadas</b>: su porcentaje no es fiable.</p>
             <div class="tabla-contenedor alta">
-                <table class="ranking tabla-espanolizacion-gaia">
+                <table class="ranking con-puesto tabla-espanolizacion-gaia">
                     <colgroup>
                         <col style="width:27%" /><col style="width:10%" /><col style="width:12%" /><col style="width:12%" /><col style="width:13%" /><col style="width:13%" /><col style="width:13%" />
                     </colgroup>
@@ -211,7 +214,7 @@
                             var e = a.Espanolizacion;
                             <tr class="@(e.Base < PaginaEspanolizacionGaia.MinBase ? "pocas" : null)">
                                 <td title="@a.Texto">@a.Texto</td>
-                                <td class="num">@Formato.Entero(e.Base)</td>
+                                <td class="num barra-volumen" data-valor="@e.Base">@Formato.Entero(e.Base)</td>
                                 <td class="num">@Formato.Porcentaje(e.Espana)</td>
                                 <td class="num">@Formato.Porcentaje(e.Colombia)</td>
                                 <td class="num">@Formato.Porcentaje(a.Indicadores.Rellamada72)</td>

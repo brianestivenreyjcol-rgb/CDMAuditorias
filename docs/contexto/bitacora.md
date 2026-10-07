@@ -83,3 +83,12 @@
   Españolización; vistas con el agente frontend-solaris. Españolización: el agente de cada llamada se
   identifica por sus frases (el «hablante 1» del PBI no es fijo), palabras enteras y piso/apartamento al
   derecho; lista en `Datos/palabras_gaia.json`. Obstáculos separados por « | ». 312 pruebas. Sin publicar.
+- **06-10-2026** — **Rediseño visual de toda la web al estilo del portal SOLARIS** (pedido del usuario; agente frontend-solaris, solo
+  `Views/**`, `site.css`, `site.js`, `tema.js` e `Iconos.cs`): portada de módulos con el estado de los datos, cabecera con migas y botones
+  (Imprimir, Presentar, Tema), pestañas en barra, panel de filtros plegable, tablas con puesto / barrita de volumen / TOTAL al pie (también en
+  General y No solución), gráficas de General y No solución con cada punto en pastilla, selector Semana / Día en todas las de GAIA con
+  `PorSemana`, medidor y anillos en Estilo y color por marca en No solución. Detalle en la guía, 9.9. Probado en el 5190; sin publicar.
+
+- **07-10-2026** — La portada recibe el estado de No solución y GAIA en el modelo (`MenuModelo` +
+  `EstadoInforme`, desde `HomeController`), en vez de leer los servicios desde la vista. Guía recopiada a
+  la skill frontend-solaris y `.skill` regenerado. 312 pruebas; todo da 200 en el 5190. Sin publicar.

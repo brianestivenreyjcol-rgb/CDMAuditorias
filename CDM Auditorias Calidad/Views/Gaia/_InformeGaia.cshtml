@@ -10,7 +10,7 @@
     var volver = Context.Request.Path + Context.Request.QueryString;
     var enCurso = Model.Cargando || Model.Actualizacion == "en-curso";
 }
-<div id="informe" class="contenedor" data-marca-pagina="@MarcaDePagina(Model.Filtros?.Peticion.Marca)" data-titulo="GAIA Formación · @PaginaGaia.Titulo(Model.Pestana) · CDM Auditorías Calidad">
+<div id="informe" data-miga="@PaginaGaia.Titulo(Model.Pestana)" data-marca-pagina="@MarcaDePagina(Model.Filtros?.Peticion.Marca)" data-titulo="GAIA Formación · @PaginaGaia.Titulo(Model.Pestana) · CDM Auditorías Calidad">
     <nav class="pestanas compactas" aria-label="Pestañas de GAIA Formación">
         @foreach (var p in Enum.GetValues<PestanaGaia>())
         {
@@ -26,6 +26,7 @@
         </span>
     </nav>
 
+    <div class="contenedor">
     @if (Model.Actualizacion == "en-curso")
     {
         <div class="aviso aviso-info" role="status">@Iconos.Svg("refrescar") <span>Leyendo el Excel de nómina y trayendo las llamadas de BigQuery. Tarda alrededor de un minuto; mientras tanto se sigue viendo lo de antes. Vuelve a cargar la página cuando termine.</span></div>
@@ -91,4 +92,5 @@
             </main>
         </div>
     }
+    </div>
 </div>

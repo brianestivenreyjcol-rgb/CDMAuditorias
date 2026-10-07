@@ -10,29 +10,37 @@
     var marcadosPlegados = plegados.Sum(g => g.Marcadas);
 }
 <aside class="panel-filtros" aria-label="Filtros">
+    <partial name="_PanelCabecera" />
     <form method="get" action="@url" data-tablero-filtros>
-        <div class="panel-cabecera">
-            <h2>@Iconos.Svg("filtro") Filtros</h2>
-            <a class="boton-icono" href="@(url + borrar.Consulta())" data-parcial title="Borrar filtros" aria-label="Borrar filtros">@Iconos.Svg("borrar-filtros")</a>
-        </div>
         <input type="hidden" name="vista" value="@f.Vista" />
 
-        @if (Model.CalendarioDesde is { } cmin && Model.CalendarioHasta is { } cmax && Model.Desde is { } desde && Model.Hasta is { } hasta)
-        {
-            var min = FiltrosTablero.EscribirFecha(cmin);
-            var max = FiltrosTablero.EscribirFecha(cmax);
-            <div class="campo">
-                <span class="campo-titulo">Fecha</span>
-                <div class="rango-fechas">
-                    <input type="date" name="desde" value="@FiltrosTablero.EscribirFecha(desde)" min="@min" max="@max" aria-label="Desde" />
-                    <input type="date" name="hasta" value="@FiltrosTablero.EscribirFecha(hasta)" min="@min" max="@max" aria-label="Hasta" />
+        <div class="grupo-filtros">
+            @if (Model.CalendarioDesde is { } cmin && Model.CalendarioHasta is { } cmax && Model.Desde is { } desde && Model.Hasta is { } hasta)
+            {
+                var min = FiltrosTablero.EscribirFecha(cmin);
+                var max = FiltrosTablero.EscribirFecha(cmax);
+                <div class="campo">
+                    <span class="campo-titulo">Fecha</span>
+                    <div class="rango-fechas">
+                        <input type="date" name="desde" value="@FiltrosTablero.EscribirFecha(desde)" min="@min" max="@max" aria-label="Desde" />
+                        <input type="date" name="hasta" value="@FiltrosTablero.EscribirFecha(hasta)" min="@min" max="@max" aria-label="Hasta" />
+                    </div>
                 </div>
-            </div>
-        }
+            }
+            @foreach (var g in visibles.Where(g => g.Campo == "mes"))
+            {
+                <partial name="_Desplegable" model="g" />
+            }
+        </div>
 
-        @foreach (var g in visibles)
+        @foreach (var bloque in EnBloques(visibles.Where(g => g.Campo != "mes"), ["sector", "super", "team"], ["auditor"]))
         {
-            <partial name="_Desplegable" model="g" />
+            <div class="grupo-filtros">
+                @foreach (var g in bloque)
+                {
+                    <partial name="_Desplegable" model="g" />
+                }
+            </div>
         }
 
         @if (plegados.Count > 0)
@@ -57,10 +65,13 @@
     </form>
 
     <div class="panel-pie">
-        <a class="boton-secundario" href="@(url + "/descargar" + f.Consulta())"
-           title="Descargar en Excel las @Formato.Entero(Model.TotalFiltrado) auditorías filtradas">
-            @Iconos.Svg("hoja") Descargar Excel
-        </a>
+        <div class="acciones-filtros">
+            <a class="btn-panel primario" href="@(url + "/descargar" + f.Consulta())"
+               title="Descargar en Excel las @Formato.Entero(Model.TotalFiltrado) auditorías filtradas">
+                @Iconos.Svg("hoja") Descargar Excel
+            </a>
+            <a class="btn-panel" href="@(url + borrar.Consulta())" data-parcial>@Iconos.Svg("borrar-filtros") Borrar filtros</a>
+        </div>
         <form method="post" action="/datos/recargar" class="estado-datos">
             @Html.AntiForgeryToken()
             <input type="hidden" name="volver" value="@(url + f.Consulta())" />

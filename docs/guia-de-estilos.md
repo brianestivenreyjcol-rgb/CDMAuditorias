@@ -188,7 +188,7 @@ mismo aspecto: **Auditorías** (General y Formación & Calidad, el Power BI «CD
 | `graficas.js`, `movimiento.js` | `wwwroot/js/site.js`: fichas, guía vertical, tablas que se ordenan, cifras que cuentan y filtros |
 | `tema.js` | igual (`wwwroot/js/tema.js`, en `<head>`); guarda la elección en `localStorage` con la clave `cdm-tema` |
 | `Service/IconosKpi.cs` | `Infraestructura/Iconos.cs`: iconos de trazo y el logotipo (marino con el visto bueno naranja) |
-| `_MarcaSolaris`, login, menú del usuario, «Salir» | no hay: la web no está dentro de SOLARIS ni tiene inicio de sesión. La cabecera lleva logotipo, título y botón de tema |
+| `_MarcaSolaris`, login, menú del usuario, «Salir» | no hay: la web no está dentro de SOLARIS ni tiene inicio de sesión. La cabecera lleva logotipo con el área, título con migas y los botones Imprimir, Presentar y Tema (9.9) |
 
 - Marca: los dos informes van con `data-marca="orange"` (por defecto); la portada y la página de error, con
   `data-marca="portada"` (marino y grises). Se elige con `ViewData["Marca"]`.
@@ -219,7 +219,7 @@ En las vistas solo van, en línea, posiciones y tamaños de gráficos (`left`, `
 | Top 10 | `table.ranking[data-mapa]` con `th[data-sentido]` y `td[data-valor]` |
 | Panel y desplegables | `_PanelFiltros`, `Shared/_Desplegable` (lo usan los dos informes), «Más filtros» con contador |
 | Pestañas | `.pestanas` (`.pestana`) y, a la derecha, `.pestanas-vista` con `.segmento` (Día / Semana / Mes) |
-| Portada | tres tarjetas en fila: **General**, **CDM No solución** y **GAIA Formación** (Formación & Calidad se abre desde las pestañas) |
+| Portada | tres tarjetas de informe como la portada de módulos del portal (9.9): **General**, **CDM No solución** y **GAIA Formación** (Formación & Calidad se abre desde las pestañas) |
 
 ### 9.4 Piezas de CDM No solución
 
@@ -317,7 +317,7 @@ los tipos de las gráficas genéricas (`GraficoGaia`, `SerieGaia`, `SelectorGaia
 | Barra al 100 % apilada | `_ApiladaGaia` (`.apilada` > `.tramo.tono-*`, `.apilada-titulo`) | estado de resolución y sentimientos; leyenda con `.veredicto-ns`; el `title` se vuelve ficha (site.js: `.apilada[title]`) |
 | Árbol de motivos | `_NodoMotivoGaia` (`.cols-motivo`, `.nivel-1/2/3`, `.hijos-motivo`, `.hoja`, `.sin-chevron`) | `details` anidados que se pintan a sí mismos; la hoja no se abre |
 | Texto largo | `_TextoLargoGaia` (`.resumen-largo`, `.rotulo-largo`) y `.lista-obstaculos` | los resúmenes de la llamada, enteros y en párrafos con su rótulo; los obstáculos, en lista |
-| Tablas de las pestañas | `.tabla-rendimiento-gaia`, `.tabla-comercial-gaia`, `.tabla-mapa-gaia`, `.tabla-pares-gaia`, `.tabla-espanolizacion-gaia` | ancho mínimo y scroll en su contenedor; `tr.pocas` en gris; `tr.total` arriba |
+| Tablas de las pestañas | `.tabla-rendimiento-gaia`, `.tabla-comercial-gaia`, `.tabla-mapa-gaia`, `.tabla-pares-gaia`, `.tabla-espanolizacion-gaia` | ancho mínimo y scroll en su contenedor; `tr.pocas` en gris; `tfoot tr.total` al pie |
 
 - Motivos: DataOrb los manda en camelCase («facturacionOrCobros», «promoDescuentoNoAplicadoOMalAplicado»); `MotivoLegible` los
   parte, pone «o» y las tildes más habituales («Facturación o cobros»). Lo que ya viene sin tilde y no está en su lista se queda así.
@@ -340,3 +340,90 @@ los tipos de las gráficas genéricas (`GraficoGaia`, `SerieGaia`, `SelectorGaia
   parciales. Variables nuevas en `site.css`: `--acento-enlace` (el acento cuando es texto: se usa en enlaces, botones secundarios, iconos de tarjeta; en
   Jazztel es `#7a6200` y no el amarillo) y los bloques `:root[data-marca="ygmm"]` / `"jazztel"` (claro y oscuro) con `--acento`, `--acento-osc`,
   `--acento-enlace`, `--acento-texto`, `--acento-suave`, `--thead`, `--thead-texto` y `--tile-realce(-fuerte)`. Las series de las gráficas no cambian.
+
+
+### 9.9 Rediseño al estilo del portal SOLARIS (06-10-2026)
+
+Toda la web (portada, General, No solución y GAIA) se llevó al aspecto del portal (`capturas/` de la skill): cabecera con migas,
+pestañas en barra, panel plegable, tarjetas con cabecera y pie, tablas con puesto, barrita de volumen y TOTAL al pie, gráficas con
+cada punto en pastilla, medidor y anillos. Las clases que ya existían se conservaron; esto es lo nuevo o lo que cambió.
+
+**Paleta y variables** (`site.css`, sección 1). Los neutros son los del portal: claro `#f4f6f9` / `#ffffff` / borde `#e2e6ec` / texto
+`#121826`; oscuro, noche gris azulada `#0e1116` / tarjetas `#151a21` / borde `#262d38` / texto `#e7eaf0`. En oscuro, las series azul,
+verde, rojo y lila suben un escalón de luz. Variables nuevas:
+
+| Variable | Qué es |
+|---|---|
+| `--campo` | fondo de los campos del panel de filtros (`#f7f8fa`; en oscuro `#1b2129`) |
+| `--cab-hover` | fondo al pasar el ratón por botones y pestañas |
+| `--sombra`, `--sombra-2` | elevación neutra de las tarjetas y de la tarjeta de la portada al pasar el ratón (en oscuro, apenas una sombra) |
+| `--alto-pestanas` | alto de la barra de pestañas (57 px): el panel pegajoso cuelga de cabecera + pestañas |
+| `--tile-filo` | ahora es un tono suave del acento; solo la tarjeta `.destacada` lleva el acento entero |
+
+**Cabecera** (`Shared/_Cabecera.cshtml`). Logotipo con el área apilada (`.logo-texto` + `.logo-area`, en el color de la marca), título
+`h1` y migas (`.migas`, `.miga-area`, `.miga-actual`) y a la derecha botones con borde (`.btn-tema`): **Imprimir** (`[data-imprimir]`,
+`window.print`), **Presentar** (`[data-presentar]`: `data-presentacion` en `<html>`, sin panel ni botones, pantalla completa; se sale con
+`.pres-salir`, Esc o saliendo de la pantalla completa) y **Tema** (`[data-boton-tema]`, con su texto «Tema: automático»). Cada vista
+fija `ViewData["Area"]` («Auditorías», «No solución», «GAIA») y `ViewData["Migas"]` (string[]; «CDM» se pone solo); la miga actual
+se cambia sin recargar con `#informe[data-miga]` (site.js). La línea de 3 px del acento ya no está bajo la cabecera sino bajo la barra
+de pestañas; la cabecera lleva una línea fina. La portada no lleva título ni migas (muestra su lema).
+
+**Pestañas** (`.pestanas`): una barra a todo el ancho, pegajosa bajo la cabecera, con la pastilla activa rellena del acento y la línea
+de 3 px debajo. Va **fuera** de `.contenedor` (el ancho de 1.120–1.720 px): `#informe` la lleva y después abre `.contenedor`. A la
+derecha, `.pestanas-vista` con `.segmento` (el activo, relleno del acento) o `.estado-ns`. En móvil deja de ser pegajosa.
+
+**Panel de filtros.** Tarjeta con sombra: `Shared/_PanelCabecera` (título «FILTROS», botón `.cmp-plegar` y el raíl `.cmp-panel-rail`),
+**grupos** separados por una línea (`.grupo-filtros`; `AyudasGaia.EnBloques(grupos, ["campo", …], …)` reparte los desplegables visibles
+en bloques), «Más filtros» (Auditorías) y al pie `.acciones-filtros` con `.btn-panel.primario` (Descargar Excel o CSV) y `.btn-panel`
+(Borrar filtros, `data-parcial`), más el estado de los datos. **Plegable** a un raíl vertical: `html[data-panel="plegado"]` (solo con
+más de 760 px); el estado se guarda en `localStorage` con la clave `cdm-panel` y lo aplica `tema.js` antes de pintar. El panel sigue sin
+scroll propio: un `overflow` recortaría sus desplegables.
+
+**Tira de indicadores.** Misma `.resumen` con sombra; `.destacada` con borde y cifra en `--acento-enlace`. **Tendencia**:
+`Iconos.Tendencia("sube" | "baja" | "igual")` pinta ▲ / ▼ / – (texto, no emoji) dentro de `.resumen-variacion` (`.sube`, `.baja`, `.mejor`,
+`.peor`, `.neutra`). Solo donde el modelo trae la variación: General (las cuatro primeras) y el «No solución» del Resumen de CDM No solución;
+en GAIA no hay variación y no se inventó.
+
+**Tarjetas.** `.tarjeta-cabecera` es una rejilla: título (`h2`), nota (`.tarjeta-nota`, en gris debajo) y, a la derecha, lo demás (selector
+Semana/Día, atajos, botón CSV); lleva una línea debajo. La **frase de lectura al pie** es `.pie-tarjeta` o, sin añadir clase, el último
+`.nota-ns` de la tarjeta (línea encima y letra algo mayor). Con `.tabla-contenedor` como último hijo, la tabla llega a ras de la tarjeta.
+
+**Tablas.** Cabecera `--thead` en versalitas con flechas de orden (las dos sin ordenar, la que toca en la columna activa; se dibujan con
+`clip-path`, sin emoji). `table.ranking.con-puesto` numera las filas (1, 2, 3…) con un contador CSS que sigue al orden que se vea (Top 10 de
+General, Ranking, Estilo, Rendimiento, Comercial y Españolización de GAIA). `td.barra-volumen[data-valor]` pinta la **barrita de volumen**
+tras la cifra: site.js pone `--v` (0 a 1) sobre la mayor de su columna. **TOTAL al pie** en todas las tablas con cifras (`tfoot tr.total`) y
+en las listas (`.fila-ns.fila-total`): se añadió a General (Top 10: el del filtro entero), a No solución (Resumen: el del rango; Equipos: la
+suma de las filas; Motivos: la suma de las tipologías; Internet: el de las averías).
+
+**Gráficas.** Las piezas de GAIA pasaron a `Views/Shared` (`_LineasGaia`, `_ColumnasGaia`, `_LeyendaGraficoGaia`, `_SelectorVistaGaia`) y
+`AyudasGaia` se importa en `Views/_ViewImports.cshtml`: las usa también General (`Tablero/Graficos/_Columnas` y `_Linea` construyen un
+`GraficoGaia`). `GraficoGaia` ganó `SinVolumen` (la ficha no lleva «Llamadas N») y `FichaExtra` (un texto más por periodo, p. ej.
+«Nota 85,20 %»); `AyudasGaia.Ficha(g, i)` escribe el `<title>` de la banda. Cada punto y cada columna lleva su valor en una
+`.etiqueta-punto`; la primera y la última del eje llevan `.al-inicio` / `.al-final` (no tapan los números del eje) y, con tres o más marcas en
+un mismo día, `.centro` (apiladas con separación). General: las dos gráficas por tiempo van **a todo el ancho** (a media tarjeta no caben las
+pastillas), con la cifra de la meta en la leyenda. No solución: `_LineasNs` y `_EncuestasDiarias` rotulan cada punto (uno de cada pocos con
+tantos días, siempre el primero y el último); sin «máx.», «mín.», «pico» ni media rotulada, y se quitaron del CSS `.valor`, `.fin-serie` y
+`.meta-texto`. GAIA: el selector Semana / Día (`_SelectorVistaGaia`, empieza en Semana) está ya en Resumen, Estilo, Rendimiento, Evolución,
+Comercial y Españolización.
+
+**Medidor y anillos** (GAIA → Estilo, como `capturas/ranking-estilo-orange.png`). `.medidor` es ahora un medio arco SVG: tres zonas en
+pastel (`.zona-baja`, `.zona-media`, `.zona-alta`, cortadas en el 40 % y el 70 %), `.medidor-aguja`, `.medidor-eje`, los umbrales
+(`.medidor-umbral`, HTML sobre el SVG) y la cifra (`.medidor-cifra`). Los ocho criterios son `.anillos > .anillo.alto|medio|bajo` (arco con el
+color del umbral y pista pastel, `.anillo-cifra` dentro, `.anillo-peso` debajo, con los umbrales 40 % / 70 % de la vista). `.rejilla-estilo`
+los pone lado a lado.
+
+**Portada** (`Home/Index`). `.modulos > a.modulo`: icono de trazo (`.modulo-icono`), etiqueta (`.etiqueta`), título con rótulo (`h2 small`),
+`.descripcion` y el pie con el estado de los datos (`.modulo-estado.ok` con punto verde, `.en-curso` ámbar que late, sin clase en gris) y la
+flecha (`.flecha`). Al pasar el ratón sube, dibuja la barra del acento y colorea la flecha. La portada solo recibe del controlador los datos
+de Auditorías; el estado de No solución y de GAIA se lee de `ServicioNoSolucion.Cache` y `ServicioGaia` (solo lectura, con `@inject`): si se
+quiere quitar ese acoplamiento, el controlador tendría que pasar esas dos fechas a `MenuModelo`.
+
+**Color por marca en No solución.** `_LayoutNoSolucion` pone `ViewData["Marca"]` (`MarcaDePagina(Model.Filtros?.Marca)`: solo ORANGE → `orange`;
+solo YOIGO y/o MASMOVIL → `ygmm`; solo JAZZTEL → `jazztel`; si no, `orange`) y `#informe[data-marca-pagina]` lo repite para que site.js lo copie
+a `<html>` en las recargas parciales. General no tiene filtro de marca y se queda con su color.
+
+**Imprimir.** `@media print` deja solo la pestaña activa y su contenido, sin panel ni botones, con las tarjetas sin partir; site.js pasa la
+página a tema claro mientras se imprime (`beforeprint` / `afterprint`).
+
+**Barra de carga.** Además de al filtrar, sale al pulsar un enlace a otra página (menos las descargas) y se quita al volver (`pageshow`).
+
