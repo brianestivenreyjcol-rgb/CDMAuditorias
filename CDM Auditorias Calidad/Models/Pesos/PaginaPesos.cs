@@ -24,8 +24,9 @@ public sealed record FilaTablaPesos(string Sector, string Responsable, string Ho
 public sealed record ComprobacionPesos(bool? Correcto, string Sector, string Texto);
 
 /// <summary>
-/// «Pesos y metas por sector»: lo analizado de un mes, filtrado, con sus comprobaciones. Solo los bloques de las hojas de
-/// agentes (pedido del usuario el 07-10-2026): los de TL, supervisor y jefe de servicio se leen pero no se enseñan.
+/// «Pesos y metas por sector»: lo analizado de un mes, filtrado, con sus comprobaciones. Solo la hoja principal de agentes de
+/// cada sector (pedido del usuario el 07-10-2026, <see cref="ExtractorPesos.HojaPrincipal"/>): las de TL, supervisor, jefe de
+/// servicio y las variantes («Mes 1», «TLT»…) se leen pero no se enseñan.
 /// </summary>
 public sealed class PaginaPesos
 {
@@ -103,7 +104,9 @@ public sealed class PaginaPesos
                     comprobaciones.Add(new(false, sector, (a.Error ?? "No se pudo leer.") + " (" + a.Archivo.RutaRelativa + ")"));
                     continue;
             }
-            var bloquesAgente = a.Bloques.Where(b => b.Nivel == "Agente").ToList();
+            // Una sola hoja por sector: la principal de agentes («Ranking AG Universal», «Ranking AG», «Ranking AGENTE»…).
+            var principal = ExtractorPesos.HojaPrincipal(a.Bloques);
+            var bloquesAgente = a.Bloques.Where(b => b.Hoja == principal).ToList();
             if (bloquesAgente.Count == 0)
             {
                 comprobaciones.Add(new(null, sector, "Solo tiene bloques de team leader, supervisor o jefe de servicio: no es un ranking de agentes."));

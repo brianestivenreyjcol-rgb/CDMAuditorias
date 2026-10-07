@@ -52,5 +52,7 @@ Los bloques «Indicador | Objetivo | Peso» de TL/SP son aceleradores y no entra
   caché) pero no salen. Un fichero sin bloques de agente sale como «Sin agentes» y con una nota. Ya no hay filtro de nivel.
 - **Meses como la carpeta**: la barra enseña «09. SEPTIEMBRE» (la ficha y la nota dicen de qué mes son los datos).
 - **Ruta para validar**: cada fila lleva «Copiar ruta» y la tabla de ficheros enseña la ruta relativa con «Copiar». La ruta se escribe con la
-  unidad del usuario (`Pesos:RutaVisible` = `Y:\INCENTIVOS JAZZPLAT`) aunque se lea por la ruta de red; también va en el CSV.
+  unidad del usuario (`Pesos:RutaVisible` = `Y:\INCENTIVOS JAZZPLAT`) aunque se lea por la ruta de red; también va en el CSV.- **Una sola hoja por sector** (`ExtractorPesos.HojaPrincipal`): la que se llame «Ranking AG Universal», «Ranking AG» o «Ranking AGENTE»
+  (por ese orden, sin mirar mayúsculas, tildes ni espacios) y, si no hay, la primera hoja de agentes del libro («CO Atención YGMM», «Senior»).
+  Fuera «Mes 1», «Mes 2», «TLT», «Traspasos», «Neuro Chat»… La tabla de ficheros dice qué hoja se leyó. Septiembre (carpeta 09): 26 sectores, 147 KPI.
 

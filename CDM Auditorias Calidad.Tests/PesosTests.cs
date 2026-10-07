@@ -74,6 +74,20 @@ public sealed class PesosTests
         Assert.True(ExtractorPesos.EsCabeceraDeMetas([0, 0.6, 1, 1.5]));
     }
 
+    [Fact]
+    public void Cada_sector_se_queda_con_su_hoja_principal_de_agentes()
+    {
+        BloquePesos B(string hoja) => new(hoja, ExtractorPesos.Nivel(hoja), null, [0, 1, 1.5], [new("TMO", 1, [700, 650, 600])]);
+        // Por nombre, aunque no sea la primera y con espacios de más.
+        Assert.Equal("Ranking AG ", ExtractorPesos.HojaPrincipal([B("Ranking AG Mes 1"), B("Ranking AG "), B("Ranking TL")]));
+        Assert.Equal("Ranking AG Universal", ExtractorPesos.HojaPrincipal([B("Ranking AG Front"), B("Ranking AG"), B("Ranking AG Universal")]));
+        Assert.Equal("Ranking AGENTE", ExtractorPesos.HojaPrincipal([B("Ranking AGENTE - Traspasos"), B("Ranking AGENTE")]));
+        // Sin ninguno de esos nombres, la primera de agentes del libro (Atención YGMM, Técnico MasMovil).
+        Assert.Equal("CO Atención YGMM", ExtractorPesos.HojaPrincipal([B("Ranking TL"), B("CO Atención YGMM"), B("CO Atención YGMM Mes 2")]));
+        Assert.Equal("Senior", ExtractorPesos.HojaPrincipal([B("Senior"), B("Ranking Agentes TLT")]));
+        Assert.Null(ExtractorPesos.HojaPrincipal([B("Ranking TL"), B("Ranking SP")]));
+    }
+
     [Theory]
     [InlineData("Ranking AG", "Agente")]
     [InlineData("Ranking Agentes TLT", "Agente")]

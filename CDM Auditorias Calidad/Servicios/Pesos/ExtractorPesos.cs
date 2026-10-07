@@ -58,6 +58,27 @@ public static class ExtractorPesos
         return salida;
     }
 
+    /// <summary>Los nombres de la hoja principal de agentes, en orden de preferencia (pedido del usuario el 07-10-2026).</summary>
+    public static readonly string[] HojasPrincipales = ["ranking ag universal", "ranking ag", "ranking agente"];
+
+    /// <summary>
+    /// La hoja principal de agentes de un fichero: la primera que se llame como <see cref="HojasPrincipales"/> (sin mirar
+    /// mayúsculas, tildes ni espacios de más) y, si no hay ninguna, la primera hoja de agentes del libro («CO Atención YGMM»,
+    /// «Senior»). Nulo si el fichero no tiene bloques de agentes. Así cada sector sale una sola vez, sin «Mes 1», «Mes 2», «TLT»…
+    /// </summary>
+    public static string? HojaPrincipal(IEnumerable<BloquePesos> bloques)
+    {
+        var deAgentes = bloques.Where(b => b.Nivel == "Agente").Select(b => b.Hoja).Distinct().ToList();
+        foreach (var nombre in HojasPrincipales)
+        {
+            var hoja = deAgentes.FirstOrDefault(h => Normal(h) == nombre);
+            if (hoja is not null) return hoja;
+        }
+        return deAgentes.FirstOrDefault();
+    }
+
+    private static string Normal(string s) => Regex.Replace(SinTildes(s).ToLowerInvariant(), @"\s+", " ").Trim();
+
     /// <summary>0 | 1 | 1,5 o 0 | 0,6 | 1 | 1,5: empieza en 0, incluye el 1, crece y no pasa de 2.</summary>
     public static bool EsCabeceraDeMetas(List<double> v)
         => v.Count >= 3 && v[0] == 0 && v.Contains(1) && v.Zip(v.Skip(1)).All(p => p.Second > p.First) && v[^1] <= 2;
