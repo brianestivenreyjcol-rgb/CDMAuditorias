@@ -27,7 +27,8 @@ public sealed class PaginaSectores
 
     public IReadOnlyList<string> Avisos => Datos?.Avisos ?? [];
 
-    public static string Ruta(IndicadorSectores i) => i == IndicadorSectores.NoSolucion ? RutaBase + "/nosolucion" : RutaBase;
+    public static string Ruta(IndicadorSectores i) => i == IndicadorSectores.NoSolucion ? RutaBase + "/nosolucion"
+        : i == IndicadorSectores.Retencion ? RutaBase + "/retencion" : RutaBase;
 
     /// <summary>La otra pestaña (o esta) con los mismos filtros y el mismo mes.</summary>
     public string UrlIndicador(IndicadorSectores i) => Con(Ruta(i), R?.Parametros() ?? []);
@@ -69,7 +70,22 @@ public sealed class PaginaSectores
         return signo + Math.Abs(v).ToString("0.00", Infraestructura.Formato.Es) + Infraestructura.Formato.EspacioFino + "%";
     }
 
-    /// <summary>Más es peor en los dos indicadores: sube más de un cuarto de punto → peor; baja → mejor; si no, igual.</summary>
+    /// <summary>
+    /// Si la diferencia es buena o mala: en rellamada y no solución más es peor (sube más de un cuarto de punto → peor); en retención,
+    /// al revés. El icono es la dirección (sube o baja), no el juicio.
+    /// </summary>
+    public static (string Clase, string Icono, string Chip) Tono(double? diferencia, bool masEsMejor)
+    {
+        var t = Tono(diferencia);
+        return masEsMejor ? t.Clase switch
+        {
+            "peor" => ("mejor", t.Icono, "chip-bueno"),
+            "mejor" => ("peor", t.Icono, "chip-critico"),
+            _ => t,
+        } : t;
+    }
+
+    /// <summary>Más es peor (rellamada, no solución): sube más de un cuarto de punto → peor; baja → mejor; si no, igual.</summary>
     public static (string Clase, string Icono, string Chip) Tono(double? diferencia) => diferencia switch
     {
         > 0.0025 => ("peor", "sube", "chip-critico"),

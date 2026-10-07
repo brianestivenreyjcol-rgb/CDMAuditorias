@@ -97,6 +97,18 @@ public sealed class SectoresTests
         => Assert.Equal(esperado, PaginaSectores.Diferencia(fraccion));
 
     [Fact]
+    public void En_retencion_mas_es_mejor()
+    {
+        // Rellamada: subir 1 punto es peor. Retención: subir es mejor y bajar, peor (la flecha sigue la dirección).
+        Assert.Equal(("peor", "sube", "chip-critico"), PaginaSectores.Tono(0.01, masEsMejor: false));
+        Assert.Equal(("mejor", "sube", "chip-bueno"), PaginaSectores.Tono(0.01, masEsMejor: true));
+        Assert.Equal(("peor", "baja", "chip-critico"), PaginaSectores.Tono(-0.01, masEsMejor: true));
+        Assert.Equal("neutra", PaginaSectores.Tono(0.001, masEsMejor: true).Clase);
+        Assert.True(IndicadorSectores.Retencion.MasEsMejor);
+        Assert.Equal("/sectores/retencion", PaginaSectores.Ruta(IndicadorSectores.Retencion));
+    }
+
+    [Fact]
     public void El_color_sigue_a_la_marca_filtrada()
     {
         PaginaSectores Con(params string[] marcas) => new()

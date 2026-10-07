@@ -56,3 +56,26 @@ Jazztel 21,04 % y 9,90 %; Masivo Orange 18,94 % y 16,64 %; total rellamada 22,12
   sector del mes con el color de su marca (`_BarrasNs` de No solución + `.relleno-serie`).
 - Tabla sector × mes (`table.ranking[data-mapa]`, semáforo por columna, variación en chip, base con barrita, TOTAL al pie, `.tabla-contenedor.alta`).
 - Portada: cuarta tarjeta (`.modulos` a 4 columnas).
+
+## % Retención (pestaña «Retención», `/sectores/retencion`, 07-10-2026, publicado)
+
+Pedido del usuario: «% de retención, que es Blindaje/Cierres» (Excel `V2 - Ranking CO Anticipacion YGMM Agosto.xlsx`) y, del Excel de
+Retención YGMM de Oscar, «Retenido con herramienta RCH (retención Yoigo Más Móvil) Servicio Fijo». Solo YGMM, de BigQuery
+(`Consultas/SectoresRetencion.sql`), plataforma «JAZZPLAT BOGOTA RETENCIÓN». **Más es mejor** (`IndicadorSectores.MasEsMejor`): el semáforo
+y el color de la variación se invierten y la tarjeta del extremo es «El más bajo».
+
+- **CO Anticipación OUT YGMM** (y sus Mes 1/2): blindajes ÷ cierres. Cierres = `COMMERCIAL.TIPIS_ALL`, campaña «Emision Anticipa»,
+  `RETENCION` distinta de «N/A». Blindajes = clientes con venta de `RS_RET_Anticipa` en REP_YGMM_BONOS (con permanencia), _DESCUENTOS (lista
+  de campañas), _TERMINALES, _TV (activa), _VENTAS (activo) y _VENTAS_OTT; cada cliente una vez al mes (la consulta del usuario).
+- **CO Retención YGMM** (y Mes 1/2, Capa Externo): RCH fijo = Rete_N_F ÷ Tipi BF. Tipi BF = TIPIS_ALL campaña «BF» (sin Anticipa).
+  Rete_N_F = ventas con permanencia de `RS_RET_Bajas Nivel 1` (terminales entregados/en vuelo, bonos con permanencia, descuentos con
+  permanencia o de la lista, con la fecha de su tipificación más cercana) que cruzan por día + agente + cliente con una tipificación
+  «retenido con herramienta» de campaña BF o BE.
+- Sector = el del agente ese día en NominaBogota: `sfid` / `dealer_code` = la parte del correo de Genesys antes de la «@» en mayúsculas;
+  el `seller` de las ventas de Anticipa, el correo entero (como los Excel).
+- Cuadre: agosto, Retención YGMM 4.277 / 12.921 = 33,10 % frente a 4.273 / 12.899 = 33,13 % de las hojas «Ranking AG Masmovil» + «Yoigo»
+  (el sector entero; «Ranking AG» solo tiene 75 de los 87 agentes); Anticipación 7.322 / 14.465 = 50,62 % frente a 55,63 % del Excel, que quita
+  a mano los días 11, 12 y 31 (los blindajes cuadran). Septiembre: 47,96 % frente a 47,93 % y 24,39 % frente a 25,21 % (precierres).
+- El TOTAL de la pestaña junta las dos fórmulas (anticipación y RCH): sirve como suma de los sectores filtrados, no como un KPI.
+- Caché de sectores v3.
+

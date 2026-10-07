@@ -25,12 +25,14 @@ public sealed class DatosSectores
     public int Version { get; set; } = VersionActual;
 
     // 2 (07-10-2026): CO Técnico Convergente Orange y la no solución de CO Whatsapp JZZ.
-    public const int VersionActual = 2;
+    // 3 (07-10-2026): % retención de YGMM (Anticipación y Retención YGMM).
+    public const int VersionActual = 3;
 }
 
 /// <summary>Los dos indicadores del informe y cómo se leen.</summary>
 /// <param name="DiasCierre">Días tras el fin de mes hasta que el mes está completo (la rellamada mira 72 h hacia delante).</param>
-public sealed record IndicadorSectores(string Clave, string Titulo, string NombreBase, string NombreCasos, int DiasCierre, string Formula)
+/// <param name="MasEsMejor">La retención sube cuando va bien; la rellamada y la no solución, cuando va mal.</param>
+public sealed record IndicadorSectores(string Clave, string Titulo, string NombreBase, string NombreCasos, int DiasCierre, string Formula, bool MasEsMejor = false)
 {
     public static readonly IndicadorSectores Rellamada = new(
         "rellamada", "Rellamada 72 h", "Llamadas con dato", "Rellamadas", 3,
@@ -40,7 +42,16 @@ public sealed record IndicadorSectores(string Clave, string Titulo, string Nombr
         "nosolucion", "No solución", "Encuestas", "No solucionadas", 0,
         "Encuestas «no se solucionó» ÷ encuestas respondidas (sí + no)");
 
-    public static readonly IReadOnlyList<IndicadorSectores> Todos = [Rellamada, NoSolucion];
+    /// <summary>
+    /// % Retención (pedido del usuario el 07-10-2026), solo YGMM y cada sector como lo mide su Excel de ranking: Anticipación, blindajes
+    /// ÷ cierres; Retención YGMM, «Retenido con herramienta RCH Servicio Fijo» (retenidos en fijo ÷ bajas de fijo).
+    /// </summary>
+    public static readonly IndicadorSectores Retencion = new(
+        "retencion", "Retención", "Gestiones", "Retenidos", 0,
+        "Anticipación: blindajes ÷ cierres; Retención YGMM: retenidos con herramienta en fijo ÷ tipificaciones de baja de fijo (RCH Fijo)",
+        MasEsMejor: true);
+
+    public static readonly IReadOnlyList<IndicadorSectores> Todos = [Rellamada, NoSolucion, Retencion];
 
     public static IndicadorSectores De(string? clave) => Todos.FirstOrDefault(i => i.Clave == clave) ?? Rellamada;
 }

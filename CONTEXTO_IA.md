@@ -30,7 +30,7 @@
   Las tablas WEB empiezan el 01/08: **el usuario avisará** cuando traigan 4 meses; no investigar.
 - No solución: BigQuery por ODBC (DSN de usuario `BQCOL`), cubo de 90 días en disco (`App_Data` en
   desarrollo, `publicacion\datos` en producción), se renueva solo cada 12 h. Formato del cubo: **v3**.
-- Por sector: `Consultas/SectoresYgmm.sql` (BigQuery) y `SectoresRellamada.sql` / `SectoresNoSolucion.sql` (SQL Server, mismo `.env`);
+- Por sector: `Consultas/SectoresYgmm.sql` y `SectoresRetencion.sql` (BigQuery, la retención de YGMM desde el 07-10-2026) y `SectoresRellamada.sql` / `SectoresNoSolucion.sql` (SQL Server, mismo `.env`);
   caché pequeña `cache_sectores.json` (v1), se renueva cada 6 h. **De GAMMA no se saca nada** aquí (lo dijo el usuario).
 - Pesos: los Excel de `\\172.16.232.102\incentivos\INCENTIVOS JAZZPLAT\<año>\<NN. MES>\01. RANKING` (unidad `Y:` del usuario); se
   leen las 40 primeras filas de cada hoja con OpenXML (y los .xlsb con `LectorXlsb`). Caché `cache_pesos.json` (v2). Hojas extra en `Pesos:HojasExtra`.

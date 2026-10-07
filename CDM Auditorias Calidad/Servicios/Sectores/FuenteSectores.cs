@@ -52,12 +52,13 @@ public sealed class FuenteSectores
         }
 
         await Intentar("YGMM de BigQuery", () => TraerYgmmAsync(ct));
+        await Intentar("la retención de YGMM de BigQuery", () => TraerBigQueryAsync("SectoresRetencion.sql", IndicadorSectores.Retencion.Clave, ct));
         await Intentar("la rellamada de SQL Server (Jazztel, Orange y WhatsApp)",
             () => TraerSqlAsync("SectoresRellamada.sql", IndicadorSectores.Rellamada.Clave, ct));
         await Intentar("la no solución de SQL Server (Jazztel y Orange)",
             () => TraerSqlAsync("SectoresNoSolucion.sql", IndicadorSectores.NoSolucion.Clave, ct));
 
-        if (fallos == 3) throw new InvalidOperationException(string.Join(" · ", avisos));
+        if (fallos == 4) throw new InvalidOperationException(string.Join(" · ", avisos));
 
         return new DatosSectores { Filas = Juntar(filas), Avisos = avisos, Generado = DateTime.Now };
     }
@@ -85,6 +86,14 @@ public sealed class FuenteSectores
             salida.Add(new FilaSector(IndicadorSectores.NoSolucion.Clave, mes, sector, marca, "BigQuery", Numero(r, "BaseNoSolucion"), Numero(r, "CasosNoSolucion")));
         }
         return salida;
+    }
+
+    /// <summary>Una consulta de BigQuery que ya devuelve Mes, Sector, Marca, Base y Casos de un indicador.</summary>
+    private async Task<IEnumerable<FilaSector>> TraerBigQueryAsync(string fichero, string indicador, CancellationToken ct)
+    {
+        var filas = await FuenteBigQuery.ConsultarAsync(_odbc, Consulta(fichero), _log, ct);
+        return filas.Select(r => new FilaSector(indicador, Texto(r, "Mes"), Sector(Texto(r, "Sector")), Texto(r, "Marca"), "BigQuery",
+            Numero(r, "Base"), Numero(r, "Casos"))).ToList();
     }
 
     private async Task<IEnumerable<FilaSector>> TraerSqlAsync(string fichero, string indicador, CancellationToken ct)

@@ -26,6 +26,9 @@ public sealed class SectoresController : Controller
     [HttpGet("")]
     public IActionResult Rellamada([FromQuery] PeticionSectores filtros) => Pagina(IndicadorSectores.Rellamada, filtros);
 
+    [HttpGet("retencion")]
+    public IActionResult Retencion([FromQuery] PeticionSectores filtros) => Pagina(IndicadorSectores.Retencion, filtros);
+
     [HttpGet("nosolucion")]
     public IActionResult NoSolucion([FromQuery] PeticionSectores filtros) => Pagina(IndicadorSectores.NoSolucion, filtros);
 

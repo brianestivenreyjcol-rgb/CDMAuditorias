@@ -1,7 +1,8 @@
 @model PaginaSectores
 @* Una pestaña de «Rellamada y No solución por sector» (las dos tienen la misma forma): la tira con el mes de referencia
    frente al anterior, la evolución mensual (línea con la base en columnas grises detrás), los sectores del mes en barras
-   del color de su marca y la tabla sector × mes con el semáforo (más es peor) y el TOTAL al pie. *@
+   del color de su marca y la tabla sector × mes con el semáforo y el TOTAL al pie. En rellamada y no solución más es peor; en
+   retención (IndicadorSectores.MasEsMejor), al revés: cambian el semáforo, el color de la variación y la tarjeta del extremo. *@
 @{
     Layout = "_InformeSectores";
 }
@@ -11,9 +12,10 @@
     var mes = r.Mes;
     var total = r.Total(mes.Clave);
     var dif = r.Variacion;
-    var tono = PaginaSectores.Tono(dif);
-    var masAlto = r.PorSectorDelMes.FirstOrDefault();
-    var icono = ind == IndicadorSectores.Rellamada ? "refrescar" : "no-resuelta";
+    var tono = PaginaSectores.Tono(dif, ind.MasEsMejor);
+    // El sector que más preocupa: el más alto en rellamada y no solución; el más bajo en retención.
+    var masAlto = ind.MasEsMejor ? r.PorSectorDelMes.LastOrDefault() : r.PorSectorDelMes.FirstOrDefault();
+    var icono = ind == IndicadorSectores.Rellamada ? "refrescar" : ind == IndicadorSectores.Retencion ? "escudo" : "no-resuelta";
     var marcasEnTabla = r.Tabla.Select(f => f.Marca).Distinct().OrderBy(CalculadoraSectores.OrdenMarca).ToList();
 
     // La evolución solo con meses cerrados: un mes en curso (y en rellamada, sus últimos 3 días sin dato) bajaría la línea sin motivo.
@@ -84,7 +86,7 @@
         </div>
         <div class="resumen-dato" title="El sector con el porcentaje más alto en @mes.TextoLargo">
             <span class="resumen-icono">@Iconos.Svg("alerta")</span>
-            <span class="resumen-titulo">El más alto</span>
+            <span class="resumen-titulo">@(ind.MasEsMejor ? "El más bajo" : "El más alto")</span>
             <span class="resumen-cifra" data-contar="@Formato.Crudo(masAlto?.En(mes.Clave).Pct)" data-formato="porcentaje">@Formato.Porcentaje(masAlto?.En(mes.Clave).Pct)</span>
             <span class="resumen-variacion neutra">@(masAlto?.Sector ?? "sin datos")</span>
         </div>
@@ -143,7 +145,7 @@
                                         <td class="num" data-valor="@Formato.Crudo(dm)">
                                             @if (dm is { } dd)
                                             {
-                                                <span class="chip @PaginaSectores.Tono(dd).Chip">@PaginaSectores.Diferencia(dd)</span>
+                                                <span class="chip @PaginaSectores.Tono(dd, ind.MasEsMejor).Chip">@PaginaSectores.Diferencia(dd)</span>
                                             }
                                             else
                                             {
@@ -201,7 +203,7 @@
     <section class="tarjeta">
         <header class="tarjeta-cabecera">
             <h2>Sector por mes</h2>
-            <span class="tarjeta-nota">% @ind.Titulo.ToLowerInvariant() · el semáforo compara los sectores de cada mes (rojo, el más alto) · pulsa una cabecera para ordenar</span>
+            <span class="tarjeta-nota">% @ind.Titulo.ToLowerInvariant() · el semáforo compara los sectores de cada mes (@(ind.MasEsMejor ? "rojo, el más bajo" : "rojo, el más alto")) · pulsa una cabecera para ordenar</span>
         </header>
         <div class="tabla-contenedor alta">
             <table class="ranking tabla-sectores" data-mapa>
@@ -210,7 +212,7 @@
                         <th scope="col"><button type="button" class="ordenar">Sector</button></th>
                         @foreach (var m in r.Meses)
                         {
-                            <th scope="col" class="num" data-sentido="-1" title="@m.TextoLargo@(m.EnCurso ? " (en curso)" : "")">
+                            <th scope="col" class="num" data-sentido="@(ind.MasEsMejor ? "1" : "-1")" title="@m.TextoLargo@(m.EnCurso ? " (en curso)" : "")">
                                 <button type="button" class="ordenar">@m.Texto@(m.EnCurso ? " · en curso" : "")</button>
                             </th>
                         }
@@ -240,7 +242,7 @@
                             @if (r.MesAnterior is { } a)
                             {
                                 var dv = actual.Pct is { } x && f.En(a.Clave).Pct is { } y ? x - y : (double?)null;
-                                var tv = PaginaSectores.Tono(dv);
+                                var tv = PaginaSectores.Tono(dv, ind.MasEsMejor);
                                 <td class="num" data-valor="@Formato.Crudo(dv)">
                                     @if (dv is { } dd)
                                     {
@@ -287,13 +289,19 @@
                 <li><b>CO Whatsapp JZZ</b>: recontacto en 72 h de <code>VW_Recontacto</code> (hay datos desde agosto de 2026).</li>
                 <li>Un mes se cierra 3 días después de acabar: la rellamada de una llamada se conoce a las 72 horas.</li>
             }
+            else if (ind == IndicadorSectores.Retencion)
+            {
+                <li><b>Solo YOIGO · MASMOVIL</b>, de BigQuery (plataforma «JAZZPLAT BOGOTA RETENCIÓN»), y cada sector como lo mide su Excel de ranking. El sector es el del agente ese día en la nómina.</li>
+                <li><b>CO Anticipación OUT YGMM</b>: <b>blindajes ÷ cierres</b>. Cierres, las tipificaciones de <code>TIPIS_ALL</code> de la campaña «Emision Anticipa» que no son «N/A»; blindajes, los clientes con alguna venta de la campaña <code>RS_RET_Anticipa</code> (bonos, descuentos, terminales, TV, líneas y OTT), cada cliente una vez al mes. El Excel además quita a mano algunos días (en agosto, el 11, el 12 y el 31): aquí va el mes entero.</li>
+                <li><b>CO Retención YGMM</b>: <b>retenido con herramienta RCH, servicio fijo</b>: ventas con permanencia de «RS_RET_Bajas Nivel 1» (terminales, bonos y descuentos) cuya tipificación del mismo día, agente y cliente es «retenido con herramienta» de una baja de fijo (BF o BE), sobre las tipificaciones de baja de fijo (BF).</li>
+            }
             else
             {
                 <li><b>YOIGO · MASMOVIL</b>: BigQuery, la misma tabla corporativa (<code>no_solucion_kpi</code>, que es la respuesta 2 de la encuesta), con los mismos sectores por servicio.</li>
                 <li><b>Jazztel</b> y <b>Orange</b> (Masivo Orange y Técnico Convergente Orange): SQL Server, <code>PD_Encuesta2</code> y <code>Pd_Encuesta_Orange2</code>, respuestas «no» sobre respuestas «sí» + «no»; el sector sale del skill.</li>
                 <li><b>CO Whatsapp JZZ</b>: la pregunta «¿se ha resuelto tu consulta?» de <code>WhatsApp_Conversaciones</code>, respuestas «no» sobre «sí» + «no» (el texto libre no cuenta). El sector sale del último agente que atendió. La pregunta empezó en septiembre de 2026.</li>
             }
-            <li>Las diferencias entre dos porcentajes son una <b>resta</b> («+0,58 %»), no una variación relativa. Más es peor: lo que sube va en rojo.</li>
+            <li>Las diferencias entre dos porcentajes son una <b>resta</b> («+0,58 %»), no una variación relativa. @(ind.MasEsMejor ? "Más es mejor: lo que baja va en rojo." : "Más es peor: lo que sube va en rojo.")</li>
         </ul>
     </section>
 }
