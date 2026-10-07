@@ -572,7 +572,7 @@ html[data-presentacion] .pres-salir {
   transition: background-color var(--mov-hover) var(--mov-curva), opacity var(--mov-hover) var(--mov-curva);
 }
 .hbarra:hover { background: var(--acento-suave); }
-.hbarra-nombre { text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hbarra-nombre { text-align: right; white-space: normal; overflow-wrap: anywhere; }
 .hbarra-pista { display: flex; align-items: center; gap: 8px; min-width: 0; }
 .hbarra-relleno {
   flex: none; height: 14px; min-width: 2px; border-radius: 0 4px 4px 0; background: var(--relleno, var(--serie-1));
@@ -591,7 +591,7 @@ html[data-presentacion] .pres-salir {
 .tabla-contenedor { max-height: 352px; overflow: auto; border: 1px solid var(--borde); border-radius: var(--radio-sm); }
 .tarjeta > .tabla-contenedor { margin-left: -18px; margin-right: -18px; border-width: 1px 0; border-radius: 0; }
 .tarjeta > .tabla-contenedor:last-child { margin-bottom: -14px; border-bottom: 0; border-radius: 0 0 var(--radio) var(--radio); }
-table.ranking { width: 100%; table-layout: fixed; border-collapse: separate; border-spacing: 0; font-size: 13px; font-variant-numeric: tabular-nums; }
+table.ranking { width: 100%; table-layout: auto; border-collapse: separate; border-spacing: 0; font-size: 13px; font-variant-numeric: tabular-nums; }
 .ranking th {
   position: sticky; top: 0; z-index: 2; padding: 0; background: var(--thead); color: var(--thead-texto); font-size: 10.5px; font-weight: 600;
   letter-spacing: .05em; text-transform: uppercase; text-align: left; border-bottom: 1px solid color-mix(in srgb, var(--thead-texto) 22%, var(--thead));
@@ -610,7 +610,15 @@ table.ranking { width: 100%; table-layout: fixed; border-collapse: separate; bor
 .ranking th[aria-sort] .ordenar::after { opacity: 1; }
 .ranking th[aria-sort="descending"] .ordenar::after { clip-path: polygon(0 62%, 100% 62%, 50% 100%); }
 .ranking th[aria-sort="ascending"] .ordenar::after { clip-path: polygon(50% 0, 100% 38%, 0 38%); }
-.ranking td { padding: 6px 8px; border-bottom: 1px solid var(--borde); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ranking td { padding: 6px 8px; border-bottom: 1px solid var(--borde); white-space: nowrap; }
+/* La columna principal se lee entera (regla 10): ninguna celda corta su texto con «…». Las columnas se ajustan a su contenido
+   (los anchos de <colgroup> son solo una pista y no mandan) y la primera queda pegada a la izquierda mientras las cifras hacen scroll. */
+.ranking col { width: auto !important; }
+.ranking th:first-child, .ranking td:first-child { position: sticky; left: 0; width: 1%; white-space: nowrap; border-right: 1px solid var(--borde); }
+.ranking td:first-child { z-index: 1; background: var(--superficie); }
+.ranking th:first-child { z-index: 3; background: var(--thead); }
+.ranking tbody tr:hover td:first-child { background-color: color-mix(in srgb, var(--acento) 10%, var(--superficie)); }
+.ranking tr.hija td:first-child { background-color: color-mix(in srgb, var(--superficie-2) 45%, var(--superficie)); }
 .ranking tbody tr:last-child td { border-bottom: 0; }
 .ranking td:first-child { font-weight: 500; }
 .ranking .num { text-align: right; font-variant-numeric: tabular-nums; }
@@ -632,7 +640,7 @@ table.ranking { width: 100%; table-layout: fixed; border-collapse: separate; bor
    pequeña gris con un dato corto (la oleada). Con puesto, el número va delante del nombre dentro de la misma caja. */
 .ranking .celda-nombre { padding-top: 6px; padding-bottom: 6px; }
 .nombre-fila { display: flex; align-items: center; gap: 6px; min-width: 0; }
-.nombre-texto { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.nombre-texto { white-space: nowrap; }
 .pastilla-dato {
   flex: none; padding: 0 6px; border-radius: 999px; background: var(--superficie-2); color: var(--texto-suave);
   font-size: 11px; font-weight: 500; line-height: 1.5; font-variant-numeric: tabular-nums;
@@ -830,7 +838,7 @@ table.ranking tfoot tr.total td {
   position: sticky; bottom: 0; z-index: 1; background: var(--superficie); color: var(--texto);
   border-top: 2px solid var(--borde-fuerte); border-bottom: 0; font-weight: 600;
 }
-table.ranking tfoot tr.total td:first-child { text-transform: uppercase; letter-spacing: .04em; }
+table.ranking tfoot tr.total td:first-child { z-index: 3; text-transform: uppercase; letter-spacing: .04em; }
 .fila-ns.fila-total { border-top: 2px solid var(--borde-fuerte); background: var(--superficie); font-weight: 600; }
 .fila-total .fila-ns-nombre { text-transform: uppercase; letter-spacing: .04em; font-weight: 600; }
 /* Tinte suave frente al total del filtro: el semáforo pastel a media intensidad. */
@@ -843,13 +851,8 @@ table.ranking tfoot tr.total td:first-child { text-transform: uppercase; letter-
 .tabla-ranking-gaia { min-width: 860px; }
 .tabla-marcas-gaia { min-width: 640px; }
 .tabla-matriz-gaia { min-width: 920px; }
-.tabla-matriz-gaia th:first-child { width: 220px; }
 .tabla-matriz-gaia th { z-index: 2; }
-.tabla-matriz-gaia th:first-child, .tabla-matriz-gaia td:first-child { position: sticky; left: 0; }
 .tabla-matriz-gaia th:first-child { z-index: 3; }
-.tabla-matriz-gaia td:first-child { z-index: 1; background: var(--superficie); }
-.tabla-matriz-gaia tfoot td:first-child { z-index: 2; }
-.tabla-matriz-gaia tbody tr:hover td:first-child { background-color: var(--superficie); }
 
 /* Indicador de las gráficas: desplegable de enlaces (cada uno recarga la pestaña con ?kpi=). */
 .barra-kpi { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; margin-bottom: 16px; }
@@ -861,10 +864,7 @@ a.opcion-enlace:hover { background: var(--superficie-2); }
 a.opcion-enlace.activa { background: var(--acento-suave); font-weight: 600; }
 
 /* Gráficas: la línea diaria sin eje X (lo lleva el volumen de debajo), el volumen bajo y el color por umbral. */
-.grafica.sin-eje-x { height: 226px; padding-bottom: 10px; }
-.grafica.corta { height: 128px; padding-top: 14px; }
 .columna-umbral { fill: var(--relleno, var(--serie-1)); }
-.columna-volumen { fill: var(--serie-2); }
 .columna-serie.columna-umbral { fill: var(--relleno, var(--serie-1)); }
 .eje-y.derecho { right: auto; left: calc(100% + 8px); }
 .leyenda-ns.centrada { justify-content: center; margin: 2px 0 4px; }
@@ -936,10 +936,10 @@ button.segmento.activo { background: var(--acento); color: var(--acento-texto); 
 .aviso-plegable .lista-ns { padding: 2px 18px 12px 34px; font-size: 12.5px; }
 
 /* Llamadas: fila con el ancho mínimo del tablero (la marca y la etapa van bajo el nombre del agente). */
-.cols-llamada { grid-template-columns: 148px minmax(0, 1.4fr) 84px 54px 62px 74px 92px 86px minmax(0, 1fr); }
+.cols-llamada { grid-template-columns: 150px 270px 90px 56px 62px 76px 92px 86px minmax(150px, 1fr); }
 .celda-doble { min-width: 0; }
 .celda-doble .recorta { font-weight: 500; }
-.recorta { display: block; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.recorta { display: block; min-width: 0; white-space: normal; overflow-wrap: anywhere; } /* ya no corta: parte en dos líneas */
 .buscar-ns-campo.ancho { width: min(480px, 100%); }
 .detalle-gaia { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px 28px; }
 .detalle-gaia h3 { margin: 0 0 6px; font-size: 11.5px; letter-spacing: .04em; text-transform: uppercase; color: var(--texto-tenue); }
@@ -1031,8 +1031,8 @@ button.segmento.activo { background: var(--acento); color: var(--acento-texto); 
 .indicador-bloque[hidden] { display: none; }
 .serie-gris { --serie: color-mix(in srgb, var(--texto) 22%, var(--superficie)); }
 .columna-gris { fill: color-mix(in srgb, var(--texto) 7%, transparent); stroke: color-mix(in srgb, var(--texto) 20%, transparent); stroke-width: 1; }
-.degradado-ini { stop-color: var(--serie-1); stop-opacity: .32; }
-.degradado-fin { stop-color: var(--serie-1); stop-opacity: 0; }
+.degradado-ini { stop-color: var(--serie, var(--serie-1)); stop-opacity: .32; }
+.degradado-fin { stop-color: var(--serie, var(--serie-1)); stop-opacity: 0; }
 .valor-volumen {
   position: absolute; transform: translate(-50%, calc(-100% - 2px)); font-size: 10.5px; line-height: 1; color: var(--texto-suave);
   font-variant-numeric: tabular-nums; white-space: nowrap; pointer-events: none;
@@ -1042,9 +1042,7 @@ button.segmento.activo { background: var(--acento); color: var(--acento-texto); 
 .tabla-ranking-estilo { min-width: 1700px; }
 .tabla-ranking-estilo.con-sector { min-width: 1820px; }
 .tabla-tipologico { min-width: 1680px; }
-.tabla-ranking-estilo th:first-child { width: 290px; }
-.tabla-ranking-estilo.con-sector th:nth-child(2) { width: 118px; }
-.tabla-tipologico th:first-child { width: 300px; }
+
 .tarjeta-cabecera .barra-tarjeta { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 8px; }
 .barra-tarjeta .pestanas-vista { margin-left: 0; }
 .buscar-tarjeta { display: inline-flex; align-items: center; gap: 6px; }
@@ -1086,8 +1084,8 @@ button.segmento.activo { background: var(--acento); color: var(--acento-texto); 
 .sentimiento-cifra b { color: var(--texto); font-weight: 600; }
 
 .roles { display: grid; gap: 4px; }
-.rol-fila { display: grid; grid-template-columns: minmax(120px, 34%) minmax(0, 1fr) 108px; align-items: center; gap: 10px; font-size: 12.5px; }
-.rol-nombre { text-align: right; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rol-fila { display: grid; grid-template-columns: minmax(180px, 38%) minmax(0, 1fr) 108px; align-items: center; gap: 10px; font-size: 12.5px; }
+.rol-nombre { text-align: right; white-space: normal; overflow-wrap: anywhere; }
 .rol-pista { position: relative; height: 12px; border-radius: 3px; background: var(--superficie-2); overflow: hidden; }
 .rol-base, .rol-rellamadas { position: absolute; left: 0; top: 0; bottom: 0; transform-origin: left center; animation: crecer-x var(--mov-crecer) var(--mov-curva) both; }
 .rol-base { background: var(--mapa-verde); }
@@ -1159,7 +1157,7 @@ button.segmento.activo { background: var(--acento); color: var(--acento-texto); 
 .modulo-estado::before { content: ""; flex: none; width: 8px; height: 8px; border-radius: 50%; background: var(--borde-fuerte); }
 .modulo-estado.ok::before { background: var(--bueno); box-shadow: 0 0 0 3px color-mix(in srgb, var(--bueno) 18%, transparent); }
 .modulo-estado.en-curso::before { background: var(--atencion); animation: latido 1.1s ease-in-out infinite; }
-.detalle { overflow: hidden; font-size: 12px; color: var(--texto-tenue); white-space: nowrap; text-overflow: ellipsis; }
+.detalle { font-size: 12px; color: var(--texto-tenue); }
 .flecha {
   flex: none; display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; background: var(--superficie-2); color: var(--texto); font-size: 18px;
   transition: background-color 260ms var(--mov-curva), color 260ms var(--mov-curva), transform 320ms var(--mov-curva);
@@ -1202,7 +1200,7 @@ button.segmento.activo { background: var(--acento); color: var(--acento-texto); 
   .filas-ns > * { min-width: 600px; }
   /* GAIA: las filas de llamadas hacen scroll; el detalle desplegado cabe en la pantalla. */
   .filas-ns.filas-llamadas > * { min-width: 0; }
-  .filas-llamadas > .fila-ns-cabecera, .filas-llamadas > details > summary, .filas-llamadas > .fila-total { min-width: 940px; }
+  .filas-llamadas > .fila-ns-cabecera, .filas-llamadas > details > summary, .filas-llamadas > .fila-total { min-width: 1080px; }
   .resumen.en-4, .detalle-gaia, .calificaciones-gaia { grid-template-columns: minmax(0, 1fr); }
   .barra-kpi details.multi { width: 100%; }
   .anillos { grid-template-columns: repeat(2, minmax(0, 1fr)); }

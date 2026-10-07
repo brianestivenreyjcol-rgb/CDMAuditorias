@@ -17,7 +17,7 @@
         var kpi = Model.Kpi;
         var mediaKpi = kpi.Valor(t);
         GraficoGaia Linea(string escala, IReadOnlyList<GrupoGaia> grupos)
-            => Grafico(escala, grupos, (kpi.Nombre, "serie-a", kpi.Valor)) with { EjeX = false, Descripcion = kpi.Nombre + " por " + escala };
+            => Grafico(escala, grupos, (kpi.Nombre, "serie-a", kpi.Valor)) with { Descripcion = kpi.Nombre + " por " + escala };
 
         SelectorGaia Selector(string id, string titulo, KpiGaia actual, string porDefecto)
             => new(id, titulo, actual.Nombre, CalculadoraGaia.Kpis
@@ -41,11 +41,9 @@
             </header>
             <div data-vista="semana">
                 @await Html.PartialAsync("_LineasGaia", Linea("semana", Model.PorSemana))
-                @await Html.PartialAsync("_ColumnasGaia", GraficoVolumen("semana", Model.PorSemana))
             </div>
             <div data-vista="dia" hidden>
                 @await Html.PartialAsync("_LineasGaia", Linea("dia", Model.PorDia))
-                @await Html.PartialAsync("_ColumnasGaia", GraficoVolumen("dia", Model.PorDia))
             </div>
         </section>
 

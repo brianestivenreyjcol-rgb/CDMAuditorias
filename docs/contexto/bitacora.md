@@ -103,4 +103,7 @@
 - **07-10-2026** — GAIA: pestañas **Ranking y Estilo** (medidor, anillos, evolución con pestañas de indicador, ranking general y tipológico, etapa y matriz) y
   **Motivo de contacto** (tarjetas con histórico, burbujas, sentimiento, rellamada por rol, obstáculos, mapa de calor y clientes) como las del portal; patrón «indicador + volumen»
   compartido (también en el Resumen); fuera todas las líneas de media, meta y umbrales y el gris de las filas con pocas llamadas. Guía, 9.11. 319 pruebas; probado en el 5190; sin publicar.
+- **07-10-2026** — Todas las gráficas de línea con el estilo de la de adherencia (suavizada, degradado bajo la principal, llamadas en columnas grises detrás, eje ajustado a los datos), también
+  TMO, Evolución, Comercial, Españolización, General y No solución; y la primera columna de todas las tablas se lee entera y queda fija a la izquierda. Guía, 9.12. 319 pruebas; probado en el 5190; sin publicar.
 
+- **07-10-2026** — La curva suavizada de las gráficas (`AyudasGaia.TrazosSuaves`) ya no se pasa de largo: los puntos de control se acotan al rango de cada tramo (antes podía bajar de 0 en un valle). Guía recopiada a la skill.

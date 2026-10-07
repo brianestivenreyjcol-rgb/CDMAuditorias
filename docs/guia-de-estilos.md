@@ -151,7 +151,7 @@ Yoigo, 3 en el de Orange). Debajo de 1.100 px, una por fila.
 | Tarjeta KPI con icono | `.tile.kpi-m` | iconos de trazo en `Service/IconosKpi.cs` |
 | Bloque | `.tarjeta` (voz), `.card` (informes) | radio 16 px |
 | Pareja de columnas | `.rejilla-2` | siempre dos |
-| Tabla que se ordena y colorea | `table.ranking[data-mapa]` | `th[data-sentido]` (1 más es mejor, −1 más es peor, 0 sin color) y `td[data-valor]`; los grupos con pocas llamadas pueden ir al final, **sin gris**; **total al pie**: `<tfoot><tr class="total">` con «TOTAL», pegado abajo del scroll (`sticky; bottom: 0`), borde superior de 2 px, sin color; nunca una fila de total arriba |
+| Tabla que se ordena y colorea | `table.ranking[data-mapa]` | `th[data-sentido]` (1 más es mejor, −1 más es peor, 0 sin color) y `td[data-valor]`; los grupos con pocas llamadas pueden ir al final, **sin gris**; **la primera columna se lee entera** (sin «…»), se ajusta a su texto y queda fija a la izquierda al hacer scroll; **total al pie**: `<tfoot><tr class="total">` con «TOTAL», pegado abajo del scroll (`sticky; bottom: 0`), borde superior de 2 px, sin color; nunca una fila de total arriba |
 | Gráfica por tiempo | `.crono-tarjeta` con `crono-linea principal/secundaria`, área y pastillas | SVG del servidor |
 | Barras horizontales | `.hbarras > .hbarra` | `.hbarra-media` en pareja |
 | Árbol desplegable | `#tablaTipologico`, `tr.padre` / `tr.hija` | `ccvbpe.js` |
@@ -504,4 +504,22 @@ mapa de afectación desaparecieron (los sustituye el tipológico); se quitaron `
 
 **Piezas pequeñas.** `Views/_ViewImports.cshtml` importa también `Servicios.Gaia` (las vistas compartidas usan `GrupoGaia`). `.barra-tarjeta` pone segmentos y buscador a la derecha de la cabecera
 de una tarjeta (en móvil, debajo y a todo el ancho). Españolización lleva la oleada en la pastilla del agente.
+
+
+### 9.12 Un solo estilo para las gráficas de línea y la primera columna entera (07-10-2026)
+
+**Gráficas de línea: todas como la de adherencia.** `Shared/_LineasGaia` se rehízo con el patrón «indicador + volumen» (9.11): cada serie suavizada
+(`TrazosSuaves`) con su color de la paleta de la marca y, **solo bajo la primera**, el área en degradado (`.degradado-ini` / `.degradado-fin` leen `--serie` de su `<g class="serie-…">`);
+las llamadas, la base o las auditorías como columnas grises (`.columna-gris`) detrás, en el mismo plano, con su cifra gris (`.valor-volumen`); el eje Y ajustado al rango de los datos
+más un 10 % (no desde 0; TMO con su formato m:ss); cuatro marcas en el eje; una pastilla en cada punto y, con escalas muy distintas, eje derecho para la segunda serie. `GraficoGaia.ConVolumen`
+(por defecto sí) lo controla; ya no existe el panel de columnas de color aparte (`GraficoVolumen`, `Baja`, `.grafica.corta`, `.columna-volumen`, `.sin-eje-x` se quitaron). Lo usan Rendimiento (TMO y cortas / sin
+contexto), Evolución (el KPI del selector), Comercial, Españolización y la línea de General (con las auditorías detrás). `_IndicadorVolumenGaia` (Ranking y Estilo, Resumen) sigue igual. En
+No solución, `_LineasNs` (por marca: sin degradado salvo con una sola marca, y los tramos que tocan un día parcial, rectos y discontinuos) y `_EncuestasDiarias` (encuestadas en línea suavizada con las
+llamadas entrantes en columnas grises detrás) usan el mismo trazo. Las gráficas de columnas por etapa (`etapa-pre` / `etapa-aseg`) y la de auditorías de General siguen siendo columnas.
+
+**La columna principal se lee entera (regla 10).** `table.ranking` pasa a `table-layout: auto` y `.ranking col { width: auto !important }` (los `<colgroup>` son solo una pista): ninguna celda lleva
+`overflow: hidden` ni `text-overflow: ellipsis` y la primera columna (`th`, `td` y el TOTAL del pie) se ajusta a su texto (`width: 1%; white-space: nowrap`) y queda **pegada a la izquierda**
+(`position: sticky; left: 0`, con fondo opaco, también al pasar el ratón y en las filas hijas del tipológico) mientras las cifras hacen scroll horizontal. El puesto y la pastilla de la oleada van dentro de esa celda.
+Los textos que no son de tabla y se cortaban (nombres de barras `.hbarra-nombre`, `.rol-nombre`, `.recorta` de las llamadas, `.detalle` de la portada) ahora se parten en dos líneas; en Llamadas el agente tiene
+una columna de 270 px. `.recorta` ya no se usa en `td` (un `td` con `display: block` deja de ser celda).
 

@@ -224,11 +224,11 @@
                             @foreach (var c in Model.Clientes)
                             {
                                 <tr>
-                                    <td class="recorta" title="@c.IdCliente">@c.IdCliente</td>
+                                    <td title="@c.IdCliente">@c.IdCliente</td>
                                     <td class="num" data-valor="@c.Llamadas">@Formato.Entero(c.Llamadas)</td>
                                     <td class="num" data-valor="@c.Rellamadas">@Formato.Entero(c.Rellamadas)</td>
                                     <td class="num" data-valor="@Formato.Crudo(c.PorcentajeRellamada)">@Formato.Porcentaje(c.PorcentajeRellamada)</td>
-                                    <td class="recorta" title="@MotivoDe(c.Motivo2)">@MotivoDe(c.Motivo2)</td>
+                                    <td title="@MotivoDe(c.Motivo2)">@MotivoDe(c.Motivo2)</td>
                                     <td class="num" data-valor="@c.UltimaLlamada.ToString("yyyyMMddHHmm")">@c.UltimaLlamada.ToString("dd/MM/yyyy HH:mm")</td>
                                 </tr>
                             }

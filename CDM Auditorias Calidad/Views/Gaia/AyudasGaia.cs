@@ -152,8 +152,11 @@ public static class AyudasGaia
                 var p1 = tramo[k];
                 var p2 = tramo[k + 1];
                 var p3 = tramo[Math.Min(tramo.Count - 1, k + 2)];
-                var c1 = (X: p1.X + (p2.X - p0.X) / 6, Y: p1.Y + (p2.Y - p0.Y) / 6);
-                var c2 = (X: p2.X - (p3.X - p1.X) / 6, Y: p2.Y - (p3.Y - p1.Y) / 6);
+                // Los puntos de control se quedan dentro del rango vertical del tramo: así la curva no se pasa
+                // de largo en picos y valles (no baja de 0 ni inventa máximos que no están en los datos).
+                double Acotar(double y) => Math.Clamp(y, Math.Min(p1.Y, p2.Y), Math.Max(p1.Y, p2.Y));
+                var c1 = (X: p1.X + (p2.X - p0.X) / 6, Y: Acotar(p1.Y + (p2.Y - p0.Y) / 6));
+                var c2 = (X: p2.X - (p3.X - p1.X) / 6, Y: Acotar(p2.Y - (p3.Y - p1.Y) / 6));
                 curva.Append($"C{C(c1.X)},{C(c1.Y)} {C(c2.X)},{C(c2.Y)} {C(p2.X)},{C(p2.Y)} ");
             }
             linea.Append(curva);
@@ -232,11 +235,11 @@ public static class AyudasGaia
         public string NombreVolumen { get; init; } = "Llamadas";
         /// <summary>Etiquetas del eje X (las líneas con el volumen debajo van sin ellas).</summary>
         public bool EjeX { get; init; } = true;
-        /// <summary>Gráfica baja (el volumen bajo una línea).</summary>
-        public bool Baja { get; init; }
         /// <summary>Las columnas llevan el color de los umbrales de la adherencia.</summary>
         public bool PorUmbral { get; init; }
         public bool ConLeyenda { get; init; } = true;
+        /// <summary>Las líneas llevan el volumen (llamadas, base, auditorías) como columnas grises detrás, en el mismo plano.</summary>
+        public bool ConVolumen { get; init; } = true;
         /// <summary>Los puntos son días (si son muchos, se rotula uno de cada dos o menos).</summary>
         public bool Dia { get; init; }
         /// <summary>Ancho en píxeles del plano: decide cuántas pastillas caben (media tarjeta, 400; tarjeta entera, 800).</summary>
@@ -367,11 +370,6 @@ public static class AyudasGaia
     public static GraficoGaia Grafico(string escala, IReadOnlyList<GrupoGaia> grupos, params (string Nombre, string Clase, Func<IndicadoresGaia, double?> Valor)[] series)
         => Construir(escala, grupos.Select(g => (g.Clave, g.Texto, g.Indicadores.Llamadas)).ToList(),
             series.Select(s => (s.Nombre, s.Clase, (IReadOnlyList<double?>)grupos.Select(g => s.Valor(g.Indicadores)).ToList())));
-
-    /// <summary>Las llamadas de cada día, semana o etapa en columnas bajas (bajo una línea); cada columna con su cifra.</summary>
-    public static GraficoGaia GraficoVolumen(string escala, IReadOnlyList<GrupoGaia> grupos)
-        => Grafico(escala, grupos, ("Llamadas", "serie-b", i => i.Llamadas))
-           with { Entero = true, Baja = true, ConLeyenda = false, Descripcion = "Llamadas" };
 
     /// <summary>Gráfico de españolización: una serie con España y otra con Colombia; el volumen es la base.</summary>
     public static GraficoGaia GraficoEspanolizacion(string escala, IReadOnlyList<GrupoEspanolizacion> grupos)

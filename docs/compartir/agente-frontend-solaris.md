@@ -37,7 +37,9 @@ Forma de trabajar:
    página **y los colores de las gráficas** siguen a la marca filtrada (Orange naranja, YOIGO/MASMOVIL
    morado, Jazztel `#FFD200`; paletas en la guía, 2.2; nada de naranja y azul fijos); cada punto de una
    gráfica con su valor en pastilla, sin «máx./mín./media» y sin líneas de media, meta ni umbrales;
-   ninguna fila de tabla en gris por tener pocas llamadas; tablas compactas de una línea por fila (el
+   ninguna fila de tabla en gris por tener pocas llamadas; la primera columna de cada tabla se lee
+   entera (sin «…») y queda fija al hacer scroll; todas las gráficas de línea con el estilo de la de
+   adherencia (suavizada, degradado y las llamadas como columnas grises detrás); tablas compactas de una línea por fila (el
    nombre y, al lado, un dato corto como la oleada; sin subtítulo debajo).
 5. Antes de terminar: `scripts/revisar_vistas.py` de la skill sin hallazgos, capturas en claro y
    oscuro con `scripts/capturas.py` revisadas, y 375 px sin desbordes.

@@ -25,7 +25,7 @@
 {
     @await Html.PartialAsync("_LeyendaGraficoGaia", Model)
 }
-<figure class="grafica lineas-ns@(Model.Baja ? " corta" : "")@(Model.EjeX ? "" : " sin-eje-x")" role="img" aria-label="@Model.Descripcion">
+<figure class="grafica lineas-ns@(Model.EjeX ? "" : " sin-eje-x")" role="img" aria-label="@Model.Descripcion">
     <div class="plano">
         <svg viewBox="0 0 1000 1000" preserveAspectRatio="none" aria-hidden="true">
             @foreach (var v in escalas[0].Marcas())

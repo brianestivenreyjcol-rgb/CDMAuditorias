@@ -63,6 +63,7 @@
   aseguramiento y las tablas son compactas (una línea, oleada en pastilla).
   También: sin líneas de media/meta/umbral en las gráficas ni filas en gris por pocas llamadas; patrón «indicador + volumen» compartido; GAIA tiene
   «Ranking y Estilo» (unidas) y «Motivo de contacto» nuevas (guía 9.11).
+  Gráficas de línea: un solo estilo (suavizada + degradado + llamadas grises detrás); tablas: primera columna entera y fija (guía 9.12).
 
 ## Pendientes
 
