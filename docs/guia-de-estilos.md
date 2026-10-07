@@ -541,3 +541,17 @@ Orange → `orange`). Lo nuevo:
 - **Portada a cuatro tarjetas**: `.modulos` pasa a `repeat(4, …)` (dos por fila por debajo de 1.100 px, una en móvil) y `.portada` a 1.320 px.
 - Las diferencias se escriben como resta con signo (`PaginaSectores.Diferencia`: «+0,58 %», «−1,15 %»), como en No solución.
 
+
+### 9.14 Pesos y metas por sector (`/pesos`, 07-10-2026)
+
+Hecho con piezas que ya existían: cabecera, `.pestanas` con una sola pestaña y los meses en `.pestanas-vista`, panel con `_Desplegable`
+(Sector, Nivel, Responsable) y el botón principal «Analizar y validar» (`.btn-panel.primario` dentro de un `form` POST), `.resumen.en-4`,
+`table.ranking` con `.pastilla-dato` (responsable al lado del sector, nivel al lado de la hoja) y `.chip.chip-atencion` «Revisar» en el KPI,
+`ul.comprobaciones-ns` con `FormatoNoSolucion.ChipComprobacion` para la validación (Revisar / Nota / Correcto), `.preparando-ns` y un `.aviso-info`
+con `[data-recargar-en="5"]` mientras se analiza. No hay variables ni clases nuevas.
+
+- **Portada con cinco tarjetas**: `.modulos` vuelve a `repeat(3, …)` (3 + 2) y `.modulo:nth-child(5)` entra con su escalón.
+- **Meses en la barra de pestañas en móvil**: `.pestanas > .pestanas-vista` pasa a varias líneas (`flex-wrap`, `border-radius: 16px`); con seis
+  meses ensanchaba la página a 526 px.
+- Metas: en % si todas las de la fila caben en ±150 %; si no, la cifra (TMO, horas, notas). «Sin peso» en la columna del peso.
+

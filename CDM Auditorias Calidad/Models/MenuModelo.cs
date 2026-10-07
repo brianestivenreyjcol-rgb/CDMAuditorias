@@ -7,4 +7,4 @@ public sealed record EstadoInforme(DateTime? Cargado, bool EnCurso);
 /// La portada: si hay datos de cada informe y de cuándo son. Auditorías trae su instantánea entera (para el
 /// número de auditorías y el rango); No solución, GAIA y «por sector», solo su estado.
 /// </summary>
-public sealed record MenuModelo(InstantaneaAuditorias? Datos, string? Error, EstadoInforme NoSolucion, EstadoInforme Gaia, EstadoInforme? Sectores = null);
+public sealed record MenuModelo(InstantaneaAuditorias? Datos, string? Error, EstadoInforme NoSolucion, EstadoInforme Gaia, EstadoInforme? Sectores = null, EstadoInforme? Pesos = null);

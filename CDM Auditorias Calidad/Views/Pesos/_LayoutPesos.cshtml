@@ -1,0 +1,13 @@
+@model PaginaPesos
+@* La página entera de «Pesos y metas por sector»: el documento base y la cabecera común. Lo de dentro (#informe) es
+   Index, que es lo único que se pide al filtrar. *@
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Pesos y metas por sector";
+    ViewData["Marca"] = "orange";
+    ViewData["Area"] = "Pesos";
+    ViewData["Migas"] = new[] { "Pesos y metas", Model.Mes is { } m ? PaginaPesos.TextoMes(m) : "Sin datos" };
+    var cabecera = new CabeceraModelo("Pesos y metas por sector", "Los objetivos de los Excel de ranking de incentivos");
+}
+<partial name="_Cabecera" model="cabecera" />
+@RenderBody()

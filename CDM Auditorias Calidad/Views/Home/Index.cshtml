@@ -1,5 +1,5 @@
 @model MenuModelo
-@* Portada: la portada de módulos del portal SOLARIS. Cuatro tarjetas de informe (icono de trazo, etiqueta, título,
+@* Portada: la portada de módulos del portal SOLARIS. Cinco tarjetas de informe (icono de trazo, etiqueta, título,
    descripción y, abajo, el estado de sus datos con el botón de flecha). El color de marca solo queda en el logotipo:
    la página va en marino y grises (data-marca="portada"). El estado de cada informe llega en el modelo. *@
 @{
@@ -25,6 +25,8 @@
     var gaiaEnCurso = Model.Gaia.EnCurso;
     var sectoresCuando = Model.Sectores?.Cargado;
     var sectoresEnCurso = Model.Sectores?.EnCurso ?? false;
+    var pesosCuando = Model.Pesos?.Cargado;
+    var pesosEnCurso = Model.Pesos?.EnCurso ?? false;
 }
 <partial name="_Cabecera" model="new CabeceraModelo()" />
 
@@ -35,7 +37,7 @@
             <span class="portada-marca-texto"><b>CDM</b><span>Auditorías</span></span>
         </div>
         <div class="portada-hero-texto">
-            <p class="portada-kicker">4 informes</p>
+            <p class="portada-kicker">5 informes</p>
             <h1 class="portada-titulo">Informes de calidad y formación</h1>
             <p class="portada-lema">Elige el informe con el que quieres trabajar. Cada tarjeta dice si sus datos ya están cargados.</p>
         </div>
@@ -142,6 +144,34 @@
                     {
                         <span class="modulo-estado">Datos sin cargar</span>
                         <span class="detalle">Se traen al abrir el informe</span>
+                    }
+                </div>
+                <span class="flecha">@Iconos.Svg("flecha")</span>
+            </div>
+        </a>
+        <a class="modulo" href="/pesos">
+            <div class="modulo-cab">
+                <span class="modulo-icono">@Iconos.Svg("diana")</span>
+                <span class="etiqueta">Informe</span>
+            </div>
+            <h2><small>Incentivos · Ranking</small>Pesos y metas</h2>
+            <p class="descripcion">Los KPI, pesos y metas de cada sector, leídos de los Excel de ranking del mes (la versión más reciente) y validados.</p>
+            <div class="modulo-pie">
+                <div class="modulo-pie-texto">
+                    @if (pesosEnCurso)
+                    {
+                        <span class="modulo-estado en-curso">Leyendo los Excel…</span>
+                        <span class="detalle">Tarda un par de minutos</span>
+                    }
+                    else if (pesosCuando is { } pc)
+                    {
+                        <span class="modulo-estado ok">Analizado @(pc.Date == DateTime.Today ? "a las " + pc.ToString("HH:mm", Formato.Es) : "el " + pc.ToString("dd/MM", Formato.Es))</span>
+                        <span class="detalle">Se vuelve a leer con «Analizar y validar»</span>
+                    }
+                    else
+                    {
+                        <span class="modulo-estado">Sin analizar</span>
+                        <span class="detalle">Se analiza al abrir el informe</span>
                     }
                 </div>
                 <span class="flecha">@Iconos.Svg("flecha")</span>

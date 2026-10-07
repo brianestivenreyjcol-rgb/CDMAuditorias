@@ -4,6 +4,7 @@ using CDM_Auditorias_Calidad.Models;
 using CDM_Auditorias_Calidad.Servicios.Datos;
 using CDM_Auditorias_Calidad.Servicios.Gaia;
 using CDM_Auditorias_Calidad.Servicios.NoSolucion;
+using CDM_Auditorias_Calidad.Servicios.Pesos;
 using CDM_Auditorias_Calidad.Servicios.Sectores;
 using Microsoft.AspNetCore.Mvc;
 
@@ -15,16 +16,18 @@ public sealed class HomeController : Controller
     private readonly ServicioNoSolucion _noSolucion;
     private readonly ServicioGaia _gaia;
     private readonly ServicioSectores _sectores;
+    private readonly ServicioPesos _pesos;
 
-    public HomeController(AlmacenAuditorias almacen, ServicioNoSolucion noSolucion, ServicioGaia gaia, ServicioSectores sectores)
+    public HomeController(AlmacenAuditorias almacen, ServicioNoSolucion noSolucion, ServicioGaia gaia, ServicioSectores sectores, ServicioPesos pesos)
     {
         _almacen = almacen;
         _noSolucion = noSolucion;
         _gaia = gaia;
         _sectores = sectores;
+        _pesos = pesos;
     }
 
-    /// <summary>La portada: las cuatro tarjetas de informe con el estado de sus datos.</summary>
+    /// <summary>La portada: las cinco tarjetas de informe con el estado de sus datos.</summary>
     [HttpGet("/")]
     public IActionResult Index()
     {
@@ -37,7 +40,8 @@ public sealed class HomeController : Controller
         return View(new MenuModelo(_almacen.Actual, _almacen.UltimoError,
             new EstadoInforme(nsCargado, _noSolucion.ConstruyendoAhora),
             new EstadoInforme(gaiaCargado, _gaia.Cargando),
-            new EstadoInforme(sectoresCargado, _sectores.Cargando)));
+            new EstadoInforme(sectoresCargado, _sectores.Cargando),
+            new EstadoInforme(_pesos.UltimoAnalisis()?.Analizado, _pesos.Analizando)));
     }
 
     [Route("/error")]

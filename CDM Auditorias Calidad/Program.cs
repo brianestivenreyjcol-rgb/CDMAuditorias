@@ -3,6 +3,7 @@ using CDM_Auditorias_Calidad.Servicios.Configuracion;
 using CDM_Auditorias_Calidad.Servicios.Datos;
 using CDM_Auditorias_Calidad.Servicios.Gaia;
 using CDM_Auditorias_Calidad.Servicios.NoSolucion;
+using CDM_Auditorias_Calidad.Servicios.Pesos;
 using CDM_Auditorias_Calidad.Servicios.Sectores;
 
 // Números y fechas como en el Power BI (es-ES). Las coordenadas de los gráficos se
@@ -32,6 +33,10 @@ builder.Services.AddHostedService<RevisionGaia>();
 builder.Services.Configure<OpcionesSectores>(builder.Configuration.GetSection(OpcionesSectores.Seccion));
 builder.Services.AddSingleton<ServicioSectores>();
 builder.Services.AddHostedService<RevisionSectores>();
+
+// Pesos y metas por sector: los bloques de objetivos de los Excel de ranking de incentivos (carpeta compartida).
+builder.Services.Configure<OpcionesPesos>(builder.Configuration.GetSection(OpcionesPesos.Seccion));
+builder.Services.AddSingleton<ServicioPesos>();
 
 var app = builder.Build();
 

@@ -13,6 +13,8 @@
   ranking-mvc (son dos copias independientes del motor).
 - Desde el 07-10-2026, **Rellamada y No solución por sector** (`/sectores`): la cifra mensual de cada sector de Bogotá;
   YGMM de BigQuery (tabla corporativa) y Jazztel, Orange y WhatsApp de SQL Server (consultas del usuario). Ver `docs/contexto/sectores.md`.
+- Desde el 07-10-2026, **Pesos y metas por sector** (`/pesos`): los KPI, pesos y metas de los Excel de ranking de incentivos de cada mes
+  (la versión más reciente de cada sector) con un botón «Analizar y validar». Ver `docs/contexto/pesos.md`.
 - Proyecto: `C:\Proyectos\CDM Auditorias Calidad\` (`CDM Auditorias Calidad.sln`: web + pruebas).
 - GitHub privado `brianestivenreyjcol-rgb/CDMAuditorias`, rama `main` (commit y push tras cada tanda,
   sin `.env`, `publicacion\`, capturas ni cachés). Si pasara a público, quitar antes lo interno.
@@ -30,6 +32,8 @@
   desarrollo, `publicacion\datos` en producción), se renueva solo cada 12 h. Formato del cubo: **v3**.
 - Por sector: `Consultas/SectoresYgmm.sql` (BigQuery) y `SectoresRellamada.sql` / `SectoresNoSolucion.sql` (SQL Server, mismo `.env`);
   caché pequeña `cache_sectores.json` (v1), se renueva cada 6 h. **De GAMMA no se saca nada** aquí (lo dijo el usuario).
+- Pesos: los Excel de `\\172.16.232.102\incentivos\INCENTIVOS JAZZPLAT\<año>\<NN. MES>\01. RANKING` (unidad `Y:` del usuario); se
+  leen las 40 primeras filas de cada hoja con OpenXML; los .xlsb no se pueden leer. Caché `cache_pesos.json` (v1).
 - Credenciales en `CDM Auditorias Calidad\.env` y `publicacion\.env` (login personal del usuario;
   nunca decirlas en el chat).
 
@@ -82,7 +86,9 @@
   corregidos; se recarga sola al guardar el Excel). Las 9 pestañas (Resumen, Ranking, Estilo,
   Rendimiento, Evolución, Comercial, Motivos, Españolización, Llamadas) hechas y **publicadas en el 5180 el 07-10-2026**. Todo en `docs/contexto/gaia-formacion.md`.
 - **Por sector** (`/sectores`, **publicado en el 5180 el 07-10-2026**): sectores de YGMM confirmados; Técnico Convergente
-  Orange y la no solución de WhatsApp (desde sep-2026) añadidos el 07-10-2026, **sin publicar** todavía. Siguiente: más KPIs (productividad, reitero, retención).
+  Orange y la no solución de WhatsApp (desde sep-2026) añadidos el 07-10-2026, **sin publicar** todavía. Siguiente: más KPIs (productividad, reitero, retención): lo investigado está en `docs/contexto/kpis-servicios.md` (aún no en la web).
+- **Pesos** (`/pesos`, 07-10-2026, probado en el 5190, **sin publicar**): faltan los .xlsb (que los guarden como .xlsm) y, si el usuario lo pide,
+  comparar los pesos con el mes anterior.
 - Detalle de todo esto: `docs/contexto/pendientes.md`.
 
 ## Dónde está el detalle (`docs/contexto/`)
@@ -93,6 +99,8 @@
 | `power-bi.md` | toques medidas, fechas DAX o la consulta de auditorías (análisis del PBI y cómo se pasó cada medida) |
 | `decisiones.md` | toques el informe de Auditorías: filtros, tarjetas, top 10, Excel, estilo aplicado |
 | `sectores.md` | toques «Rellamada y No solución por sector»: fuentes, consultas, decisiones y pantalla |
+| `pesos.md` | toques «Pesos y metas por sector»: carpetas, versión elegida, lector de bloques, validación |
+| `kpis-servicios.md` | vayas a añadir productividad, reitero o retención: cómo los calcula cada Excel y de dónde salen |
 | `no-solucion.md` | toques No solución: fuente, cubo, pestañas, causas atención/proceso, palabras clave |
 | `estructura-y-ejecucion.md` | necesites saber qué hay en cada carpeta o cómo se ejecuta y publica con detalle |
 | `verificacion.md` | quieras cuadrar cifras con lo que ya se comprobó contra SQL o BigQuery |
