@@ -36,26 +36,71 @@ public static class ExtractorPesos
                 while (k < f.Length && metas.Count < 5 && Numero(f[k]) is { } v) { metas.Add(v); k++; }
                 if (!EsCabeceraDeMetas(metas)) continue;
 
-                int colPeso = c - 1, colKpi = c - 2;
-                var filas = new List<FilaPeso>();
+                var colPeso = c - 1;
+                // El nombre del KPI: la columna con texto más cercana a la izquierda del peso en la primera fila (WhatsApp
+                // Técnico deja una columna vacía en medio). Sin texto en ninguna, no es un bloque.
+                var colKpi = -1;
+                if (r + 1 < g.Length)
+                {
+                    for (var x = c - 2; x >= Math.Max(0, c - 4); x--)
+                    {
+                        if (g[r + 1][x] is string t && !string.IsNullOrWhiteSpace(t) && Numero(t) is null) { colKpi = x; break; }
+                    }
+                }
+                if (colKpi < 0) continue;
+
+                var filas = new List<(FilaPeso Fila, string? Grupo)>();
                 for (var rr = r + 1; rr < g.Length && rr < r + 25; rr++)
                 {
                     if (g[rr][colKpi] is not string nombre || string.IsNullOrWhiteSpace(nombre)) break;
                     // Otro bloque apilado justo debajo (Técnico Orange: uno por skill): aquí acaba este.
                     if (EsCabeceraDeMetas(Enumerable.Range(c, metas.Count).Select(j => j < g[rr].Length ? Numero(g[rr][j]) : null)
                             .TakeWhile(x => x is not null).Select(x => x!.Value).ToList())) break;
-                    filas.Add(new FilaPeso(Limpio(nombre), Numero(g[rr][colPeso]),
-                        Enumerable.Range(0, metas.Count).Select(j => c + j < g[rr].Length ? Numero(g[rr][c + j]) : null).ToList()));
+                    var grupo = colKpi > 0 && g[rr][colKpi - 1] is string gr && !string.IsNullOrWhiteSpace(gr) ? Limpio(gr) : null;
+                    filas.Add((new FilaPeso(Limpio(nombre), Numero(g[rr][colPeso]),
+                        Enumerable.Range(0, metas.Count).Select(j => c + j < g[rr].Length ? Numero(g[rr][c + j]) : null).ToList()), grupo));
                 }
                 if (filas.Count > 0)
                 {
                     var titulo = g[r][colKpi] as string ?? g[r][colPeso] as string;
-                    salida.Add(new BloquePesos(hoja.Hoja.Trim(), Nivel(hoja.Hoja), titulo is null ? null : Limpio(titulo), metas, filas));
+                    foreach (var (grupo, parte) in PorGrupos(filas))
+                    {
+                        var t = grupo ?? titulo;
+                        salida.Add(new BloquePesos(hoja.Hoja.Trim(), Nivel(hoja.Hoja), t is null ? null : Limpio(t), metas, parte));
+                    }
                 }
                 c = k;
             }
         }
         return salida;
+    }
+
+    /// <summary>
+    /// Parte un bloque por grupos cuando la columna de la izquierda del KPI trae un rótulo de vez en cuando (WhatsApp Técnico:
+    /// «WhatsApp» en la primera fila y «Técnico» más abajo). Solo si la primera fila lo trae y no lo trae (casi) cada fila: si no,
+    /// esa columna es otra cosa y el bloque va entero.
+    /// </summary>
+    private static IEnumerable<(string? Grupo, List<FilaPeso> Filas)> PorGrupos(List<(FilaPeso Fila, string? Grupo)> filas)
+    {
+        var conGrupo = filas.Count(f => f.Grupo is not null);
+        if (filas[0].Grupo is null || conGrupo < 2 || conGrupo * 2 > filas.Count)
+        {
+            yield return (null, filas.Select(f => f.Fila).ToList());
+            yield break;
+        }
+        string? actual = null;
+        var parte = new List<FilaPeso>();
+        foreach (var (fila, grupo) in filas)
+        {
+            if (grupo is not null && parte.Count > 0)
+            {
+                yield return (actual, parte);
+                parte = new List<FilaPeso>();
+            }
+            if (grupo is not null) actual = grupo;
+            parte.Add(fila);
+        }
+        if (parte.Count > 0) yield return (actual, parte);
     }
 
     /// <summary>Los nombres de la hoja principal de agentes, en orden de preferencia (pedido del usuario el 07-10-2026).</summary>
@@ -76,6 +121,9 @@ public static class ExtractorPesos
         }
         return deAgentes.FirstOrDefault();
     }
+
+    /// <summary>Si dos nombres de hoja son la misma, sin mirar mayúsculas, tildes ni espacios de más.</summary>
+    public static bool MismaHoja(string a, string b) => Normal(a) == Normal(b);
 
     private static string Normal(string s) => Regex.Replace(SinTildes(s).ToLowerInvariant(), @"\s+", " ").Trim();
 

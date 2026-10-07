@@ -33,7 +33,7 @@ public sealed class PesosController : Controller
         }
         else
         {
-            var (filas, comprobaciones, desplegables, archivos) = PaginaPesos.Construir(analisis, p, _pesos.RutaVisible);
+            var (filas, comprobaciones, desplegables, archivos) = PaginaPesos.Construir(analisis, p, _pesos.RutaVisible, _pesos.HojasExtra);
             modelo = Modelo(meses, mes, analisis, p, filas, comprobaciones, desplegables, archivos);
         }
         ViewData["Parcial"] = Request.Headers["X-Parcial"] == "1";
@@ -58,7 +58,7 @@ public sealed class PesosController : Controller
         var meses = _pesos.Meses();
         var mes = meses.FirstOrDefault(m => m.Clave == p.Mes) ?? meses.FirstOrDefault();
         if (mes is null || _pesos.Analisis(mes.Clave) is not { } analisis) return NotFound();
-        var (filas, _, _, _) = PaginaPesos.Construir(analisis, p, _pesos.RutaVisible);
+        var (filas, _, _, _) = PaginaPesos.Construir(analisis, p, _pesos.RutaVisible, _pesos.HojasExtra);
         Response.Headers.CacheControl = "private, no-store";
         string N(double? v) => v is { } x ? x.ToString("0.######", CultureInfo.GetCultureInfo("es-ES")) : "";
         var columnas = new List<ColumnaCsv<FilaTablaPesos>>
@@ -84,7 +84,7 @@ public sealed class PesosController : Controller
         {
             Meses = meses, Mes = mes, Analisis = analisis, Peticion = p,
             Analizando = _pesos.Analizando, MesEnCurso = _pesos.MesEnCurso, Progreso = _pesos.Progreso, Error = _pesos.UltimoError,
-            Aviso = TempData[ClaveAviso] as string, Raiz = _pesos.Raiz, RutaVisible = _pesos.RutaVisible,
+            Aviso = TempData[ClaveAviso] as string, Raiz = _pesos.Raiz, RutaVisible = _pesos.RutaVisible, Extras = _pesos.HojasExtra,
             Filas = filas, Comprobaciones = comprobaciones, Desplegables = desplegables, Archivos = archivos,
         };
 }

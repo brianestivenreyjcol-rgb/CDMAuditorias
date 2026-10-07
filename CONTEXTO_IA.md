@@ -33,7 +33,7 @@
 - Por sector: `Consultas/SectoresYgmm.sql` (BigQuery) y `SectoresRellamada.sql` / `SectoresNoSolucion.sql` (SQL Server, mismo `.env`);
   caché pequeña `cache_sectores.json` (v1), se renueva cada 6 h. **De GAMMA no se saca nada** aquí (lo dijo el usuario).
 - Pesos: los Excel de `\\172.16.232.102\incentivos\INCENTIVOS JAZZPLAT\<año>\<NN. MES>\01. RANKING` (unidad `Y:` del usuario); se
-  leen las 40 primeras filas de cada hoja con OpenXML; los .xlsb no se pueden leer. Caché `cache_pesos.json` (v1).
+  leen las 40 primeras filas de cada hoja con OpenXML (y los .xlsb con `LectorXlsb`). Caché `cache_pesos.json` (v2). Hojas extra en `Pesos:HojasExtra`.
 - Credenciales en `CDM Auditorias Calidad\.env` y `publicacion\.env` (login personal del usuario;
   nunca decirlas en el chat).
 
@@ -87,8 +87,7 @@
   Rendimiento, Evolución, Comercial, Motivos, Españolización, Llamadas) hechas y **publicadas en el 5180 el 07-10-2026**. Todo en `docs/contexto/gaia-formacion.md`.
 - **Por sector** (`/sectores`, **publicado en el 5180 el 07-10-2026**): sectores de YGMM confirmados; Técnico Convergente
   Orange y la no solución de WhatsApp (desde sep-2026) añadidos el 07-10-2026, **sin publicar** todavía. Siguiente: más KPIs (productividad, reitero, retención): lo investigado está en `docs/contexto/kpis-servicios.md` (aún no en la web).
-- **Pesos** (`/pesos`, **publicado en el 5180 el 07-10-2026**; solo la hoja principal de agentes de cada sector): faltan los .xlsb (que los guarden como .xlsm) y, si el usuario lo pide,
-  comparar los pesos con el mes anterior.
+- **Pesos** (`/pesos`, **publicado en el 5180 el 07-10-2026**; solo la hoja principal de agentes de cada sector): ya lee los .xlsb; si el usuario lo pide, comparar los pesos con el mes anterior.
 - Detalle de todo esto: `docs/contexto/pendientes.md`.
 
 ## Dónde está el detalle (`docs/contexto/`)

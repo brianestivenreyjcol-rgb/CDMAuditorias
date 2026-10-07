@@ -22,7 +22,22 @@ public sealed class OpcionesPesos
     /// <summary>Lo analizado, en disco. Relativo a la carpeta de la aplicación.</summary>
     public string RutaCache { get; set; } = Path.Combine("App_Data", "cache_pesos.json");
 
+    /// <summary>
+    /// Hojas que, dentro de un Excel, son otro sector y se enseñan además de la principal (pedido del usuario el 07-10-2026: Bo
+    /// Seguro Móvil va en el Excel de Gestión pedidos). <see cref="HojaExtraPesos.Fichero"/> es el nombre del Excel en cualquier
+    /// versión (se compara su clave de sector).
+    /// </summary>
+    public List<HojaExtraPesos> HojasExtra { get; set; } = new();
+
     /// <summary>Filas y columnas de cada hoja en las que se busca el bloque de objetivos.</summary>
     public int Filas { get; set; } = 40;
     public int Columnas { get; set; } = 200;
+}
+
+/// <summary>Una hoja de un Excel de ranking que es otro sector: el Excel, la hoja y el nombre del sector que se enseña.</summary>
+public sealed class HojaExtraPesos
+{
+    public string Fichero { get; set; } = "";
+    public string Hoja { get; set; } = "";
+    public string Sector { get; set; } = "";
 }

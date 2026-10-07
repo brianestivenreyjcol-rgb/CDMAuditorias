@@ -1,5 +1,6 @@
 using System.Globalization;
 using CDM_Auditorias_Calidad.Infraestructura;
+using CDM_Auditorias_Calidad.Servicios.Configuracion;
 using CDM_Auditorias_Calidad.Servicios.Pesos;
 using Microsoft.AspNetCore.WebUtilities;
 
@@ -47,6 +48,19 @@ public sealed class PaginaPesos
     /// <summary>La ruta de un fichero como la abre el usuario (<c>Y:\…</c>).</summary>
     public Func<string, string> RutaVisible { get; init; } = r => r;
 
+    /// <summary>Las hojas extra que son otro sector (appsettings, <c>Pesos:HojasExtra</c>).</summary>
+    public IReadOnlyList<HojaExtraPesos> Extras { get; init; } = [];
+
+    /// <summary>Las hojas que se leen de un fichero: la principal y las extra que tenga.</summary>
+    public string HojasLeidas(ArchivoAnalizado a)
+    {
+        var clave = ArchivosRanking.ClaveSector(Path.GetFileName(a.Archivo.Ruta));
+        var hojas = new[] { ExtractorPesos.HojaPrincipal(a.Bloques) }
+            .Concat(Extras.Where(e => ArchivosRanking.ClaveSector(e.Fichero) == clave && a.Bloques.Any(b => ExtractorPesos.MismaHoja(b.Hoja, e.Hoja))).Select(e => e.Hoja))
+            .Where(h => h is not null).ToList();
+        return hojas.Count == 0 ? "—" : string.Join(" + ", hojas);
+    }
+
     public IReadOnlyList<GrupoFiltro> Desplegables { get; init; } = [];
     public IReadOnlyList<FilaTablaPesos> Filas { get; init; } = [];
     public IReadOnlyList<ComprobacionPesos> Comprobaciones { get; init; } = [];
@@ -86,12 +100,15 @@ public sealed class PaginaPesos
 
     /// <summary>Las filas de la tabla, las comprobaciones y los desplegables de un análisis con estos filtros.</summary>
     public static (List<FilaTablaPesos> Filas, List<ComprobacionPesos> Comprobaciones, List<GrupoFiltro> Desplegables, List<ArchivoAnalizado> Archivos)
-        Construir(AnalisisPesos analisis, PeticionPesos p, Func<string, string>? rutaVisible = null)
+        Construir(AnalisisPesos analisis, PeticionPesos p, Func<string, string>? rutaVisible = null, IReadOnlyList<HojaExtraPesos>? extras = null)
     {
         rutaVisible ??= r => r;
+        extras ??= [];
         bool Pasa(string valor, List<string> marcados) => marcados.Count == 0 || marcados.Contains(valor);
         var todas = new List<(FilaTablaPesos Fila, ArchivoAnalizado Archivo)>();
         var comprobaciones = new List<ComprobacionPesos>();
+        // Los sectores que da cada fichero (el suyo y, si los hay, los de sus hojas extra).
+        var sectoresDe = analisis.Archivos.ToDictionary(a => a, a => new List<string>());
 
         foreach (var a in analisis.Archivos)
         {
@@ -104,14 +121,30 @@ public sealed class PaginaPesos
                     comprobaciones.Add(new(false, sector, (a.Error ?? "No se pudo leer.") + " (" + a.Archivo.RutaRelativa + ")"));
                     continue;
             }
-            // Una sola hoja por sector: la principal de agentes («Ranking AG Universal», «Ranking AG», «Ranking AGENTE»…).
+            // Una sola hoja por sector: la principal de agentes («Ranking AG Universal», «Ranking AG», «Ranking AGENTE»…) y, si está en
+            // OpcionesPesos.HojasExtra, alguna más que en ese Excel es otro sector (Bo Seguro Móvil dentro de Gestión pedidos).
             var principal = ExtractorPesos.HojaPrincipal(a.Bloques);
-            var bloquesAgente = a.Bloques.Where(b => b.Hoja == principal).ToList();
-            if (bloquesAgente.Count == 0)
+            var unidades = new List<(string Sector, List<BloquePesos> Bloques)> { (sector, a.Bloques.Where(b => b.Hoja == principal).ToList()) };
+            var clave = ArchivosRanking.ClaveSector(Path.GetFileName(a.Archivo.Ruta));
+            foreach (var e in extras.Where(e => ArchivosRanking.ClaveSector(e.Fichero) == clave))
+            {
+                var bloquesExtra = a.Bloques.Where(b => ExtractorPesos.MismaHoja(b.Hoja, e.Hoja)).ToList();
+                if (bloquesExtra.Count > 0) unidades.Add((e.Sector, bloquesExtra));
+            }
+            if (unidades[0].Bloques.Count == 0 && unidades.Count == 1)
             {
                 comprobaciones.Add(new(null, sector, "Solo tiene bloques de team leader, supervisor o jefe de servicio: no es un ranking de agentes."));
                 continue;
             }
+            foreach (var (sectorUnidad, bloquesAgente) in unidades.Where(u => u.Bloques.Count > 0))
+            {
+                sectoresDe[a].Add(sectorUnidad);
+                Unidad(a, sectorUnidad, bloquesAgente);
+            }
+        }
+
+        void Unidad(ArchivoAnalizado a, string sector, List<BloquePesos> bloquesAgente)
+        {
             var avisosArchivo = 0;
             // La suma de pesos se mira por hoja: algunas reparten el 100 % entre varios bloques (uno por skill).
             var hojasMal = new HashSet<string>();
@@ -148,7 +181,8 @@ public sealed class PaginaPesos
 
         var filtradas = todas.Where(x => Pasa(x.Fila.Sector, p.Sector) && Pasa(x.Fila.Responsable, p.Responsable)
                                          && (p.Ver != "revisar" || x.Fila.ConAvisos)).Select(x => x.Fila).ToList();
-        var sectoresVisibles = analisis.Archivos.Where(a => Pasa(a.Archivo.Sector, p.Sector) && Pasa(a.Archivo.Responsable, p.Responsable)).Select(a => a.Archivo.Sector).ToHashSet();
+        var sectoresVisibles = analisis.Archivos.Where(a => Pasa(a.Archivo.Responsable, p.Responsable))
+            .SelectMany(a => sectoresDe[a].Append(a.Archivo.Sector)).Where(x => Pasa(x, p.Sector)).ToHashSet();
 
         GrupoFiltro Grupo(string campo, string titulo, IEnumerable<string> valores, List<string> marcados, Func<FilaTablaPesos, bool> otros, Func<FilaTablaPesos, string> de)
             => new(campo, titulo, valores.Distinct().Concat(marcados).Distinct()
@@ -167,7 +201,7 @@ public sealed class PaginaPesos
             comprobaciones.Where(c => sectoresVisibles.Contains(c.Sector)).OrderBy(c => c.Correcto switch { false => 0, null => 1, _ => 2 })
                 .ThenBy(c => c.Sector, StringComparer.CurrentCulture).ToList(),
             desplegables,
-            analisis.Archivos.Where(a => sectoresVisibles.Contains(a.Archivo.Sector)).ToList());
+            analisis.Archivos.Where(a => sectoresDe[a].Append(a.Archivo.Sector).Any(sectoresVisibles.Contains)).ToList());
     }
 
     /// <summary>

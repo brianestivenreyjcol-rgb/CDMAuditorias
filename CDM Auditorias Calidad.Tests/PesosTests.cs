@@ -1,4 +1,5 @@
 using CDM_Auditorias_Calidad.Models.Pesos;
+using CDM_Auditorias_Calidad.Servicios.Configuracion;
 using CDM_Auditorias_Calidad.Servicios.Pesos;
 using Xunit;
 
@@ -54,6 +55,26 @@ public sealed class PesosTests
     }
 
     [Fact]
+    public void Lee_el_bloque_con_columna_vacia_y_lo_parte_por_grupos()
+    {
+        // Como CO WhatsApp Técnico: «KPIs | (vacía) | % | 0 | 1 | 1,5», el grupo a la izquierda («WhatsApp», «Tecnico»).
+        var h = Hoja("Ranking Agente",
+            (4, 3, "KPIs"), (4, 5, "%"), (4, 6, "0"), (4, 7, "1"), (4, 8, 1.5),
+            (5, 2, "WhatsApp"), (5, 3, "Productividad"), (5, 5, 0.2), (5, 6, 3d), (5, 7, 4.5), (5, 8, 8d),
+            (6, 3, "Re-Chat"), (6, 5, 0.5), (6, 6, 18d), (6, 7, 12d), (6, 8, 9d),
+            (7, 3, "Recontacto"), (7, 5, 0.3), (7, 6, 35d), (7, 7, 25d), (7, 8, 16d),
+            (8, 2, "Tecnico"), (8, 3, "TMO"), (8, 5, 0.6), (8, 6, 730d), (8, 7, 620d), (8, 8, 580d),
+            (9, 3, "Transfer"), (9, 5, 0.4), (9, 6, 7d), (9, 7, 5d), (9, 8, 2d));
+        var bloques = ExtractorPesos.Extraer(h);
+        Assert.Equal(2, bloques.Count);
+        Assert.Equal("WhatsApp", bloques[0].Titulo);
+        Assert.Equal(["Productividad", "Re-Chat", "Recontacto"], bloques[0].Filas.Select(f => f.Kpi));
+        Assert.Equal([35d, 25d, 16d], bloques[0].Filas[2].Metas.Select(m => m!.Value));
+        Assert.Equal("Tecnico", bloques[1].Titulo);
+        Assert.Equal(1.0, bloques[1].SumaPesos, 10);
+    }
+
+    [Fact]
     public void Lee_las_cuatro_metas_de_atencion_jazztel()
     {
         var h = Hoja("Ranking AG",
@@ -86,6 +107,24 @@ public sealed class PesosTests
         Assert.Equal("CO Atención YGMM", ExtractorPesos.HojaPrincipal([B("Ranking TL"), B("CO Atención YGMM"), B("CO Atención YGMM Mes 2")]));
         Assert.Equal("Senior", ExtractorPesos.HojaPrincipal([B("Senior"), B("Ranking Agentes TLT")]));
         Assert.Null(ExtractorPesos.HojaPrincipal([B("Ranking TL"), B("Ranking SP")]));
+    }
+
+    [Fact]
+    public void Una_hoja_extra_sale_como_su_propio_sector()
+    {
+        BloquePesos B(string hoja, string kpi) => new(hoja, ExtractorPesos.Nivel(hoja), null, [0, 1, 1.5], [new(kpi, 1, [0.5, 1, 1.8])]);
+        var archivo = new ArchivoElegido("Gestion pedidos", "Debinson", "V1", @"X:. RANKING. V1. Debinson\Ranking de Gestion de pedidos Agosto V1.xlsb",
+            @"02. V1. Debinson\Ranking de Gestion de pedidos Agosto V1.xlsb", DateTime.Today, 2);
+        var analisis = new AnalisisPesos
+        {
+            Mes = "2026-09",
+            Archivos = [new(archivo, "ok", null, [B("Ranking AG Gestion Incidencias", "Casos/Hora"), B("Ranking AG Seguro Movil", "Casos/Hora"), B("Ranking AG M", "Otro")])],
+        };
+        var extras = new[] { new HojaExtraPesos { Fichero = "Ranking de Gestion de pedidos.xlsb", Hoja = "ranking ag  seguro movil", Sector = "Bo Seguro Móvil" } };
+        var (filas, _, desplegables, _) = PaginaPesos.Construir(analisis, new PeticionPesos(), null, extras);
+        Assert.Equal(["Gestion pedidos", "Bo Seguro Móvil"], filas.Select(f => f.Sector));
+        Assert.DoesNotContain(filas, f => f.Kpi == "Otro");
+        Assert.Equal(2, desplegables.Single(d => d.Campo == "sector").Opciones.Count);
     }
 
     [Theory]

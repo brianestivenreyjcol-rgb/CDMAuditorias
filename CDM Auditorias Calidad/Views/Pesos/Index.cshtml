@@ -140,11 +140,11 @@
                         <span class="resumen-cifra" data-contar="@revisar" data-formato="entero">@Formato.Entero(revisar)</span>
                         <span class="resumen-variacion neutra">y @Formato.Entero(notas) @(notas == 1 ? "nota" : "notas")</span>
                     </div>
-                    <div class="resumen-dato" title="Los .xlsb no se pueden leer: hay que guardarlos como .xlsm o .xlsx">
+                    <div class="resumen-dato" title="Ficheros que no se pudieron abrir (dañados, protegidos con contraseña…)">
                         <span class="resumen-icono">@Iconos.Svg("cerrar")</span>
                         <span class="resumen-titulo">No legibles</span>
                         <span class="resumen-cifra" data-contar="@noLegibles" data-formato="entero">@Formato.Entero(noLegibles)</span>
-                        <span class="resumen-variacion neutra">ficheros .xlsb o con error</span>
+                        <span class="resumen-variacion neutra">ficheros que no se pudieron abrir</span>
                     </div>
                 </section>
 
@@ -264,7 +264,7 @@
                                                 <span class="pastilla-dato">@x.Archivo.Responsable</span>
                                             }</div></td>
                                         <td data-valor="@x.Archivo.Version">@x.Archivo.Version</td>
-                                        <td data-valor="@(ExtractorPesos.HojaPrincipal(x.Bloques) ?? "")">@(ExtractorPesos.HojaPrincipal(x.Bloques) ?? "—")</td>
+                                        <td data-valor="@Model.HojasLeidas(x)">@Model.HojasLeidas(x)</td>
                                         <td class="num" data-valor="@agentes">@agentes</td>
                                         <td data-valor="@texto"><span class="chip @chip">@texto</span></td>
                                         <td class="celda-ruta" data-valor="@ruta"><span class="ruta-texto">@x.Archivo.RutaRelativa</span> <button type="button" class="enlace" data-copiar="@ruta" title="Copiar @ruta">@Iconos.Svg("copiar") Copiar</button></td>

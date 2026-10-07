@@ -5,7 +5,7 @@ using Microsoft.Extensions.Options;
 namespace CDM_Auditorias_Calidad.Servicios.Pesos;
 
 /// <summary>Lo leído de un fichero: el fichero elegido, cómo fue y sus bloques de objetivos.</summary>
-/// <param name="Estado"><c>ok</c>, <c>sin-bloques</c>, <c>xlsb</c> (no se puede leer) o <c>error</c>.</param>
+/// <param name="Estado"><c>ok</c>, <c>sin-bloques</c> o <c>error</c> (antes del 07-10-2026 también <c>xlsb</c>: no se leían).</param>
 public sealed record ArchivoAnalizado(ArchivoElegido Archivo, string Estado, string? Error, List<BloquePesos> Bloques);
 
 /// <summary>El análisis de un mes: los ficheros leídos y cuándo.</summary>
@@ -21,7 +21,8 @@ public sealed class DatosPesos
 {
     public Dictionary<string, AnalisisPesos> Meses { get; set; } = new();
     public int Version { get; set; } = VersionActual;
-    public const int VersionActual = 1;
+    // 2 (07-10-2026): se leen los .xlsb y el lector entiende los bloques con columna vacía o por grupos (WhatsApp Técnico).
+    public const int VersionActual = 2;
 }
 
 /// <summary>
@@ -47,6 +48,9 @@ public sealed class ServicioPesos
     }
 
     public string Raiz => _op.RutaRaiz;
+
+    /// <summary>Las hojas extra que son otro sector (<see cref="OpcionesPesos.HojasExtra"/>).</summary>
+    public IReadOnlyList<HojaExtraPesos> HojasExtra => _op.HojasExtra;
 
     /// <summary>La ruta de un fichero como la abre el usuario (<c>Y:\…</c> en vez de la ruta de red).</summary>
     public string RutaVisible(string ruta)
@@ -139,13 +143,12 @@ public sealed class ServicioPesos
 
     private ArchivoAnalizado Leer(ArchivoElegido a)
     {
-        if (a.Ruta.EndsWith(".xlsb", StringComparison.OrdinalIgnoreCase))
-        {
-            return new ArchivoAnalizado(a, "xlsb", "Es un .xlsb (libro binario) y no se puede leer: guárdalo como .xlsm o .xlsx.", []);
-        }
         try
         {
-            var bloques = LectorCabeceras.Leer(a.Ruta, _op.Filas, _op.Columnas).SelectMany(ExtractorPesos.Extraer).ToList();
+            var hojas = a.Ruta.EndsWith(".xlsb", StringComparison.OrdinalIgnoreCase)
+                ? LectorXlsb.Leer(a.Ruta, _op.Filas, _op.Columnas)
+                : LectorCabeceras.Leer(a.Ruta, _op.Filas, _op.Columnas);
+            var bloques = hojas.SelectMany(ExtractorPesos.Extraer).ToList();
             return new ArchivoAnalizado(a, bloques.Count > 0 ? "ok" : "sin-bloques",
                 bloques.Count > 0 ? null : "No se encontró ningún bloque de objetivos (cabecera 0 | 1 | 1,5) en las primeras filas.", bloques);
         }

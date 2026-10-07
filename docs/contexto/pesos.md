@@ -16,8 +16,8 @@ meta 0 %, (60 %), 100 % y 150 %.
   número de orden que algunos ponen delante («1.PreCierre…»). Se descartan temporales (`~$`), copias («… -.xlsb», «Original»,
   «Estilo», «excepción»), plantillas y consolidados.
 - Los consolidados (`01. Consolidado de Incentivos … $$ V3`) traen sueldos e incentivos por persona: **no se usan**.
-- **Los .xlsb no se pueden leer** (6–16 ficheros según el mes, de Sebastián y Debinson): salen como «no legible: guárdalo como
-  .xlsm o .xlsx».
+- **Los .xlsb se leen desde el 07-10-2026** con `LectorXlsb` (BIFF12 a mano: `workbook.bin`, `sharedStrings.bin` y las celdas de las primeras
+  filas; no hay librería en .NET). Antes salían como «no legibles» (los de Sebastián y Debinson).
 
 ## Cómo se encuentra el bloque
 
@@ -57,3 +57,13 @@ Los bloques «Indicador | Objetivo | Peso» de TL/SP son aceleradores y no entra
   (por ese orden, sin mirar mayúsculas, tildes ni espacios) y, si no hay, la primera hoja de agentes del libro («CO Atención YGMM», «Senior»).
   Fuera «Mes 1», «Mes 2», «TLT», «Traspasos», «Neuro Chat»… La tabla de ficheros dice qué hoja se leyó. Septiembre (carpeta 09): 26 sectores, 147 KPI.
 - **Publicado en el 5180 el 07-10-2026** (con la caché de 2026-08, 09 y 10 copiada a `publicacion\datos`).
+- **07-10-2026 (noche)**: (1) se leen los .xlsb; (2) el lector entiende los bloques con una columna vacía entre el KPI y el peso y los parte por grupos
+  cuando la columna de su izquierda trae un rótulo de vez en cuando (CO WhatsApp Técnico: «WhatsApp» y «Técnico»); (3) **hojas extra**
+  (`Pesos:HojasExtra` en appsettings): hojas que dentro de un Excel son otro sector y salen además de la principal — «Ranking AG Seguro Movil» de
+  Gestión pedidos → **Bo Seguro Móvil**, «Ranking AG Buzon Otros» de CO Buzones → **CO BO M Móvil Orange Buzones (Otros)**. No se enseñan todas las
+  hojas de agentes porque los BO de Orange copian las mismas hojas («Ranking AG M», «Ajustes», «Reitero»…) en varios ficheros. Caché v2.
+  Septiembre: 40 sectores leídos, 197 KPI, 2 para revisar, 0 no legibles; los 10 sectores de BO de Orange de la tabla del usuario (Casos/Hora y
+  % Reitero) cuadran con sus metas. Publicado en el 5180.
+- Los cuatro «ReContacto WhatsApp» del catálogo de Clan (indirectos) salen de: AtenFide → CO WhatsApp YGMM («Ranking AGENTE apoyo»), retención →
+  CO WhatsApp Retención, Técnico → CO WhatsApp Técnico («Recontacto»), Infancia → Infancia Convergente, bloque CDA («Re-Chat»). Mismas metas, otro peso.
+
