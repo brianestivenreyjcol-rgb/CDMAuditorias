@@ -92,3 +92,6 @@
 - **07-10-2026** — La portada recibe el estado de No solución y GAIA en el modelo (`MenuModelo` +
   `EstadoInforme`, desde `HomeController`), en vez de leer los servicios desde la vista. Guía recopiada a
   la skill frontend-solaris y `.skill` regenerado. 312 pruebas; todo da 200 en el 5190. Sin publicar.
+- **07-10-2026** — **Publicado en el 5180** (pedido del usuario): GAIA Formación (9 pestañas) y el rediseño al
+  estilo del portal SOLARIS. Se copió `cache_gaia.json` (v2) de `App_Data` a `publicacion\datos`. Comprobado
+  desde `http://10.148.223.143:5180`; el 5190 de pruebas, parado.

@@ -35,7 +35,8 @@
   (5180)» que abre `arrancar.cmd` sobre `publicacion\app`. Al día desde el **06-10-2026**.
 - **Publicar** (solo si el usuario lo pide): cerrar esa ventana → `cmd /c "C:\Proyectos\CDM Auditorias
   Calidad\publicar.cmd"` → `arrancar.cmd` con ruta completa. Si cambia el formato del cubo de No
-  solución, copiar antes la caché de `App_Data` a `publicacion\datos` para no esperar a BigQuery.
+  solución o de la caché de GAIA (`DatosGaia.VersionActual`), copiar antes la caché de `App_Data` a
+  `publicacion\datos` para no esperar a BigQuery.
 - **Probar** en una copia temporal en otro puerto (p. ej. 5190: `ASPNETCORE_URLS=http://localhost:5190
   dotnet run --no-build --no-launch-profile`) y **pararla al acabar**. Parar la web antes de compilar
   (la DLL queda bloqueada). Pruebas: `dotnet test "CDM Auditorias Calidad.sln"` (312 en verde).
@@ -70,8 +71,7 @@
 - **GAIA Formación** (`/gaia`, desde el 06-10-2026): PBI en `Power bi\GAIA Formación.pbip`; llamadas de
   BigQuery filtradas por el Excel de nómina de la compartida (filtro exacto agente + día, fallos del PBI
   corregidos; se recarga sola al guardar el Excel). Las 9 pestañas (Resumen, Ranking, Estilo,
-  Rendimiento, Evolución, Comercial, Motivos, Españolización, Llamadas) hechas y probadas en el 5190;
-  **sin publicar**. Todo en `docs/contexto/gaia-formacion.md`.
+  Rendimiento, Evolución, Comercial, Motivos, Españolización, Llamadas) hechas y **publicadas en el 5180 el 07-10-2026**. Todo en `docs/contexto/gaia-formacion.md`.
 - Detalle de todo esto: `docs/contexto/pendientes.md`.
 
 ## Dónde está el detalle (`docs/contexto/`)
