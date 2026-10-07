@@ -95,3 +95,8 @@
 - **07-10-2026** — **Publicado en el 5180** (pedido del usuario): GAIA Formación (9 pestañas) y el rediseño al
   estilo del portal SOLARIS. Se copió `cache_gaia.json` (v2) de `App_Data` a `publicacion\datos`. Comprobado
   desde `http://10.148.223.143:5180`; el 5190 de pruebas, parado.
+- **07-10-2026** — Gráficas con la paleta de la marca filtrada en toda la web (`--serie-1…5` por `[data-marca]`, claro y oscuro; las series que son una marca
+  llevan el color de su marca), columnas por etapa en preconexión / aseguramiento (`--etapa-pre`, `--etapa-aseg`) en vez de por umbral y tablas compactas (una línea por
+  fila, nombre con la oleada en una pastilla; Llamadas con marca y etapa en columnas propias). Detalle en la guía, 9.10. Probado en el 5190 (parado al acabar); sin publicar.
+
+- **07-10-2026** — Españolización: la tabla de agentes lleva también la oleada al lado del nombre (`GrupoEspanolizacion.Oleada`). Guía recopiada a la skill y `.skill` regenerado.

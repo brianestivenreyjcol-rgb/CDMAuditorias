@@ -108,7 +108,7 @@
                     <h2>Adherencia por etapa</h2>
                     <span class="tarjeta-nota">de la preconexión al aseguramiento</span>
                 </header>
-                @await Html.PartialAsync("_ColumnasGaia", Grafico("etapa", enEtapa, ("Adherencia", "serie-a", adherencia)) with { Media = media, PorUmbral = true, Descripcion = "Adherencia por etapa de formación" })
+                @await Html.PartialAsync("_ColumnasGaia", Grafico("etapa", enEtapa, ("Adherencia", "serie-a", adherencia)) with { Media = media, Descripcion = "Adherencia por etapa de formación" })
             </section>
 
         <section class="tarjeta" data-vistas>
@@ -161,10 +161,7 @@
                         {
                             Model.MatrizEtapas.TryGetValue(fila.IdAgente, out var porEtapa);
                             <tr>
-                                <td title="@fila.Agente · @fila.Sector · oleada @fila.Oleada">
-                                    @fila.Agente
-                                    <span class="sub-ns">@fila.Sector · oleada @fila.Oleada</span>
-                                </td>
+                                <td class="celda-nombre" title="@fila.Agente · @fila.Sector · oleada @fila.Oleada"><div class="nombre-fila"><span class="nombre-texto">@fila.Agente</span><span class="pastilla-dato" title="Oleada @fila.Oleada">@fila.Oleada</span></div></td>
                                 <td class="num barra-volumen" data-valor="@fila.Indicadores.Llamadas">@Formato.Entero(fila.Indicadores.Llamadas)</td>
                                 <td class="num @MapaAdherencia(fila.Indicadores.Adherencia)">@Formato.Porcentaje(fila.Indicadores.Adherencia)</td>
                                 @foreach (var etapa in Model.Etapas)

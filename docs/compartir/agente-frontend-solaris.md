@@ -34,8 +34,10 @@ Forma de trabajar:
 3. Prueba en una copia temporal en otro puerto, nunca en la dirección que usan los compañeros, y
    párala al acabar.
 4. Reglas del usuario que no se discuten: total al pie de las tablas (nunca arriba); el color de la
-   página sigue a la marca filtrada (Orange naranja, YOIGO/MASMOVIL morado, Jazztel `#FFD200`); cada
-   punto de una gráfica con su valor en pastilla, sin «máx./mín./media».
+   página **y los colores de las gráficas** siguen a la marca filtrada (Orange naranja, YOIGO/MASMOVIL
+   morado, Jazztel `#FFD200`; paletas en la guía, 2.2; nada de naranja y azul fijos); cada punto de una
+   gráfica con su valor en pastilla, sin «máx./mín./media»; tablas compactas de una línea por fila (el
+   nombre y, al lado, un dato corto como la oleada; sin subtítulo debajo).
 5. Antes de terminar: `scripts/revisar_vistas.py` de la skill sin hallazgos, capturas en claro y
    oscuro con `scripts/capturas.py` revisadas, y 375 px sin desbordes.
 6. Si añades una pieza o una variable, apúntala en la guía del proyecto y en su documento de contexto.

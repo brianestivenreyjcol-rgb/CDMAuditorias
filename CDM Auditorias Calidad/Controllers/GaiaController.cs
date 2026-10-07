@@ -193,7 +193,7 @@ public sealed class GaiaController : Controller
 
         var palabras = datos!.Palabras;
         nivel = Math.Clamp(nivel, 0, palabras.Niveles.Count);
-        var porAgente = CalculadoraGaia.EspanolizacionPor(f.Llamadas, palabras, nivel, l => l.IdAgente, g => g.First().Agente);
+        var porAgente = CalculadoraGaia.EspanolizacionPor(f.Llamadas, palabras, nivel, l => l.IdAgente, g => g.First().Agente, g => g.First().Oleada);
         return Pagina("Espanolizacion", new PaginaEspanolizacionGaia
         {
             Datos = datos, Filtros = f, Cargando = _gaia.Cargando, Error = _gaia.UltimoError,

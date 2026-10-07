@@ -36,8 +36,8 @@ public sealed record FilaPalabraGaia(PalabraGaia Palabra, int Llamadas, int Base
     public double? Fraccion => Base == 0 ? null : (double)Llamadas / Base;
 }
 
-/// <summary>Un agente (o día, o etapa) con su españolización.</summary>
-public sealed record GrupoEspanolizacion(string Clave, string Texto, EspanolizacionGaia Espanolizacion, IndicadoresGaia Indicadores);
+/// <summary>Un agente (o día, o etapa) con su españolización. <paramref name="Oleada"/>, solo en las filas de agente.</summary>
+public sealed record GrupoEspanolizacion(string Clave, string Texto, EspanolizacionGaia Espanolizacion, IndicadoresGaia Indicadores, string Oleada = "");
 
 /// <summary>Los análisis de las fases 3 y 4: repartos, motivos, obstáculos, semanas y españolización.</summary>
 public static partial class CalculadoraGaia
@@ -203,12 +203,13 @@ public static partial class CalculadoraGaia
 
     /// <summary>Españolización e indicadores agrupados por <paramref name="clave"/>.</summary>
     public static List<GrupoEspanolizacion> EspanolizacionPor(IEnumerable<LlamadaGaia> ll, PalabrasGaia palabras, int nivel,
-        Func<LlamadaGaia, string> clave, Func<IGrouping<string, LlamadaGaia>, string> texto)
+        Func<LlamadaGaia, string> clave, Func<IGrouping<string, LlamadaGaia>, string> texto,
+        Func<IGrouping<string, LlamadaGaia>, string>? oleada = null)
         => ll.GroupBy(clave)
              .Select(g =>
              {
                  var lista = g.ToList();
-                 return new GrupoEspanolizacion(g.Key, texto(g), Espanolizacion(lista, palabras, nivel), Calcular(lista));
+                 return new GrupoEspanolizacion(g.Key, texto(g), Espanolizacion(lista, palabras, nivel), Calcular(lista), oleada?.Invoke(g) ?? "");
              })
              .ToList();
 }

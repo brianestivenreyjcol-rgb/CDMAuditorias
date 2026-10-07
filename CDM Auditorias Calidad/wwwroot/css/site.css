@@ -38,11 +38,21 @@
   --mapa-ambar: #ffeb9c;
   --mapa-rojo: #ffc7ce;
   --mapa-tinta: #141414;
+  /* Series de las gráficas: una paleta por marca (guía, 2.2). Aquí la de Orange, que es también la de por defecto; Yoigo y
+     Jazztel la redefinen más abajo. La 1 es el color de la marca y las demás, de su familia pero distinguibles. */
   --serie-1: #f16e00;
-  --serie-2: #4170d8;
-  --serie-3: #228722;
-  --serie-4: #cd3c14;
-  --serie-5: #a885d8;
+  --serie-2: #a84a00;
+  --serie-3: #f2a65a;
+  --serie-4: #d13f1f;
+  --serie-5: #8a7464;
+  /* Cuando cada serie ES una marca (evolución por marca), el color de la marca, sea cual sea la página. */
+  --marca-orange: #f16e00;
+  --marca-yoigo: #ab3e91;
+  --marca-masmovil: #3a3a3a;
+  --marca-jazztel: #d4a900;
+  /* Columnas por etapa de formación: preconexión en un tono claro de la marca y aseguramiento en el color de la marca. */
+  --etapa-pre: color-mix(in srgb, var(--serie-1) 45%, var(--superficie));
+  --etapa-aseg: var(--serie-1);
   --rejilla: #e9ecf1;
   /* Tramo «atención» de No solución (entre lo normal y lo crítico): relleno y texto. */
   --atencion: #c99400;
@@ -104,11 +114,15 @@
   --texto-suave: #a4acba;
   --texto-tenue: #78818f;
 
-  /* Las series suben un escalón de luz: el azul y el verde de Boosted no se leen sobre fondo oscuro. */
-  --serie-2: #5b8cf0;
-  --serie-3: #3fb55a;
-  --serie-4: #ff6b4a;
-  --serie-5: #b99cf0;
+  /* Series (Orange, en oscuro): un escalón más de luz para leerse sobre fondo oscuro. */
+  --serie-1: #ff8a1f;
+  --serie-2: #e08a4d;
+  --serie-3: #ffc48a;
+  --serie-4: #ff7a5c;
+  --serie-5: #b8a493;
+  --marca-yoigo: #d777bd;
+  --marca-masmovil: #c9c9c9;
+  --marca-jazztel: #ffd200;
   --bueno: #5cc67a;
   --malo: #ff7a59;
   --mapa-verde: #2f5d3a;
@@ -157,6 +171,11 @@
   --thead-texto: #4a1f7d;
   --tile-realce: rgb(123 56 201 / .07);
   --tile-realce-fuerte: rgb(123 56 201 / .16);
+  --serie-1: #7b38c9;
+  --serie-2: #c2408f;
+  --serie-3: #4b55c4;
+  --serie-4: #a98ae0;
+  --serie-5: #6e6680;
 }
 :root[data-marca="ygmm"][data-tema="oscuro"] {
   --acento: #b48af0;
@@ -168,6 +187,11 @@
   --thead-texto: #dcc8f8;
   --tile-realce: rgb(180 138 240 / .08);
   --tile-realce-fuerte: rgb(180 138 240 / .15);
+  --serie-1: #b48af0;
+  --serie-2: #ee8cc4;
+  --serie-3: #8f97f0;
+  --serie-4: #cdb6f5;
+  --serie-5: #a59cb8;
 }
 :root[data-marca="jazztel"] {
   --acento: #ffd200;
@@ -179,6 +203,11 @@
   --thead-texto: #5c4a00;
   --tile-realce: rgb(255 210 0 / .12);
   --tile-realce-fuerte: rgb(255 210 0 / .24);
+  --serie-1: #d4a900;
+  --serie-2: #7a6200;
+  --serie-3: #3a3a3a;
+  --serie-4: #e08c00;
+  --serie-5: #a89a6e;
 }
 :root[data-marca="jazztel"][data-tema="oscuro"] {
   --acento: #ffdd33;
@@ -190,6 +219,11 @@
   --thead-texto: #ffe98a;
   --tile-realce: rgb(255 221 51 / .08);
   --tile-realce-fuerte: rgb(255 221 51 / .15);
+  --serie-1: #ffd200;
+  --serie-2: #c9b45a;
+  --serie-3: #e6e6e6;
+  --serie-4: #ffb347;
+  --serie-5: #c9bf9f;
 }
 
 /* =========================================================================================
@@ -577,7 +611,7 @@ table.ranking { width: 100%; table-layout: fixed; border-collapse: separate; bor
 .ranking th[aria-sort] .ordenar::after { opacity: 1; }
 .ranking th[aria-sort="descending"] .ordenar::after { clip-path: polygon(0 62%, 100% 62%, 50% 100%); }
 .ranking th[aria-sort="ascending"] .ordenar::after { clip-path: polygon(50% 0, 100% 38%, 0 38%); }
-.ranking td { padding: 7px 8px; border-bottom: 1px solid var(--borde); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ranking td { padding: 6px 8px; border-bottom: 1px solid var(--borde); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .ranking tbody tr:last-child td { border-bottom: 0; }
 .ranking td:first-child { font-weight: 500; }
 .ranking .num { text-align: right; font-variant-numeric: tabular-nums; }
@@ -596,6 +630,19 @@ table.ranking { width: 100%; table-layout: fixed; border-collapse: separate; bor
 .ranking.con-puesto tbody td:first-child::before {
   content: counter(fila); display: inline-block; min-width: 1.9em; margin-right: 4px; font-size: 11px; font-weight: 600; color: var(--texto-tenue);
 }
+/* Filas compactas (guía, regla 10): una sola línea, relleno vertical de 6–7 px; la primera columna lleva el nombre y, al lado, una pastilla
+   pequeña gris con un dato corto (la oleada). Con puesto, el número va delante del nombre dentro de la misma caja. */
+.ranking .celda-nombre { padding-top: 6px; padding-bottom: 6px; }
+.nombre-fila { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.nombre-texto { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pastilla-dato {
+  flex: none; padding: 0 6px; border-radius: 999px; background: var(--superficie-2); color: var(--texto-suave);
+  font-size: 11px; font-weight: 500; line-height: 1.5; font-variant-numeric: tabular-nums;
+}
+.ranking.con-puesto tbody td.celda-nombre:first-child::before { content: none; }
+.ranking.con-puesto .nombre-fila::before {
+  content: counter(fila); flex: none; min-width: 1.9em; font-size: 11px; font-weight: 600; color: var(--texto-tenue); font-variant-numeric: tabular-nums;
+}
 /* Barrita de volumen tras la cifra de llamadas: el largo (--v, de 0 a 1) lo calcula site.js sobre la mayor de la columna. */
 .ranking td.barra-volumen {
   background-image: linear-gradient(to right, color-mix(in srgb, var(--acento) 22%, transparent) calc(var(--v, 0) * 100%), transparent 0);
@@ -608,10 +655,10 @@ table.ranking { width: 100%; table-layout: fixed; border-collapse: separate; bor
 
 /* Colores por marca (fijos: si se filtra una, las demás no cambian) y por tono del desvío.
    Las piezas leen --serie o --relleno; así ninguna vista lleva un color. */
-.serie-orange { --serie: var(--serie-1); }
-.serie-jazztel { --serie: var(--serie-2); }
-.serie-masmovil { --serie: var(--serie-3); }
-.serie-yoigo { --serie: var(--serie-5); }
+.serie-orange { --serie: var(--marca-orange); }
+.serie-jazztel { --serie: var(--marca-jazztel); }
+.serie-masmovil { --serie: var(--marca-masmovil); }
+.serie-yoigo { --serie: var(--marca-yoigo); }
 .serie-otra { --serie: var(--texto-tenue); }
 .tono-critico, .relleno-malo { --relleno: var(--malo); }
 .tono-atencion { --relleno: var(--atencion); }
@@ -665,7 +712,6 @@ table.ranking { width: 100%; table-layout: fixed; border-collapse: separate; bor
 .sub-ns { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 11.5px; font-weight: 400; color: var(--texto-tenue); }
 .sub-ns.en-linea { display: inline; margin-left: 6px; }
 .ranking td .sub-ns { margin-left: calc(1.8em + 6px); }
-.ranking.con-puesto td .sub-ns { margin-left: calc(1.9em + 4px); }
 .cabecera-acciones-ns { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
 .cabecera-acciones-ns .pestanas-vista { margin-left: 0; }
 .boton-secundario.pequeno { display: inline-flex; height: 30px; padding: 0 10px; font-size: 12.5px; }
@@ -719,7 +765,7 @@ table.ranking { width: 100%; table-layout: fixed; border-collapse: separate; bor
 
 /* Filas que se despliegan (tipologías, impedimentos, averías). */
 .filas-ns { border: 1px solid var(--borde); border-radius: var(--radio-sm); overflow: hidden; }
-.fila-ns { display: grid; align-items: center; gap: 12px; padding: 9px 12px; font-size: 13px; }
+.fila-ns { display: grid; align-items: center; gap: 12px; padding: 7px 12px; font-size: 13px; }
 .fila-ns .num { text-align: right; font-variant-numeric: tabular-nums; }
 .fila-ns-cabecera { background: var(--thead); color: var(--thead-texto); font-size: 12.5px; font-weight: 600; }
 .cols-n3 { grid-template-columns: minmax(0, 1fr) 100px 80px 170px 70px; }
@@ -798,8 +844,6 @@ table.ranking tfoot tr.total td:first-child { text-transform: uppercase; letter-
 .muestra-tinte.mapa-rojo { background: var(--mapa-rojo); color: var(--mapa-tinta); }
 .tabla-ranking-gaia { min-width: 860px; }
 .tabla-marcas-gaia { min-width: 640px; }
-.tabla-ranking-gaia td, .tabla-matriz-gaia td { height: 44px; }
-.tabla-ranking-gaia td .sub-ns, .tabla-matriz-gaia td .sub-ns { margin-left: 0; }
 .tabla-matriz-gaia { min-width: 920px; }
 .tabla-matriz-gaia th:first-child { width: 220px; }
 .tabla-matriz-gaia th { z-index: 2; }
@@ -841,6 +885,7 @@ button.segmento.activo { background: var(--acento); color: var(--acento-texto); 
 .etiqueta-punto.abajo { transform: translate(var(--dx), 8px); }
 .etiqueta-punto.centro { transform: translate(var(--dx), -50%); }
 /* La primera y la última del eje no se salen de la gráfica ni tapan los números del eje. */
+.etiqueta-punto.etapa-pre { color: color-mix(in srgb, var(--etapa-aseg) 70%, var(--texto)); }
 .etiqueta-punto.al-inicio { --dx: -16%; }
 .etiqueta-punto.al-final { --dx: -84%; }
 .etiqueta-punto.tono-critico { --serie: var(--malo); }
@@ -893,7 +938,7 @@ button.segmento.activo { background: var(--acento); color: var(--acento-texto); 
 .aviso-plegable .lista-ns { padding: 2px 18px 12px 34px; font-size: 12.5px; }
 
 /* Llamadas: fila con el ancho mínimo del tablero (la marca y la etapa van bajo el nombre del agente). */
-.cols-llamada { grid-template-columns: 100px minmax(0, 1.4fr) 62px 74px 92px 86px minmax(0, 1fr); }
+.cols-llamada { grid-template-columns: 148px minmax(0, 1.4fr) 84px 54px 62px 74px 92px 86px minmax(0, 1fr); }
 .celda-doble { min-width: 0; }
 .celda-doble .recorta { font-weight: 500; }
 .recorta { display: block; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -930,6 +975,9 @@ button.segmento.activo { background: var(--acento); color: var(--acento-texto); 
 .serie-espana { --serie: var(--serie-2); --relleno: var(--serie-2); }
 .serie-colombia { --serie: var(--serie-1); --relleno: var(--serie-1); }
 .columna-serie { fill: var(--serie, var(--serie-1)); }
+/* Columnas, pastillas y leyenda por grupo de etapa (guía, 2.2): preconexión en el tono claro de la marca, aseguramiento en el de la marca. */
+.etapa-pre { --serie: var(--etapa-pre); --relleno: var(--etapa-pre); }
+.etapa-aseg { --serie: var(--etapa-aseg); --relleno: var(--etapa-aseg); }
 
 .vacio.corto { min-height: 120px; }
 .nota-suelta { margin: 0 0 16px; }
@@ -990,8 +1038,6 @@ button.segmento.activo { background: var(--acento); color: var(--acento-texto); 
 .tabla-mapa-gaia { min-width: 760px; }
 .tabla-pares-gaia { min-width: 780px; }
 .tabla-espanolizacion-gaia { min-width: 780px; }
-.tabla-rendimiento-gaia td, .tabla-comercial-gaia td, .tabla-espanolizacion-gaia td { height: 44px; }
-.tabla-comercial-gaia td .sub-ns, .tabla-rendimiento-gaia td .sub-ns { margin-left: 0; }
 
 /* Textos largos de la llamada (resúmenes enteros y obstáculos). */
 .resumen-largo { display: grid; gap: 6px; }
@@ -1099,7 +1145,7 @@ button.segmento.activo { background: var(--acento); color: var(--acento-texto); 
   .filas-ns > * { min-width: 600px; }
   /* GAIA: las filas de llamadas hacen scroll; el detalle desplegado cabe en la pantalla. */
   .filas-ns.filas-llamadas > * { min-width: 0; }
-  .filas-llamadas > .fila-ns-cabecera, .filas-llamadas > details > summary, .filas-llamadas > .fila-total { min-width: 760px; }
+  .filas-llamadas > .fila-ns-cabecera, .filas-llamadas > details > summary, .filas-llamadas > .fila-total { min-width: 940px; }
   .resumen.en-4, .detalle-gaia, .calificaciones-gaia { grid-template-columns: minmax(0, 1fr); }
   .barra-kpi details.multi { width: 100%; }
   .anillos { grid-template-columns: repeat(2, minmax(0, 1fr)); }

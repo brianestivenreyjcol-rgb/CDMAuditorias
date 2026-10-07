@@ -50,8 +50,8 @@
             <div class="tabla-contenedor alta">
                 <table class="ranking con-puesto tabla-ranking-gaia">
                     <colgroup>
-                        <col style="width:24%" /><col style="width:7%" /><col style="width:9%" /><col style="width:8.5%" /><col style="width:8%" />
-                        <col style="width:7.5%" /><col style="width:7%" /><col style="width:7.5%" /><col style="width:7%" /><col style="width:7%" /><col style="width:7.5%" />
+                        <col style="width:27%" /><col style="width:6.5%" /><col style="width:8.5%" /><col style="width:8%" /><col style="width:7.5%" />
+                        <col style="width:7%" /><col style="width:6.5%" /><col style="width:7%" /><col style="width:6.5%" /><col style="width:7%" /><col style="width:8.5%" />
                     </colgroup>
                     <thead>
                         <tr>
@@ -72,10 +72,7 @@
                             var ind = fila.Indicadores;
                             var pocas = ind.Llamadas < MinLlamadasFiable;
                             <tr class="@(pocas ? "pocas" : null)">
-                                <td title="@fila.Agente · @fila.Sector · oleada @fila.Oleada">
-                                    @fila.Agente
-                                    <span class="sub-ns">@fila.Sector · oleada @fila.Oleada</span>
-                                </td>
+                                <td class="celda-nombre" title="@fila.Agente · @fila.Sector · oleada @fila.Oleada"><div class="nombre-fila"><span class="nombre-texto">@fila.Agente</span><span class="pastilla-dato" title="Oleada @fila.Oleada">@fila.Oleada</span></div></td>
                                 <td class="num barra-volumen" data-valor="@ind.Llamadas">@Formato.Entero(ind.Llamadas)</td>
                                 @foreach (var c in columnas)
                                 {

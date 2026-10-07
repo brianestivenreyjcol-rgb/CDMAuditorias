@@ -139,7 +139,7 @@
                             {
                                 var x = r.Peores[i];
                                 <tr>
-                                    <td data-valor="@x.Dia"><span class="puesto-ns">@(i + 1)</span>@FormatoNoSolucion.FechaLarga(x.Dia) <span class="sub-ns en-linea">@x.DiaSemana</span></td>
+                                    <td class="celda-nombre" data-valor="@x.Dia"><div class="nombre-fila"><span class="puesto-ns">@(i + 1)</span><span class="nombre-texto">@FormatoNoSolucion.FechaLarga(x.Dia)</span><span class="pastilla-dato">@x.DiaSemana</span></div></td>
                                     <td class="num" data-valor="@x.Encuestadas">@FormatoNoSolucion.Int(x.Encuestadas)</td>
                                     <td class="num" data-valor="@x.Nosol">@FormatoNoSolucion.Int(x.Nosol)</td>
                                     <td class="num" data-valor="@Formato.Crudo(x.Pct)">@FormatoNoSolucion.ChipTasa(x.Pct, x.Desvio)</td>

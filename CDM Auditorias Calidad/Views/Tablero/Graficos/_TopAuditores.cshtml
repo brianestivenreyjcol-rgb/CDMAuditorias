@@ -29,9 +29,11 @@ else
                 {
                     var clases = string.Join(" ", new[] { a.Marcado ? "marcada" : null, a.Cantidad < Minimo ? "pocas" : null }.Where(c => c is not null));
                     <tr class="@(clases.Length > 0 ? clases : null)">
-                        <td data-valor="@a.Auditor">
-                            <a href="@(url + Model.Filtros.Alternar("auditor", a.Auditor).Consulta())" data-parcial
-                               title="@a.Auditor · @a.Cargo · @(a.Marcado ? "Pulsa para quitar el filtro" : "Pulsa para filtrar por este auditor")">@a.Auditor</a>
+                        <td class="celda-nombre" data-valor="@a.Auditor">
+                            <div class="nombre-fila">
+                                <a class="nombre-texto" href="@(url + Model.Filtros.Alternar("auditor", a.Auditor).Consulta())" data-parcial
+                                   title="@a.Auditor · @a.Cargo · @(a.Marcado ? "Pulsa para quitar el filtro" : "Pulsa para filtrar por este auditor")">@a.Auditor</a>
+                            </div>
                         </td>
                         <td data-valor="@a.Cargo">@a.Cargo</td>
                         <td class="num barra-volumen" data-valor="@a.Cantidad">@Formato.Entero(a.Cantidad)</td>

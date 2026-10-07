@@ -171,10 +171,7 @@
                         {
                             var i = fila.Indicadores;
                             <tr class="@(i.Llamadas < MinLlamadasFiable ? "pocas" : null)">
-                                <td title="@fila.Agente · @fila.Sector · oleada @fila.Oleada">
-                                    @fila.Agente
-                                    <span class="sub-ns">@fila.Sector · oleada @fila.Oleada</span>
-                                </td>
+                                <td class="celda-nombre" title="@fila.Agente · @fila.Sector · oleada @fila.Oleada"><div class="nombre-fila"><span class="nombre-texto">@fila.Agente</span><span class="pastilla-dato" title="Oleada @fila.Oleada">@fila.Oleada</span></div></td>
                                 <td class="num">@Duracion(i.Tmo)</td>
                                 <td class="num barra-volumen" data-valor="@i.Llamadas">@Formato.Entero(i.Llamadas)</td>
                                 <td class="num">@Formato.Porcentaje(i.Menores60)</td>

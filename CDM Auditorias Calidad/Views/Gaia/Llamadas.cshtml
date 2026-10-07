@@ -40,7 +40,9 @@
             <div class="filas-ns filas-llamadas">
                 <div class="fila-ns fila-ns-cabecera cols-llamada" aria-hidden="true">
                     <span>Fecha y hora</span>
-                    <span>Agente, marca y etapa</span>
+                    <span>Agente</span>
+                    <span>Marca</span>
+                    <span>Etapa</span>
                     <span class="num">Duración</span>
                     <span>Rellam. 72 h</span>
                     <span>Encuesta</span>
@@ -61,12 +63,11 @@
                         <summary class="fila-ns cols-llamada" title="Pulsa para ver el detalle de la llamada">
                             <span class="fila-ns-nombre">
                                 @Iconos.Svg("derecha", "chevron-ns")
-                                <span>@Formato.Fecha(DateOnly.FromDateTime(l.FechaHora))<span class="sub-ns">@l.FechaHora.ToString("HH:mm")</span></span>
+                                <span class="recorta">@Formato.Fecha(DateOnly.FromDateTime(l.FechaHora)) <span class="texto-tenue">@l.FechaHora.ToString("HH:mm")</span></span>
                             </span>
-                            <span class="celda-doble" title="@l.Agente · @l.Marca · @EtapaLegible(l.TipoConexion)">
-                                <span class="recorta">@l.Agente</span>
-                                <span class="sub-ns"><i class="marca-punto @ClaseMarca(l.Marca)"></i>@l.Marca · @EtapaLegible(l.TipoConexion)</span>
-                            </span>
+                            <span class="recorta" title="@l.Agente · @l.Marca · @EtapaLegible(l.TipoConexion)">@l.Agente</span>
+                            <span class="recorta" title="@l.Marca"><i class="marca-punto @ClaseMarca(l.Marca)"></i>@l.Marca</span>
+                            <span class="recorta" title="@EtapaLegible(l.TipoConexion)">@EtapaCorta(l.TipoConexion).Replace(".", "")</span>
                             <span class="num">@Duracion(l.DuracionSegundos)</span>
                             <span>@RellamadaTexto(l.Rellamada72h)</span>
                             <span>@EncuestaTexto(l.EncuestaSolucion)</span>
@@ -144,7 +145,9 @@
                 }
                 <div class="fila-ns fila-total cols-llamada" title="Todas las llamadas del filtro, no solo las de esta página">
                     <span class="fila-ns-nombre">TOTAL</span>
-                    <span class="celda-doble"><span class="recorta">@Formato.Entero(t.Llamadas) llamadas</span></span>
+                    <span class="recorta">@Formato.Entero(t.Llamadas) llamadas</span>
+                    <span></span>
+                    <span></span>
                     <span class="num">@Duracion(t.Tmo)</span>
                     <span>@Formato.Porcentaje(t.Rellamada72)</span>
                     <span>@Formato.Porcentaje(t.NoSolucion)</span>

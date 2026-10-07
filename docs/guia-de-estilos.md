@@ -56,15 +56,30 @@ La marca se marca en `<html data-marca="…">` y cambia el acento de toda la pá
   y cifras «de acento» usan `--acento-enlace` (el oscuro del acento en cada marca: `#5f27a3`, `#cc5e00`, `#7a6200`).
 - **La marca sigue al filtro** (pedido del usuario el 06-10-2026): en los informes con filtro de marca, `data-marca` sale de lo
   marcado: solo ORANGE → `orange`; solo YOIGO y/o MASMOVIL → `ygmm`; solo JAZZTEL → `jazztel`; nada o marcas de grupos
-  distintos → el color por defecto del informe. Lo pone el servidor y el JS lo actualiza en las recargas parciales. Las series
-  de las gráficas no cambian (tienen su color por marca).
-- En Yoigo, la serie «morada» de las gráficas pasa al ámbar `#c99400` para no confundirse con el acento.
+  distintos → el color por defecto del informe. Lo pone el servidor y el JS lo actualiza en las recargas parciales. **Con la
+  marca cambian también las series de las gráficas** (2.2, pedido del usuario el 07-10-2026).
 - Los menús y la portada van en marino y gris: el color de marca solo queda en los logotipos.
 
-### 2.2 Fijos en todas las marcas
+### 2.2 Series de las gráficas: una paleta por marca
+
+Las gráficas toman `--serie-1` … `--serie-5` de la marca de la página (`[data-marca]`); nunca el naranja y el azul de
+siempre. La 1 es el color de la marca; las demás, de su misma familia pero distinguibles (cambian de tono **y** de claridad).
+
+| Marca | 1 | 2 | 3 | 4 | 5 | Oscuro (1–5) |
+|---|---|---|---|---|---|---|
+| **Yoigo · MásMóvil** (`ygmm`) | morado `#7b38c9` | magenta `#c2408f` | índigo `#4b55c4` | lila `#a98ae0` | gris violáceo `#6e6680` | `#b48af0`, `#ee8cc4`, `#8f97f0`, `#cdb6f5`, `#a59cb8` |
+| **Orange** (`orange`, y el por defecto) | naranja `#f16e00` | tostado `#a84a00` | melocotón `#f2a65a` | teja `#d13f1f` | gris cálido `#8a7464` | `#ff8a1f`, `#e08a4d`, `#ffc48a`, `#ff7a5c`, `#b8a493` |
+| **Jazztel** (`jazztel`) | amarillo `#d4a900` (oscurecido para leerse sobre blanco) | ocre `#7a6200` | carbón `#3a3a3a` | ámbar `#e08c00` | arena `#a89a6e` | `#ffd200`, `#c9b45a`, `#e6e6e6`, `#ffb347`, `#c9bf9f` |
+
+- **Grupos de una misma cosa, mismo color** (columnas por etapa de formación): `--etapa-pre` (preconexión, tono claro de la
+  marca: `color-mix(in srgb, var(--serie-1) 45%, var(--superficie))`) y `--etapa-aseg` (aseguramiento, `--serie-1`).
+- **Cuando cada serie es una marca** (evolución por marca), cada una lleva el color de su marca, sea cual sea la página:
+  ORANGE `#f16e00`, YOIGO `#ab3e91`, MASMOVIL `#3a3a3a` (su amarillo coincide con el de Jazztel), JAZZTEL `#d4a900`.
+- Los colores con significado no cambian con la marca: bueno / malo, semáforo y sentimientos (tabla de abajo).
+
+### 2.3 Fijos en todas las marcas
 | Qué | Colores |
 |---|---|
-| **Series de gráficas** (Orange Boosted) | naranja `#f16e00`, azul `#4170d8`, verde `#228722`, rojo `#cd3c14`, lila `#a885d8` |
 | **Bueno / malo** | verde `#228722` / rojo `#cd3c14` |
 | **Semáforo pastel** (como el formato condicional de Excel) | verde `#c6efce`, ámbar `#ffeb9c`, rojo `#ffc7ce`, tinta `#141414`. En oscuro: `#2f5d3a`, `#5e5325`, `#5f2f37` con tinta `#f5f5f5` |
 | **Sentimientos** | positivo `#2a9d8f`, neutro `#8d99ae`, mixto `#e9b44c`, negativo `#d1495b` |
@@ -201,9 +216,9 @@ mismo aspecto: **Auditorías** (General y Formación & Calidad, el Power BI «CD
 
 | Variable | Qué es |
 |---|---|
-| `--serie-3`, `--serie-4`, `--serie-5` | el verde, el rojo y el lila de las series de 2.2 (`--serie-1` y `--serie-2` ya existían) |
+| `--serie-1` … `--serie-5` | la paleta de series **de la marca de la página** (desde el 07-10-2026, ver 9.10); antes eran fijas |
 | `--atencion` / `--atencion-texto` | tramo «atención» de No solución: ámbar `#c99400` para rellenos y `#8a6500` para texto; en oscuro, `#e9b44c` los dos |
-| `--serie` | color de una serie **por marca**, fijo (si se filtra una, las demás no cambian): lo ponen `.serie-orange` (naranja), `.serie-jazztel` (azul), `.serie-masmovil` (verde) y `.serie-yoigo` (lila) |
+| `--serie` | color de una serie **por marca**, fijo (si se filtra una, las demás no cambian): lo ponen `.serie-orange`, `.serie-jazztel`, `.serie-masmovil` y `.serie-yoigo` con `--marca-*` (9.10) |
 | `--relleno` | color de una barra **por tono**: `.tono-critico` / `.relleno-malo` (rojo), `.tono-atencion` (ámbar), `.tono-bueno` (verde), `.tono-neutro` / `.relleno-tenue` (gris), `.relleno-proceso` (azul) y `.relleno-atencion` (naranja). `.hbarra-relleno` y `.hbarra-media-relleno` lo usan si está; si no, su color de siempre |
 | `--fraccion` | largo de una barra de `.hbarras.libre` (0–1) sobre el hueco que deja su cifra: la cifra nunca se sale |
 
@@ -339,7 +354,7 @@ los tipos de las gráficas genéricas (`GraficoGaia`, `SerieGaia`, `SelectorGaia
   `orange`) se pone en `<html data-marca>` (desde `_LayoutGaia`) y en `#informe[data-marca-pagina]`, y site.js lo copia a `<html>` en las recargas
   parciales. Variables nuevas en `site.css`: `--acento-enlace` (el acento cuando es texto: se usa en enlaces, botones secundarios, iconos de tarjeta; en
   Jazztel es `#7a6200` y no el amarillo) y los bloques `:root[data-marca="ygmm"]` / `"jazztel"` (claro y oscuro) con `--acento`, `--acento-osc`,
-  `--acento-enlace`, `--acento-texto`, `--acento-suave`, `--thead`, `--thead-texto` y `--tile-realce(-fuerte)`. Las series de las gráficas no cambian.
+  `--acento-enlace`, `--acento-texto`, `--acento-suave`, `--thead`, `--thead-texto` y `--tile-realce(-fuerte)`. Desde el 07-10-2026 cambian también las series (2.2).
 
 
 ### 9.9 Rediseño al estilo del portal SOLARIS (06-10-2026)
@@ -426,4 +441,31 @@ a `<html>` en las recargas parciales. General no tiene filtro de marca y se qued
 página a tema claro mientras se imprime (`beforeprint` / `afterprint`).
 
 **Barra de carga.** Además de al filtrar, sale al pulsar un enlace a otra página (menos las descargas) y se quita al volver (`pageshow`).
+
+
+### 9.10 Series por marca, colores por etapa y tablas compactas (07-10-2026)
+
+**Las gráficas siguen a la marca.** `--serie-1` … `--serie-5` se definen por `[data-marca]`, en claro y en oscuro, con las paletas de 2.2: Orange (y por
+defecto) naranja / tostado / melocotón / teja / gris cálido; Yoigo y MásMóvil (`ygmm`) morado / magenta / índigo / lila / gris violáceo; Jazztel amarillo
+oscurecido / ocre / carbón / ámbar / arena. Las clases `.serie-a` … `.serie-e`, `.serie-espana` / `.serie-colombia`, `.columna-volumen`, los puntos de la
+dispersión, las barras de reparto y la barra de carga leen esas variables y cambian solas con `?marca=`. Al haber una sola paleta por marca, las gráficas con
+dos series usan la 1 y la 2 (Comercial: «Ventas» pasó de `serie-c` a `serie-b`, porque el índigo de Yoigo se parecía demasiado a su morado). Excepción: cuando
+cada serie **es una marca** (evolución por marca de No solución, `.marca-punto`, el punto de la tabla de Actualización BD), `.serie-orange`, `.serie-yoigo`,
+`.serie-masmovil` y `.serie-jazztel` usan `--marca-orange` `#f16e00`, `--marca-yoigo` `#ab3e91`, `--marca-masmovil` `#3a3a3a` y `--marca-jazztel` `#d4a900`
+(en oscuro, `#d777bd`, `#c9c9c9` y `#ffd200` para leerse). Bueno / malo, semáforo y sentimientos no cambian.
+
+**Columnas por etapa de formación.** Variables `--etapa-pre` (tono claro de la marca: `color-mix` del `--serie-1` con la superficie) y `--etapa-aseg` (el
+`--serie-1`) y clases `.etapa-pre` / `.etapa-aseg` (fijan `--serie` y `--relleno`). `GraficoGaia.PorEtapa` (lo pone `Grafico("etapa", …)`) hace que, con **una
+sola serie**, `_ColumnasGaia` ponga la clase de su grupo (`AyudasGaia.ClaseEtapa(titulo)`: «Preconexión» o «Aseguramiento») en cada columna y cada pastilla, y
+`_LeyendaGraficoGaia` rotule «Preconexión» y «Aseguramiento». Lo usan Resumen («Avance por etapa»), Estilo («Adherencia por etapa», que **ya no colorea por
+umbral**) y Rendimiento («TMO por etapa»). Con dos series por etapa (cortas y sin contexto, ofrecimientos y ventas, España y Colombia) se usan dos colores de
+la paleta. `PorUmbral` sigue en `GraficoGaia` pero ninguna vista lo usa.
+
+**Tablas compactas** (regla 10). Una sola línea por fila, relleno vertical de 6 px (filas de 32 px). La primera celda es `td.celda-nombre` con
+`div.nombre-fila` > `span.nombre-texto` (se corta con «…») y `span.pastilla-dato[title]` (pastilla pequeña gris con el dato corto: en GAIA, la oleada, `Ana Pérez  740`).
+Con `.con-puesto`, el número va dentro de `.nombre-fila` (no antes de ella). Se quitaron los subtítulos `.sub-ns` bajo el nombre: Ranking, Estilo (matriz),
+Rendimiento y Comercial llevan la oleada en la pastilla y el sector en el `title`; en No solución, Equipos pasa su detalle al `title` y los días peores llevan el
+día de la semana en la pastilla; Españolización no lleva oleada (su modelo de agente no la trae) y General no tenía subtítulo. **Llamadas**: la fecha y la hora van en una
+línea y el agente, la marca y la etapa abreviada («Pre 1», «Aseg 3») tienen su propia columna (`.cols-llamada`, 9 columnas; en móvil la fila hace scroll con 940 px de ancho
+mínimo). Las filas de las listas desplegables (`.fila-ns`) bajaron a 7 px de relleno.
 

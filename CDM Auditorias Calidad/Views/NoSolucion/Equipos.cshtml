@@ -83,10 +83,7 @@
                         {
                             var f = x.Fila;
                             <tr>
-                                <td title="@f.Nombre · @x.Detalle">
-                                    <span class="puesto-ns">@x.Puesto</span>@f.Nombre
-                                    <span class="sub-ns">@x.Detalle</span>
-                                </td>
+                                <td title="@f.Nombre · @x.Detalle"><span class="puesto-ns">@x.Puesto</span>@f.Nombre</td>
                                 <td class="num barra-volumen" data-valor="@f.Llamadas">@FormatoNoSolucion.Int(f.Llamadas)</td>
                                 <td class="num">@FormatoNoSolucion.Int(f.Encuestadas)</td>
                                 <td class="num texto-suave">@FormatoNoSolucion.Pct(f.Cobertura)</td>

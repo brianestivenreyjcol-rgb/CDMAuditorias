@@ -59,6 +59,8 @@
 - **Aspecto = el del portal SOLARIS** (06-10-2026, guía 9.9): cabecera con migas, Imprimir / Presentar / Tema, pestañas en barra, panel
   de filtros plegable (`cdm-panel`), tarjetas con cabecera y pie, tablas con puesto, barrita de volumen y TOTAL al pie, gráficas con
   cada punto en pastilla (piezas en `Views/Shared`), medidor y anillos en GAIA → Estilo; el color de No solución también sigue a la marca.
+  Desde el 07-10-2026 las gráficas también siguen a la marca (paleta por marca, guía 2.2 y 9.10), las columnas por etapa van en preconexión /
+  aseguramiento y las tablas son compactas (una línea, oleada en pastilla).
 
 ## Pendientes
 

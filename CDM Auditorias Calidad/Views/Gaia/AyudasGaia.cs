@@ -197,7 +197,13 @@ public static class AyudasGaia
         public bool SinVolumen { get; init; }
         /// <summary>Un texto más al final de la ficha de cada periodo (p. ej. «Nota 85,20 %»), en el orden de los puntos.</summary>
         public IReadOnlyList<string>? FichaExtra { get; init; }
+        /// <summary>Los puntos son etapas de formación: con una sola serie, las columnas llevan el color de su grupo (preconexión o aseguramiento).</summary>
+        public bool PorEtapa { get; init; }
     }
+
+    /// <summary>Grupo de una etapa de formación: «1 Preconexión» → <c>etapa-pre</c>; «Aseguramiento 3» → <c>etapa-aseg</c> (colores de la marca, guía 2.2).</summary>
+    public static string ClaseEtapa(string etapa)
+        => etapa.Contains("Preconexi", StringComparison.OrdinalIgnoreCase) ? "etapa-pre" : "etapa-aseg";
 
     /// <summary>El texto de la ficha de un periodo: «Etiqueta · Serie valor · … · Llamadas N» (la ficha de site.js lo parte por « · »).</summary>
     public static string Ficha(GraficoGaia g, int i)
@@ -304,6 +310,7 @@ public static class AyudasGaia
         {
             MaxEtiquetasX = escala == "semana" ? 7 : 12,
             Dia = escala == "dia",
+            PorEtapa = escala == "etapa",
         };
 
     /// <summary>Gráfico de grupos (días, semanas o etapas) con una serie por indicador.</summary>
