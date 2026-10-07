@@ -1,5 +1,6 @@
 -- Rellamada 72 h de Jazztel, Orange y WhatsApp JZZ por mes y sector, en SQL Server (YGMM sale de BigQuery:
--- SectoresYgmm.sql). Es la consulta del usuario (07-10-2026) con el mes añadido. El sector sale del skill.
+-- SectoresYgmm.sql). Es la consulta del usuario (07-10-2026) con el mes añadido y, de Orange, también
+-- CO Técnico Convergente Orange (lo pidió el usuario el mismo día). El sector sale del skill.
 --   % Rellamada = LlamadaMala / TotalLlamadas
 -- Ojo: Pd_R72_Orange.Fecha es datetime y el login está en español: un literal '2026-09-01' se leería como
 -- 9 de enero. Por eso las fechas van en variables DATE (o como '20260901').
@@ -33,7 +34,7 @@ BASE_ORANGE AS (
     WHERE pd.Fecha >= @FechaIni AND pd.Fecha < DATEADD(DAY, 1, @FechaFin)
       AND sk.[Tipo Servicio] = 'FRONT'
       AND sk.Site = 'Bogotá'
-      AND sk.Sector = 'CO Masivo Orange'
+      AND sk.Sector IN ('CO Masivo Orange', 'CO Técnico Convergente Orange')
     GROUP BY FORMAT(pd.Fecha, 'yyyy-MM'), sk.Sector
 ),
 BASE_WHATSAPP AS (       -- WhatsApp de Jazztel: recontacto en 72 h

@@ -24,7 +24,8 @@ public sealed class DatosSectores
     /// <summary>Versión del formato de la caché: si cambia, la caché vieja no se usa.</summary>
     public int Version { get; set; } = VersionActual;
 
-    public const int VersionActual = 1;
+    // 2 (07-10-2026): CO Técnico Convergente Orange y la no solución de CO Whatsapp JZZ.
+    public const int VersionActual = 2;
 }
 
 /// <summary>Los dos indicadores del informe y cómo se leen.</summary>

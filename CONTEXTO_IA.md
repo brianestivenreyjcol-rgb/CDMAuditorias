@@ -81,8 +81,8 @@
   BigQuery filtradas por el Excel de nómina de la compartida (filtro exacto agente + día, fallos del PBI
   corregidos; se recarga sola al guardar el Excel). Las 9 pestañas (Resumen, Ranking, Estilo,
   Rendimiento, Evolución, Comercial, Motivos, Españolización, Llamadas) hechas y **publicadas en el 5180 el 07-10-2026**. Todo en `docs/contexto/gaia-formacion.md`.
-- **Por sector** (`/sectores`, **publicado en el 5180 el 07-10-2026**): confirmar con el usuario los sectores de YGMM por servicio
-  (Retención → CO Retención YGMM, Averías → CO Técnico MasMovil), la fuente de no solución de WhatsApp y si entra CO Técnico Convergente Orange.
+- **Por sector** (`/sectores`, **publicado en el 5180 el 07-10-2026**): sectores de YGMM confirmados; Técnico Convergente
+  Orange y la no solución de WhatsApp (desde sep-2026) añadidos el 07-10-2026, **sin publicar** todavía. Siguiente: más KPIs (productividad, reitero, retención).
 - Detalle de todo esto: `docs/contexto/pendientes.md`.
 
 ## Dónde está el detalle (`docs/contexto/`)

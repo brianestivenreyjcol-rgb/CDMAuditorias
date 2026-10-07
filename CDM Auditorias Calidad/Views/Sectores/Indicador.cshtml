@@ -283,15 +283,15 @@
             @if (ind == IndicadorSectores.Rellamada)
             {
                 <li><b>YOIGO · MASMOVIL</b>: BigQuery, tabla corporativa <code>ALL_LLAMADAS_EJECUTIVO_BRUTOS_RELLAMADA</code> (la del PBI de Atención YGMM), entrantes de Bogotá (agencia JAZZBOG). El sector sale del servicio: Comercial, Fidelización y General son Atención YGMM; Retención, Retención YGMM; Averías, Técnico MasMovil.</li>
-                <li><b>Jazztel</b> (todos los sectores FRONT de Bogotá) y <b>Orange</b> (Masivo Orange): SQL Server, <code>PD_JAZZTEL_FCR_72h</code> y <code>Pd_R72_Orange</code>, llamadas malas sobre llamadas; el sector sale del skill.</li>
+                <li><b>Jazztel</b> (todos los sectores FRONT de Bogotá) y <b>Orange</b> (Masivo Orange y Técnico Convergente Orange): SQL Server, <code>PD_JAZZTEL_FCR_72h</code> y <code>Pd_R72_Orange</code>, llamadas malas sobre llamadas; el sector sale del skill.</li>
                 <li><b>CO Whatsapp JZZ</b>: recontacto en 72 h de <code>VW_Recontacto</code> (hay datos desde agosto de 2026).</li>
                 <li>Un mes se cierra 3 días después de acabar: la rellamada de una llamada se conoce a las 72 horas.</li>
             }
             else
             {
                 <li><b>YOIGO · MASMOVIL</b>: BigQuery, la misma tabla corporativa (<code>no_solucion_kpi</code>, que es la respuesta 2 de la encuesta), con los mismos sectores por servicio.</li>
-                <li><b>Jazztel</b> y <b>Orange</b> (Masivo Orange): SQL Server, <code>PD_Encuesta2</code> y <code>Pd_Encuesta_Orange2</code>, respuestas «no» sobre respuestas «sí» + «no»; el sector sale del skill.</li>
-                <li>WhatsApp no está: aún no hay una fuente fiable de su encuesta de solución.</li>
+                <li><b>Jazztel</b> y <b>Orange</b> (Masivo Orange y Técnico Convergente Orange): SQL Server, <code>PD_Encuesta2</code> y <code>Pd_Encuesta_Orange2</code>, respuestas «no» sobre respuestas «sí» + «no»; el sector sale del skill.</li>
+                <li><b>CO Whatsapp JZZ</b>: la pregunta «¿se ha resuelto tu consulta?» de <code>WhatsApp_Conversaciones</code>, respuestas «no» sobre «sí» + «no» (el texto libre no cuenta). El sector sale del último agente que atendió. La pregunta empezó en septiembre de 2026.</li>
             }
             <li>Las diferencias entre dos porcentajes son una <b>resta</b> («+0,58 %»), no una variación relativa. Más es peor: lo que sube va en rojo.</li>
         </ul>

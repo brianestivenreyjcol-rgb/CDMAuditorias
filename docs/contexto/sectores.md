@@ -22,8 +22,13 @@ nada»). No mezclar con CDM No solución (`/nosolucion`), que sale de GAMMA y es
   no solución = `SUM(no_solucion_kpi) / COUNT(…)` (`no_solucion_kpi` = 1 si `answer_2` = 2, 0 si 1) y `CuentaNO / (CuentaSI + CuentaNO)`.
 - **Fechas en SQL**: `Pd_R72_Orange.Fecha` y `Pd_Encuesta_Orange2.Fecha` son `datetime` y el login está en español: `'2026-09-01'` se lee
   como 9 de enero. Las consultas usan variables `DATE`; a mano, `'20260901'`.
-- **WhatsApp en No solución: no está.** `Indicadores.Front.EncuestaSolucion` trae `CantidadSiSolucion` siempre a 0. Pendiente de que el
-  usuario dé la fuente buena. **CO Técnico Convergente Orange** tampoco sale (el usuario solo puso Masivo Orange); sí tiene encuestas.
+- **Confirmado por el usuario (07-10-2026)**: Retención → CO Retención YGMM y Averías → CO Técnico MasMovil. Pidió añadir **CO Técnico
+  Convergente Orange** (en las dos consultas, `Sector IN (...)`).
+- **No solución de WhatsApp (CO Whatsapp JZZ)**: `Indicadores.WhatsApp.WhatsApp_Conversaciones`, pregunta `questionSolvedAsked = 'sí'`, respuestas
+  «sí»/«no» (el texto libre no cuenta), último agente humano de `Jazzplat Bogotá`; sector por su extensión Avaya (`messageAgentHumanLatestAvayaID` →
+  `PD_Usuarios` → `PANEL - DIARIO NOMINA` del día). Cruzar con `VW_Recontacto` da lo mismo (sep: 80/1.288 frente a 79/1.281) pero tarda más de 5 min;
+  así, 8 s. **La pregunta empezó en septiembre de 2026.** Descartadas: `EncuestaSolucion` (`CantidadSiSolucion` siempre 0) y `CMDWhat` (las
+  encuestas quedan en «Sin agente asignado»). Caché v2.
 - SQL Server no tiene la rellamada 72 h de YGMM al día (`Indicadores.Front.DatosBrutosYGMMV` acaba el 06-07-2026, `YYGMMV.dbo.DatosBrutosYGMMV`
   el 14-01-2026 y la vista `YYGMMV.dbo.DATOS_BRUTOS` está rota): por eso YGMM sale de BigQuery.
 
