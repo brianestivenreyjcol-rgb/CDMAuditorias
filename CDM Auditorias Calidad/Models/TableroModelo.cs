@@ -10,7 +10,7 @@ public sealed class TableroModelo
     /// <summary>
     /// Filtros que van plegados en «Más filtros» (guía de estilos, 4): los demás se ven siempre.
     /// </summary>
-    public static readonly IReadOnlySet<string> CamposEnMasFiltros = new HashSet<string> { "cargo", "base" };
+    public static readonly IReadOnlySet<string> CamposEnMasFiltros = new HashSet<string> { "cargo", "base", "plantilla" };
 
     public required PaginaTablero Pagina { get; init; }
 
@@ -32,6 +32,9 @@ public sealed class TableroModelo
     public IReadOnlyList<BarraSector> Sectores { get; init; } = [];
     public IReadOnlyList<FilaAuditor> TopAuditores { get; init; } = [];
     public IReadOnlyList<GrupoFiltro> Grupos { get; init; } = [];
+
+    /// <summary>El contenido de «T0 y planes de acción»; null en General y Formación.</summary>
+    public InformeT0? T0 { get; init; }
 
     /// <summary>Auditorías que cumplen todos los filtros.</summary>
     public int TotalFiltrado { get; init; }

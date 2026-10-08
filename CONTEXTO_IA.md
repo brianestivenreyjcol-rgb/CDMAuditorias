@@ -13,6 +13,9 @@
   ranking-mvc (son dos copias independientes del motor).
 - Desde el 07-10-2026, **Rellamada y No solución por sector** (`/sectores`): la cifra mensual de cada sector de Bogotá;
   YGMM de BigQuery (tabla corporativa) y Jazztel, Orange y WhatsApp de SQL Server (consultas del usuario). Ver `docs/contexto/sectores.md`.
+- Desde el 08-10-2026, **T0 y planes de acción** (`/t0`, tercera pestaña de Auditorías, **sin publicar**): cada auditoría ICEBERG con
+  «Tolerancia 0» frente a su alerta T0 (`RecursosHumanos.Legal.Alertas_T0`) y su plan (`Legal.PlanAccion`; «Acción de Calidad» es el
+  motivo 1020). Ver `docs/contexto/t0-planes.md`.
 - Desde el 07-10-2026, **Pesos y metas por sector** (`/pesos`): los KPI, pesos y metas de los Excel de ranking de incentivos de cada mes
   (la versión más reciente de cada sector) con un botón «Analizar y validar». Ver `docs/contexto/pesos.md`.
 - Proyecto: `C:\Proyectos\CDM Auditorias Calidad\` (`CDM Auditorias Calidad.sln`: web + pruebas).
@@ -28,6 +31,9 @@
   `Consultas/Nomina.sql`; en memoria, recarga cada 30 min; las consultas se leen en cada carga
   (editar el `.sql` + «Actualizar»). Ventana: 3 meses atrás + el mes en curso (ICEBERG con `- 3`).
   Las tablas WEB empiezan el 01/08: **el usuario avisará** cuando traigan 4 meses; no investigar.
+- T0: `Consultas/AuditoriasT0.sql` (mismo `.env`, ~8 s, en la misma recarga que las auditorías; si falla, solo esa pestaña avisa).
+  `Legal.PlanAccion` **no tiene planes del 14-07 al 30-09-2026**: la web avisa de los huecos. El login de SQL está en español:
+  en columnas `datetime`, escribir las fechas como `'20260701'`.
 - No solución: BigQuery por ODBC (DSN de usuario `BQCOL`), cubo de 90 días en disco (`App_Data` en
   desarrollo, `publicacion\datos` en producción), se renueva solo cada 12 h. Formato del cubo: **v3**.
 - Por sector: `Consultas/SectoresYgmm.sql` y `SectoresRetencion.sql` (BigQuery, la retención de YGMM desde el 07-10-2026) y `SectoresRellamada.sql` / `SectoresNoSolucion.sql` (SQL Server, mismo `.env`);
@@ -88,6 +94,8 @@
 - **Por sector** (`/sectores`, **publicado en el 5180 el 07-10-2026**): sectores de YGMM confirmados; Técnico Convergente
   Orange y la no solución de WhatsApp (desde sep-2026) añadidos el 07-10-2026, **sin publicar** todavía. Siguiente: más KPIs (productividad, reitero, retención): lo investigado está en `docs/contexto/kpis-servicios.md` (aún no en la web).
 - **Pesos** (`/pesos`, **publicado en el 5180 el 07-10-2026**; solo la hoja principal de agentes de cada sector): ya lee los .xlsb; si el usuario lo pide, comparar los pesos con el mes anterior.
+- **T0 y planes** (`/t0`, sin publicar): que el usuario diga si «Registro de Falta» y «Agente dado de baja» cumplen la regla (hoy no)
+  y que pidan recargar `Legal.PlanAccion`.
 - Detalle de todo esto: `docs/contexto/pendientes.md`.
 
 ## Dónde está el detalle (`docs/contexto/`)
@@ -98,6 +106,7 @@
 | `power-bi.md` | toques medidas, fechas DAX o la consulta de auditorías (análisis del PBI y cómo se pasó cada medida) |
 | `decisiones.md` | toques el informe de Auditorías: filtros, tarjetas, top 10, Excel, estilo aplicado |
 | `sectores.md` | toques «Rellamada y No solución por sector»: fuentes, consultas, decisiones y pantalla |
+| `t0-planes.md` | toques «T0 y planes de acción»: tablas, llaves del cruce, «Acción de Calidad», hueco de PlanAccion |
 | `pesos.md` | toques «Pesos y metas por sector»: carpetas, versión elegida, lector de bloques, validación |
 | `kpis-servicios.md` | vayas a añadir productividad, reitero o retención: cómo los calcula cada Excel y de dónde salen |
 | `no-solucion.md` | toques No solución: fuente, cubo, pestañas, causas atención/proceso, palabras clave |

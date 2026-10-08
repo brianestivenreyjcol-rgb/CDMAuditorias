@@ -35,13 +35,19 @@ public sealed class InstantaneaAuditorias
         DateTime cargadoEn,
         TimeSpan duracion,
         IReadOnlyList<RegistroNomina>? nomina = null,
-        string? errorNomina = null)
+        string? errorNomina = null,
+        IReadOnlyList<AuditoriaT0>? t0 = null,
+        string? errorT0 = null,
+        IReadOnlyDictionary<DateOnly, int>? planesPorDia = null)
     {
         Filas = filas;
         CargadoEn = cargadoEn;
         Duracion = duracion;
         Nomina = nomina;
         ErrorNomina = errorNomina;
+        T0 = t0;
+        ErrorT0 = errorT0;
+        PlanesPorDia = planesPorDia;
         if (filas.Count > 0)
         {
             PrimeraFecha = filas.Min(f => f.Fecha);
@@ -55,6 +61,14 @@ public sealed class InstantaneaAuditorias
     public IReadOnlyList<RegistroNomina>? Nomina { get; }
 
     public string? ErrorNomina { get; }
+
+    /// <summary>Las auditorías ICEBERG con Tolerancia 0 y su alerta y plan (<c>Consultas/AuditoriasT0.sql</c>); null si no se pudo leer.</summary>
+    public IReadOnlyList<AuditoriaT0>? T0 { get; }
+
+    public string? ErrorT0 { get; }
+
+    /// <summary>Planes creados cada día en <c>Legal.PlanAccion</c> en la ventana (los días sin ninguno no están): para ver sus huecos.</summary>
+    public IReadOnlyDictionary<DateOnly, int>? PlanesPorDia { get; }
     public DateTime CargadoEn { get; }
     public TimeSpan Duracion { get; }
 

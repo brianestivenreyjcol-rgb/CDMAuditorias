@@ -25,10 +25,14 @@ public sealed class FiltrosTablero
     public List<string> Auditor { get; set; } = [];
     public List<string> Cargo { get; set; } = [];
     public List<string> Base { get; set; } = [];
+
+    /// <summary>Solo en «T0 y planes de acción»: plantilla de ICEBERG y situación frente al plan.</summary>
+    public List<string> Plantilla { get; set; } = [];
+    public List<string> Situacion { get; set; } = [];
     public string? Vista { get; set; }
 
     /// <summary>Nombres de los campos de varias opciones, en el orden de la barra.</summary>
-    public static readonly string[] CamposMultiples = ["mes", "sector", "super", "team", "auditor", "cargo", "base"];
+    public static readonly string[] CamposMultiples = ["mes", "sector", "super", "team", "auditor", "cargo", "base", "plantilla", "situacion"];
 
     public List<string> Lista(string campo) => campo switch
     {
@@ -39,6 +43,8 @@ public sealed class FiltrosTablero
         "auditor" => Auditor,
         "cargo" => Cargo,
         "base" => Base,
+        "plantilla" => Plantilla,
+        "situacion" => Situacion,
         _ => throw new ArgumentOutOfRangeException(nameof(campo), campo, null),
     };
 

@@ -86,7 +86,75 @@ public sealed class RepositorioAuditorias
             }
         }
 
-        return new InstantaneaAuditorias(filas, DateTime.Now, reloj.Elapsed, nomina, errorNomina);
+        // Las T0 y sus planes también van aparte: si RecursosHumanos no responde, solo esa pestaña sale sin datos.
+        IReadOnlyList<AuditoriaT0>? t0 = null;
+        IReadOnlyDictionary<DateOnly, int>? planesPorDia = null;
+        string? errorT0 = null;
+        try
+        {
+            (t0, planesPorDia) = await CargarT0Async(cn, op.SegundosConsulta, ct);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            errorT0 = ex.Message;
+        }
+
+        return new InstantaneaAuditorias(filas, DateTime.Now, reloj.Elapsed, nomina, errorNomina, t0, errorT0, planesPorDia);
+    }
+
+    public string RutaConsultaT0 => Path.Combine(_entorno.ContentRootPath, "Consultas", "AuditoriasT0.sql");
+
+    /// <summary>
+    /// Las auditorías con Tolerancia 0, con su alerta y su plan (primer resultado de la consulta), y los planes
+    /// creados cada día en <c>Legal.PlanAccion</c> (segundo resultado).
+    /// </summary>
+    private async Task<(IReadOnlyList<AuditoriaT0>, IReadOnlyDictionary<DateOnly, int>)> CargarT0Async(SqlConnection cn, int segundos, CancellationToken ct)
+    {
+        var sql = await File.ReadAllTextAsync(RutaConsultaT0, ct);
+        await using var cmd = new SqlCommand(sql, cn) { CommandTimeout = segundos };
+        await using var rd = await cmd.ExecuteReaderAsync(ct);
+
+        int O(string nombre) => rd.GetOrdinal(nombre);
+        int iFecha = O("Fecha"), iLegajo = O("legajo"), iSector = O("Sector"), iSuper = O("Super"), iTeam = O("Team"),
+            iAgente = O("Agente"), iGestion = O("IdGestion"), iLlamada = O("ID_Llamada"), iCorreo = O("CorreoAuditor"),
+            iAuditor = O("Nombre_Auditor"), iCargo = O("Cargo_Auditor"), iPlantilla = O("Plantilla"), iInfraccion = O("Infraccion"),
+            iNota = O("Respuesta"), iAlerta = O("IdAlerta"), iCruce = O("Cruce"), iReporte = O("FechaReporteT0"),
+            iGravedad = O("Gravedad"), iEstado = O("EstadoAlerta"), iAccion = O("Accion"), iIdAccion = O("ID_Accion"),
+            iGestionado = O("FechaGestionado"), iGestionador = O("Gestionador"), iCargoGest = O("CargoGestionador"),
+            iPlan = O("IdPlan"), iFechaPlan = O("FechaPlan"), iEstadoPlan = O("EstadoPlan"), iMotivo = O("MotivoPlan"),
+            iPlanCalidad = O("IdPlanCalidad"), iFechaPlanCalidad = O("FechaPlanCalidad");
+
+        DateTime? Momento(int i) => rd.IsDBNull(i) ? null : rd.GetDateTime(i);
+        long? Numero(int i) => rd.IsDBNull(i) ? null : Convert.ToInt64(rd.GetValue(i), CultureInfo.InvariantCulture);
+
+        var t0 = new List<AuditoriaT0>(4_000);
+        while (await rd.ReadAsync(ct))
+        {
+            if (rd.IsDBNull(iFecha) || Numero(iGestion) is not { } gestion) continue;
+            t0.Add(new AuditoriaT0(
+                DateOnly.FromDateTime(rd.GetDateTime(iFecha)),
+                Legajo(rd, iLegajo),
+                Texto(rd, iSector), Texto(rd, iSuper), Texto(rd, iTeam), Texto(rd, iAgente),
+                gestion,
+                Texto(rd, iLlamada), Texto(rd, iCorreo), Texto(rd, iAuditor), Texto(rd, iCargo),
+                Texto(rd, iPlantilla), Texto(rd, iInfraccion),
+                rd.IsDBNull(iNota) ? null : Convert.ToDouble(rd.GetValue(iNota), CultureInfo.InvariantCulture),
+                Numero(iAlerta), Texto(rd, iCruce), Momento(iReporte), Texto(rd, iGravedad), Texto(rd, iEstado),
+                Texto(rd, iAccion), Numero(iIdAccion), Momento(iGestionado), Texto(rd, iGestionador), Texto(rd, iCargoGest),
+                Numero(iPlan), Momento(iFechaPlan), Texto(rd, iEstadoPlan), Texto(rd, iMotivo),
+                Numero(iPlanCalidad), Momento(iFechaPlanCalidad)));
+        }
+
+        var planesPorDia = new Dictionary<DateOnly, int>();
+        if (await rd.NextResultAsync(ct))
+        {
+            int iDia = rd.GetOrdinal("Dia"), iPlanes = rd.GetOrdinal("Planes");
+            while (await rd.ReadAsync(ct))
+                if (!rd.IsDBNull(iDia))
+                    planesPorDia[DateOnly.FromDateTime(rd.GetDateTime(iDia))] = Convert.ToInt32(rd.GetValue(iPlanes), CultureInfo.InvariantCulture);
+        }
+
+        return (t0, planesPorDia);
     }
 
     public string RutaConsultaNomina => Path.Combine(_entorno.ContentRootPath, "Consultas", "Nomina.sql");

@@ -1,4 +1,4 @@
-using CDM_Auditorias_Calidad.Infraestructura;
+﻿using CDM_Auditorias_Calidad.Infraestructura;
 using CDM_Auditorias_Calidad.Models;
 using CDM_Auditorias_Calidad.Servicios.Configuracion;
 
@@ -106,7 +106,7 @@ public static class CalculadoraTablero
 
         // --- Gráficos -----------------------------------------------------------------------
 
-        var evolucion = Serie(contexto, vista);
+        var evolucion = Serie(contexto, a => a.Fecha, Media, vista);
 
         var sectoresMarcados = elegidos["sector"];
         var sectores = contexto
@@ -131,7 +131,7 @@ public static class CalculadoraTablero
 
         // --- Opciones de los filtros (se filtran entre sí, como los segmentadores) -----------
 
-        var grupos = new List<GrupoFiltro> { GrupoMes(conColumnas, desde, hasta, meses) };
+        var grupos = new List<GrupoFiltro> { GrupoMes(conColumnas.Select(a => a.Fecha), desde, hasta, meses) };
         foreach (var d in Dimensiones)
         {
             var cuenta = filasPagina
@@ -366,59 +366,64 @@ public static class CalculadoraTablero
         return n > 0 ? suma / n : null;
     }
 
-    private static DateOnly Acotar(DateOnly f, DateOnly min, DateOnly max) => f < min ? min : f > max ? max : f;
+    internal static DateOnly Acotar(DateOnly f, DateOnly min, DateOnly max) => f < min ? min : f > max ? max : f;
 
-    private static List<PuntoSerie> Serie(List<Auditoria> contexto, Vista vista)
+    /// <summary>
+    /// Un punto por día, semana o mes con el número de filas y su <paramref name="valor"/> (la nota en
+    /// General; el % con plan de acción en «T0 y planes de acción»).
+    /// </summary>
+    internal static List<PuntoSerie> Serie<T>(IReadOnlyCollection<T> filas, Func<T, DateOnly> fecha, Func<IEnumerable<T>, double?> valor, Vista vista)
     {
-        var años = contexto.Select(a => a.Fecha.Year).Distinct().Count();
+        var años = filas.Select(a => fecha(a).Year).Distinct().Count();
 
         switch (vista)
         {
             case Vista.Dia:
-                return contexto
-                    .GroupBy(a => a.Fecha)
+                return filas
+                    .GroupBy(fecha)
                     .OrderBy(g => g.Key)
                     .Select(g => new PuntoSerie(
                         Formato.FechaCorta(g.Key),
                         Formato.Mayuscula(g.Key.ToString("dddd dd/MM/yyyy", Formato.Es)),
-                        g.Count(), Media(g)))
+                        g.Count(), valor(g)))
                     .ToList();
 
             case Vista.Semana:
-                return contexto
-                    .GroupBy(a => (a.Fecha.Year, Semana: Periodos.Semana(a.Fecha)))
+                return filas
+                    .GroupBy(a => (fecha(a).Year, Semana: Periodos.Semana(fecha(a))))
                     .OrderBy(g => g.Key.Year).ThenBy(g => g.Key.Semana)
                     .Select(g =>
                     {
-                        var lunes = Periodos.Lunes(g.Min(a => a.Fecha));
+                        var lunes = Periodos.Lunes(g.Min(fecha));
                         var etiqueta = años > 1 ? $"{g.Key.Semana}/{g.Key.Year % 100:D2}" : g.Key.Semana.ToString(Formato.Es);
                         return new PuntoSerie(etiqueta,
                             $"Semana {g.Key.Semana} de {g.Key.Year} ({Formato.FechaCorta(lunes)} – {Formato.FechaCorta(lunes.AddDays(6))})",
-                            g.Count(), Media(g));
+                            g.Count(), valor(g));
                     })
                     .ToList();
 
             default:
-                return contexto
-                    .GroupBy(a => (a.Fecha.Year, a.Fecha.Month))
+                return filas
+                    .GroupBy(a => (fecha(a).Year, fecha(a).Month))
                     .OrderBy(g => g.Key.Year).ThenBy(g => g.Key.Month)
                     .Select(g =>
                     {
                         var corto = Formato.MesCorto(g.Key.Year, g.Key.Month);
                         return new PuntoSerie(años > 1 ? $"{corto} {g.Key.Year % 100:D2}" : corto,
-                            Formato.MesLargo(g.Key.Year, g.Key.Month), g.Count(), Media(g));
+                            Formato.MesLargo(g.Key.Year, g.Key.Month), g.Count(), valor(g));
                     })
                     .ToList();
         }
     }
 
-    private static GrupoFiltro GrupoMes(List<Auditoria> conColumnas, DateOnly desde, DateOnly hasta, HashSet<string> meses)
+    /// <param name="fechasConColumnas">Las fechas de las filas que pasan los filtros de columna (una por fila).</param>
+    internal static GrupoFiltro GrupoMes(IEnumerable<DateOnly> fechasConColumnas, DateOnly desde, DateOnly hasta, HashSet<string> meses)
     {
         // El segmentador de Mes es del calendario: lo filtra el de fecha, no los de columna.
         // La cifra de cada mes es la de auditorías con los demás filtros.
-        var cuenta = conColumnas
-            .Where(a => a.Fecha >= desde && a.Fecha <= hasta)
-            .GroupBy(a => ClaveMes(a.Fecha))
+        var cuenta = fechasConColumnas
+            .Where(f => f >= desde && f <= hasta)
+            .GroupBy(ClaveMes)
             .ToDictionary(g => g.Key, g => g.Count());
 
         var opciones = new List<OpcionFiltro>();
@@ -436,7 +441,7 @@ public static class CalculadoraTablero
         return new GrupoFiltro("mes", "Mes", opciones);
     }
 
-    private static GrupoFiltro Grupo(string campo, string titulo, Dictionary<string, int> cuenta, HashSet<string> elegidos)
+    internal static GrupoFiltro Grupo(string campo, string titulo, Dictionary<string, int> cuenta, HashSet<string> elegidos)
     {
         // Las elegidas se ven siempre, aunque otro filtro las deje sin auditorías, para poder quitarlas.
         foreach (var e in elegidos) cuenta.TryAdd(e, 0);

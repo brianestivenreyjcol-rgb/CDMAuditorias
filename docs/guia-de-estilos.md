@@ -555,3 +555,13 @@ con `[data-recargar-en="5"]` mientras se analiza. No hay variables ni clases nue
   meses ensanchaba la página a 526 px.
 - Metas: en % si todas las de la fila caben en ±150 %; si no, la cifra (TMO, horas, notas). «Sin peso» en la columna del peso.
 
+
+### 9.15 T0 y planes de acción (`/t0`, 08-10-2026)
+
+Tercera pestaña de Auditorías (`Views/Tablero/_ContenidoT0.cshtml`, debajo de la tira de 5 indicadores de siempre) hecha con piezas que ya
+existían: `.aviso` (hueco de PlanAccion), `.crono-tarjeta` con `_LineasGaia` (% con plan, auditorías T0 en columnas grises detrás),
+`.hbarras.libre` con `.sub-ns.envuelve` y los tonos `.tono-bueno` / `.tono-neutro` / `.tono-atencion` / `.tono-critico` por situación,
+`table.ranking[data-mapa]` (sector y team, con `a.nombre-fila[data-parcial]` para filtrar, `td.barra-volumen` y TOTAL al pie), `.chip` con el
+semáforo pastel en la situación del detalle y `.pastilla-dato` con el legajo, y `ul.lista-ns`. La barra de cobertura de las tarjetas
+(`.resumen-cobertura`) lleva ahora el título de su tarjeta como `aria-label`. No hay variables ni clases nuevas.
+

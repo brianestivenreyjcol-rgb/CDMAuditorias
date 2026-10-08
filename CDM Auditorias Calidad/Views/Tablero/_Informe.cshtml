@@ -5,7 +5,7 @@
     var f = Model.Filtros;
     var url = "/" + Model.Pagina.Clave;
     (Vista Vista, string Texto)[] vistas = [(Vista.Dia, "Día"), (Vista.Semana, "Semana"), (Vista.Mes, "Mes")];
-    (string Clave, string Texto)[] paginas = [(PaginaTablero.ClaveGeneral, "General"), (PaginaTablero.ClaveFormacion, "Formación & Calidad")];
+    (string Clave, string Texto)[] paginas = [(PaginaTablero.ClaveGeneral, "General"), (PaginaTablero.ClaveFormacion, "Formación & Calidad"), (PaginaTablero.ClaveT0, "T0 y planes de acción")];
     var porVista = Model.Vista switch { Vista.Dia => "día", Vista.Semana => "semana", _ => "mes" };
 }
 <div id="informe" data-titulo="@Model.Pagina.Titulo · CDM Auditorías Calidad" data-miga="@Model.Pagina.Titulo">
@@ -48,7 +48,7 @@
                         @if (t.Progreso is { } progreso)
                         {
                             <span class="resumen-cobertura">
-                                <span class="resumen-cobertura-pista" role="progressbar" aria-label="Agentes auditados"
+                                <span class="resumen-cobertura-pista" role="progressbar" aria-label="@t.Titulo"
                                       aria-valuemin="0" aria-valuemax="100" aria-valuenow="@Formato.Coord(progreso * 100)">
                                     <span class="resumen-cobertura-relleno" style="width:@(Formato.Coord(Math.Clamp(progreso, 0, 1) * 100))%"></span>
                                 </span>
@@ -69,6 +69,12 @@
                 }
             </section>
 
+            @if (Model.T0 is not null)
+            {
+                <partial name="_ContenidoT0" model="Model" />
+            }
+            else
+            {
             @* Las dos gráficas por tiempo, a todo el ancho: así cada columna y cada punto cabe con su valor en una pastilla. *@
             <section class="tarjeta crono-tarjeta">
                 <header class="tarjeta-cabecera">
@@ -101,6 +107,7 @@
                     <partial name="Graficos/_TopAuditores" model="Model" />
                 </section>
             </div>
+            }
         </main>
     </div>
     </div>
