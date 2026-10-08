@@ -1,4 +1,4 @@
-# T0 y planes de acción (`/t0`, 08-10-2026, sin publicar)
+# T0 y planes de acción (`/t0`, 08-10-2026, publicado en el 5180 el mismo día)
 
 > Parte del contexto de CDM Auditorías Calidad: el resumen está en `CONTEXTO_IA.md` (raíz del proyecto).
 
@@ -61,4 +61,3 @@ WHATSAPP YGMM TÉCNICO y ATENCIÓN YGMM.
 
 - Que el usuario confirme si «Agente dado de baja» y «Registro de Falta» cuentan como cumplir la regla (hoy no).
 - Que pidan recargar `Legal.PlanAccion` (hueco del 14-07 al 30-09-2026).
-- Publicar en el 5180 cuando lo pida.

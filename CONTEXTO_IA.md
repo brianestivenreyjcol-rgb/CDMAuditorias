@@ -13,7 +13,7 @@
   ranking-mvc (son dos copias independientes del motor).
 - Desde el 07-10-2026, **Rellamada y No solución por sector** (`/sectores`): la cifra mensual de cada sector de Bogotá;
   YGMM de BigQuery (tabla corporativa) y Jazztel, Orange y WhatsApp de SQL Server (consultas del usuario). Ver `docs/contexto/sectores.md`.
-- Desde el 08-10-2026, **T0 y planes de acción** (`/t0`, tercera pestaña de Auditorías, **sin publicar**): cada auditoría ICEBERG con
+- Desde el 08-10-2026, **T0 y planes de acción** (`/t0`, tercera pestaña de Auditorías, **publicado en el 5180 el 08-10-2026**): cada auditoría ICEBERG con
   «Tolerancia 0» frente a su alerta T0 (`RecursosHumanos.Legal.Alertas_T0`) y su plan (`Legal.PlanAccion`; «Acción de Calidad» es el
   motivo 1020). Ver `docs/contexto/t0-planes.md`.
 - Desde el 07-10-2026, **Pesos y metas por sector** (`/pesos`): los KPI, pesos y metas de los Excel de ranking de incentivos de cada mes
@@ -46,7 +46,7 @@
 ## Producción y pruebas (una sola dirección: el 5180)
 
 - `http://10.148.223.143:5180` (compañeros) = `http://localhost:5180`: ventana «CDM Auditorias Calidad
-  (5180)» que abre `arrancar.cmd` sobre `publicacion\app`. Al día desde el **07-10-2026** (GAIA, rediseño, Ranking y Estilo, Motivo de contacto, tablas y gráficas y Rellamada y No solución por sector).
+  (5180)» que abre `arrancar.cmd` sobre `publicacion\app`. Al día desde el **08-10-2026** (lo anterior más T0 y planes de acción).
 - **Publicar** (solo si el usuario lo pide): cerrar esa ventana → `cmd /c "C:\Proyectos\CDM Auditorias
   Calidad\publicar.cmd"` → `arrancar.cmd` con ruta completa. Si cambia el formato del cubo de No
   solución o de la caché de GAIA (`DatosGaia.VersionActual`), copiar antes la caché de `App_Data` a
@@ -94,7 +94,7 @@
 - **Por sector** (`/sectores`, **publicado en el 5180 el 07-10-2026**): sectores de YGMM confirmados; Técnico Convergente
   Orange y la no solución de WhatsApp (desde sep-2026) añadidos el 07-10-2026, **sin publicar** todavía. Siguiente: más KPIs (productividad, reitero, retención): lo investigado está en `docs/contexto/kpis-servicios.md` (aún no en la web).
 - **Pesos** (`/pesos`, **publicado en el 5180 el 07-10-2026**; solo la hoja principal de agentes de cada sector): ya lee los .xlsb; si el usuario lo pide, comparar los pesos con el mes anterior.
-- **T0 y planes** (`/t0`, sin publicar): que el usuario diga si «Registro de Falta» y «Agente dado de baja» cumplen la regla (hoy no)
+- **T0 y planes** (`/t0`, publicado el 08-10-2026): que el usuario diga si «Registro de Falta» y «Agente dado de baja» cumplen la regla (hoy no)
   y que pidan recargar `Legal.PlanAccion`.
 - Detalle de todo esto: `docs/contexto/pendientes.md`.
 
