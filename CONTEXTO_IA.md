@@ -19,8 +19,12 @@
 - Desde el 07-10-2026, **Pesos y metas por sector** (`/pesos`): los KPI, pesos y metas de los Excel de ranking de incentivos de cada mes
   (la versión más reciente de cada sector) con un botón «Analizar y validar». Ver `docs/contexto/pesos.md`.
 - Proyecto: `C:\Proyectos\CDM Auditorias Calidad\` (`CDM Auditorias Calidad.sln`: web + pruebas).
-- GitHub privado `brianestivenreyjcol-rgb/CDMAuditorias`, rama `main` (commit y push tras cada tanda,
-  sin `.env`, `publicacion\`, capturas ni cachés). Si pasara a público, quitar antes lo interno.
+- GitHub `brianestivenreyjcol-rgb/CDMAuditorias` (público el 09-10-2026), rama `main`. **Regla del usuario (09-10-2026): cada
+  modificación se sube aquí** (commit y push, sin `.env`, `publicacion\`, capturas ni cachés), **y lo de Auditorías (General,
+  Formación & Calidad, T0), CDM No solución y GAIA Formación también a `brianestivenreyjcol-rgb/Entrega`** (público, rama `main`):
+  la entrega al otro equipo, solo con esos tres informes y el mismo aspecto. Las piezas comunes (`site.css`, `site.js`,
+  `Views/Shared`, guía) van también a Entrega; lo de Sectores y Pesos, nunca. Entrega no comparte historial: se clona, se aplica
+  el cambio, se prueba y se sube.
 - Aspecto: `docs/guia-de-estilos.md` (SOLARIS · GAIA + sección 9, lo de esta web). Para el front está
   la skill y el agente **`frontend-solaris`** (copias para compartir en `docs/compartir/`); si la guía
   cambia, recopiarla en la skill y regenerar el `.skill`.
