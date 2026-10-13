@@ -75,7 +75,7 @@
   el 05-10-2026, «CDM No solución»; «Formación &
   Calidad» se abre desde las pestañas del informe. **Desde el 13-10-2026** (pedido del usuario) la portada son dos tarjetas
   de grupo: **General** (`/informes`: Auditorías, CDM No solución y GAIA Formación, abierto) y **Personal** (`/personal`: por
-  sector y Pesos y metas) con contraseña. La contraseña es `CLAVE_PERSONAL` del `.env` (1234, la eligió el usuario; no va en el
+  sector y Pesos y metas) con contraseña. La contraseña es `CLAVE_PERSONAL` del `.env` (la eligió el usuario; no va en el
   repo, que es público); al acertarla se da una cookie cifrada (Data Protection) que vale 12 h y que caduca si cambia la
   contraseña; 5 fallos seguidos desde una IP la hacen esperar 5 min. `[AccesoPersonal]` cierra `/personal`, todo `/sectores` y
   todo `/pesos` (también sus CSV y botones), así que no se entra escribiendo la dirección. En el grupo General la tarjeta de
