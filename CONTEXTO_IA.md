@@ -15,8 +15,8 @@
   YGMM de BigQuery (tabla corporativa) y Jazztel, Orange y WhatsApp de SQL Server (consultas del usuario). Ver `docs/contexto/sectores.md`.
 - Desde el 08-10-2026, **T0 y planes de acción** (`/t0`, tercera pestaña de Auditorías): desde el 13-10-2026, **por técnico de calidad /
   auditor**: sus auditorías, las que tienen T0 (ICEBERG «Tolerancia 0») y cuántas están en **`[Reporting].[pdc].[Reportar_T0]`**, la única
-  tabla de T0 que se usa (pedido del usuario; ya no `Alertas_T0` ni `PlanAccion`). La versión del 13-10 **no está publicada** (en el 5180 sigue
-  la del 08-10). Ver `docs/contexto/t0-planes.md`.
+  tabla de T0 que se usa (pedido del usuario; ya no `Alertas_T0` ni `PlanAccion`). **Publicada en el 5180 el 13-10-2026.** Ver
+  `docs/contexto/t0-planes.md`.
 - Desde el 07-10-2026, **Pesos y metas por sector** (`/pesos`): los KPI, pesos y metas de los Excel de ranking de incentivos de cada mes
   (la versión más reciente de cada sector) con un botón «Analizar y validar». Ver `docs/contexto/pesos.md`.
 - Proyecto: `C:\Proyectos\CDM Auditorias Calidad\` (`CDM Auditorias Calidad.sln`: web + pruebas).
@@ -101,8 +101,8 @@
 - **Por sector** (`/sectores`, **publicado en el 5180 el 07-10-2026**): sectores de YGMM confirmados; Técnico Convergente
   Orange y la no solución de WhatsApp (desde sep-2026) añadidos el 07-10-2026, **sin publicar** todavía. Siguiente: más KPIs (productividad, reitero, retención): lo investigado está en `docs/contexto/kpis-servicios.md` (aún no en la web).
 - **Pesos** (`/pesos`, **publicado en el 5180 el 07-10-2026**; solo la hoja principal de agentes de cada sector): ya lee los .xlsb; si el usuario lo pide, comparar los pesos con el mes anterior.
-- **T0 y planes** (`/t0`): publicar la versión por auditor (13-10-2026) cuando lo pida; que diga si «Registro de Falta» y «Agente dado de baja»
-  cuentan como plan (hoy no).
+- **T0 y planes** (`/t0`, por auditor, publicado el 13-10-2026): que el usuario diga si «Registro de Falta» y «Agente dado de baja» cuentan como
+  plan (hoy no).
 - Detalle de todo esto: `docs/contexto/pendientes.md`.
 
 ## Dónde está el detalle (`docs/contexto/`)
