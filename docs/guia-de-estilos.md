@@ -582,3 +582,15 @@ con la anterior; la última va siempre y, si pisa, se quita la anterior (nunca l
 caben todas, van todas. Medido el 09-10-2026: General y Formación sin choques de 1.280 px en adelante (en Mes, los cuatro meses); al ancho
 mínimo (1.120 px) y en móvil alguna se roza. En GAIA → Rendimiento y en No solución bajaron los choques (13 → 8 y 21 → 10 a 1.280 px): los
 que quedan son de dos series en el mismo punto. Pruebas en `RotuladosTests`.
+
+### 9.17 Portada en dos grupos: General y Personal con contraseña (13-10-2026)
+
+Pedido del usuario: la portada (`/`) ya no lleva las cinco tarjetas de informe sino **dos tarjetas de grupo** con el mismo molde `.modulo`
+en `.modulos.grupos` (dos columnas; una en móvil): **General** (`/informes`, icono `cuadricula`: Auditorías, CDM No solución y GAIA
+Formación, abierto) y **Personal** (`/personal`, icono `candado` / `candado-abierto`: por sector y Pesos y metas, con contraseña). El pie de
+General dice cuántos de sus tres informes tienen datos; el de Personal, si este navegador ya tiene el pase. Las páginas de cada grupo usan la
+misma portada con las tarjetas de informe de antes (la de Auditorías se titula «Auditorías», no «General», para no repetir el nombre del
+grupo) y llevan las **migas en el sitio del antetítulo** (`.migas.portada-migas`: «Inicio › General»). La contraseña va en
+`/personal/entrar`: tarjeta `.acceso` (máx. 420 px) con la etiqueta, el campo de `.buscar-ns-campo` con el candado, el error en `.acceso-error`
+(`--malo`) y abajo `.enlace` «Volver al inicio» y `.boton-aplicar` «Entrar». En `/personal`, «Cerrar Personal» (`.boton-secundario.pequeno`
+dentro de `.portada-accion`) borra el pase. En los informes, el logotipo de la cabecera vuelve a su grupo (`ViewData["Volver"]`), no a la portada.

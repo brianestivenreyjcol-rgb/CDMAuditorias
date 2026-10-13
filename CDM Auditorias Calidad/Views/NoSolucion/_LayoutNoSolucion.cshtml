@@ -8,6 +8,7 @@
     ViewData["Marca"] = MarcaDePagina(Model.Filtros?.Marca);
     ViewData["Area"] = "No solución";
     ViewData["Migas"] = new[] { "No solución", PaginaNoSolucion.Texto(Model.Pestana) };
+    ViewData["Volver"] = "/informes"; // El logotipo vuelve a su grupo de la portada.
     var cabecera = new CabeceraModelo("CDM No solución", "Bogotá · Call · YOIGO, MASMOVIL, JAZZTEL y ORANGE");
 }
 <partial name="_Cabecera" model="cabecera" />

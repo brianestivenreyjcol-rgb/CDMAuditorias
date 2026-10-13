@@ -27,7 +27,7 @@ C:\Proyectos\CDM Auditorias Calidad\
 │  ├─ Datos\impedimentos_tabla.json ← No solución: etiquetas de impedimento → categorías (fija)
 │  ├─ App_Data\                   ← (sin versionar) caché de No solución en desarrollo (~60 MB)
 │  ├─ Controllers\
-│  │  ├─ HomeController.cs        ← "/" portada (Menú) y "/error"
+│  │  ├─ HomeController.cs        ← "/" portada (dos grupos), "/informes" (General), "/personal" (+ /entrar, /salir) y "/error"
 │  │  ├─ TableroController.cs     ← "/general", "/formacion", "/{pagina}/descargar", POST "/datos/recargar"
 │  │  └─ NoSolucionController.cs  ← "/nosolucion" (+ /equipos, /motivos, /internet), los CSV y POST "/nosolucion/actualizar"
 │  ├─ Models\                     ← Auditoria y RegistroNomina (filas), InstantaneaAuditorias,
@@ -47,7 +47,8 @@ C:\Proyectos\CDM Auditorias Calidad\
 │  │  └─ Comun\                   ← (de ranking-mvc) FormatoPython, ExportacionCsv, Errores
 │  ├─ Views\
 │  │  ├─ Shared\_Layout, _Cabecera ← documento base (data-marca, tema.js) y cabecera común
-│  │  ├─ Home\Index.cshtml        ← portada (solo «General»)
+│  │  ├─ Home\Index.cshtml        ← portada: tarjetas de grupo General y Personal (13-10-2026)
+│  │  ├─ Home\General, Personal   ← las tarjetas de informe de cada grupo; Home\Entrar, la contraseña de Personal
 │  │  ├─ Tablero\Index            ← cabecera + _Informe
 │  │  ├─ Tablero\_Informe         ← lo que se sustituye al filtrar: pestañas, panel, tira, rejillas
 │  │  ├─ Tablero\_PanelFiltros, _ErrorDatos (_Desplegable está en Shared: lo usan los dos informes)

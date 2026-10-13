@@ -8,6 +8,7 @@
     ViewData["Marca"] = MarcaDePagina(Model.Filtros?.Peticion.Marca);
     ViewData["Area"] = "GAIA";
     ViewData["Migas"] = new[] { "GAIA Formación", PaginaGaia.Titulo(Model.Pestana) };
+    ViewData["Volver"] = "/informes"; // El logotipo vuelve a su grupo de la portada.
     var cabecera = new CabeceraModelo("GAIA Formación", "Agentes en formación · preconexión y aseguramiento");
 }
 <partial name="_Cabecera" model="cabecera" />

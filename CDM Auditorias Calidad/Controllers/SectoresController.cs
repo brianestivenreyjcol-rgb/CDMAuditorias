@@ -1,5 +1,6 @@
 using System.Globalization;
 using CDM_Auditorias_Calidad.Models.Sectores;
+using CDM_Auditorias_Calidad.Servicios.Acceso;
 using CDM_Auditorias_Calidad.Servicios.Comun;
 using CDM_Auditorias_Calidad.Servicios.Sectores;
 using Microsoft.AspNetCore.Mvc;
@@ -14,6 +15,7 @@ namespace CDM_Auditorias_Calidad.Controllers;
 /// Como en No solución y GAIA, con la cabecera <c>X-Parcial: 1</c> (la manda site.js) cada pestaña devuelve solo
 /// <c>#informe</c>.
 /// </remarks>
+[AccesoPersonal] // Grupo «Personal» de la portada: con contraseña (13-10-2026).
 [Route(PaginaSectores.RutaBase)]
 public sealed class SectoresController : Controller
 {

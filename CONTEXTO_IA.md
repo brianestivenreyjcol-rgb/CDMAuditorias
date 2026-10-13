@@ -45,6 +45,7 @@
   caché pequeña `cache_sectores.json` (v1), se renueva cada 6 h. **De GAMMA no se saca nada** aquí (lo dijo el usuario).
 - Pesos: los Excel de `\\172.16.232.102\incentivos\INCENTIVOS JAZZPLAT\<año>\<NN. MES>\01. RANKING` (unidad `Y:` del usuario); se
   leen las 40 primeras filas de cada hoja con OpenXML (y los .xlsb con `LectorXlsb`). Caché `cache_pesos.json` (v2). Hojas extra en `Pesos:HojasExtra`.
+- Contraseña del grupo «Personal» de la portada: `CLAVE_PERSONAL` en los mismos dos `.env` (13-10-2026; sin ella, Personal queda cerrado).
 - Credenciales en `CDM Auditorias Calidad\.env` y `publicacion\.env` (login personal del usuario;
   nunca decirlas en el chat).
 
@@ -67,7 +68,10 @@
 - Variación de «Total auditorías» y de la nota: frente al mismo tiempo justo antes (no el DATEADD del PBI).
 - General y Formación & Calidad: «Evolución de auditorías» y «Nota promedio de calidad» **en paralelo** (09-10-2026; antes a todo el
   ancho). Las pastillas que no caben sin pisarse no se rotulan (guía 9.16 en CDMAuditorias, 9.15 en Entrega).
-- Filtros que se aplican al marcar, con el desplegable abierto; portada con «General» y «CDM No solución».
+- Filtros que se aplican al marcar, con el desplegable abierto.
+- **Portada en dos grupos** (13-10-2026): **General** (`/informes`: Auditorías, CDM No solución y GAIA Formación), abierto, y
+  **Personal** (`/personal`: por sector y Pesos y metas) con contraseña (`CLAVE_PERSONAL` del `.env`, pase de 12 h). `/sectores` y
+  `/pesos` también piden la contraseña. Detalle en `decisiones.md` (Portada) y guía 9.17.
 - «Total agentes» = nómina (Agente, Agente en Capacitacion, Aprendiz Sena Etapa Productiva) vs. auditados.
 - No solución, «Sin acceso a internet»: **una causa por llamada** (proceso, proceso con fallos de
   atención, atención, cliente, sin causa) con las reglas del proceso de soporte de YGMM

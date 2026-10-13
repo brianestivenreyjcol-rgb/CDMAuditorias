@@ -1,0 +1,43 @@
+@model EntrarModelo
+@* La contraseña del grupo «Personal» (13-10-2026). Al acertarla, HomeController da el pase (cookie de 12 h) y vuelve a la
+   dirección que se pidió (Model.Volver: /personal, o el informe de Sectores o Pesos al que se quería entrar). *@
+@{
+    ViewData["Title"] = "Personal · contraseña";
+    ViewData["Marca"] = "portada";
+}
+<partial name="_Cabecera" model="new CabeceraModelo()" />
+
+<main class="portada">
+    <section class="portada-hero">
+        <div class="portada-marca" aria-hidden="true">
+            @Iconos.Logotipo()
+            <span class="portada-marca-texto"><b>CDM</b><span>Auditorías</span></span>
+        </div>
+        <div class="portada-hero-texto">
+            <nav class="migas portada-migas" aria-label="Migas de pan">
+                <a href="/">Inicio</a><span class="miga-sep" aria-hidden="true">›</span><span class="miga-actual" aria-current="page">Personal</span>
+            </nav>
+            <h1 class="portada-titulo">Personal</h1>
+            <p class="portada-lema">Estos informes piden contraseña. Se escribe una vez y vale 12 h en este navegador.</p>
+        </div>
+    </section>
+
+    <form method="post" action="/personal/entrar" class="acceso">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="volver" value="@Model.Volver" />
+        <label for="clave">Contraseña</label>
+        <span class="buscar-ns-campo">
+            @Iconos.Svg("candado")
+            <input id="clave" name="clave" type="password" autocomplete="current-password" required autofocus
+                   aria-invalid="@(Model.Error is not null ? "true" : null)" aria-describedby="@(Model.Error is not null ? "acceso-error" : null)" />
+        </span>
+        @if (Model.Error is not null)
+        {
+            <p class="acceso-error" id="acceso-error" role="alert">@Model.Error</p>
+        }
+        <div class="acceso-acciones">
+            <a class="enlace" href="/">Volver al inicio</a>
+            <button type="submit" class="boton-aplicar">Entrar</button>
+        </div>
+    </form>
+</main>

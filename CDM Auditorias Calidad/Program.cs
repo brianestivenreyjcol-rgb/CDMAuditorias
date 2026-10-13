@@ -1,4 +1,5 @@
 using System.Globalization;
+using CDM_Auditorias_Calidad.Servicios.Acceso;
 using CDM_Auditorias_Calidad.Servicios.Configuracion;
 using CDM_Auditorias_Calidad.Servicios.Datos;
 using CDM_Auditorias_Calidad.Servicios.Gaia;
@@ -37,6 +38,9 @@ builder.Services.AddHostedService<RevisionSectores>();
 // Pesos y metas por sector: los bloques de objetivos de los Excel de ranking de incentivos (carpeta compartida).
 builder.Services.Configure<OpcionesPesos>(builder.Configuration.GetSection(OpcionesPesos.Seccion));
 builder.Services.AddSingleton<ServicioPesos>();
+
+// Portada en dos grupos: «General», abierto, y «Personal» (por sector y Pesos), con la contraseña CLAVE_PERSONAL del .env.
+builder.Services.AddSingleton<AccesoPersonal>();
 
 var app = builder.Build();
 

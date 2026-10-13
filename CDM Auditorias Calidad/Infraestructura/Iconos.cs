@@ -48,6 +48,10 @@ public static class Iconos
         ["izquierda"] = """<path d="m15 18-6-6 6-6"/>""",
         ["flecha"] = """<path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>""",
         ["cerrar"] = """<path d="M18 6 6 18"/><path d="m6 6 12 12"/>""",
+        // Portada en dos grupos: «General» (cuadrícula) y «Personal», con contraseña (candado cerrado o abierto).
+        ["cuadricula"] = """<rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/>""",
+        ["candado"] = """<rect width="18" height="11" x="3" y="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>""",
+        ["candado-abierto"] = """<rect width="18" height="11" x="3" y="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/>""",
     };
 
     /// <param name="clase">Clases CSS extra para el <c>&lt;svg&gt;</c>.</param>

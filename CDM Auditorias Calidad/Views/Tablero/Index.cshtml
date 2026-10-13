@@ -5,6 +5,7 @@
 @{
     ViewData["Area"] = "Auditorías";
     ViewData["Migas"] = new[] { "Auditorías", Model.Pagina.Titulo };
+    ViewData["Volver"] = "/informes"; // El logotipo vuelve a su grupo de la portada.
 }
 <partial name="_Cabecera" model="new CabeceraModelo(TableroModelo.TituloInforme, Model.Pagina.Titulo)" />
 <partial name="_Informe" model="Model" />

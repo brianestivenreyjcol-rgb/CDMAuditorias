@@ -1,0 +1,97 @@
+@model PersonalModelo
+@* Grupo «Personal» de la portada (/personal, 13-10-2026): por sector y Pesos y metas, con contraseña. Solo se llega con el
+   pase de /personal/entrar ([AccesoPersonal]); «Cerrar Personal» lo borra de este navegador. *@
+@{
+    ViewData["Title"] = "Personal";
+    ViewData["Marca"] = "portada";
+
+    // «Datos cargados a las 11:02» (con el día si no son de hoy).
+    string Cargados(DateTime cuando)
+        => cuando.Date == DateTime.Today ? "Datos cargados a las " + cuando.ToString("HH:mm", Formato.Es)
+           : "Datos cargados el " + cuando.ToString("dd/MM", Formato.Es) + " a las " + cuando.ToString("HH:mm", Formato.Es);
+
+    var sectoresCuando = Model.Sectores.Cargado;
+    var sectoresEnCurso = Model.Sectores.EnCurso;
+    var pesosCuando = Model.Pesos.Cargado;
+    var pesosEnCurso = Model.Pesos.EnCurso;
+}
+<partial name="_Cabecera" model="new CabeceraModelo()" />
+
+<main class="portada">
+    <section class="portada-hero">
+        <div class="portada-marca" aria-hidden="true">
+            @Iconos.Logotipo()
+            <span class="portada-marca-texto"><b>CDM</b><span>Auditorías</span></span>
+        </div>
+        <div class="portada-hero-texto">
+            <nav class="migas portada-migas" aria-label="Migas de pan">
+                <a href="/">Inicio</a><span class="miga-sep" aria-hidden="true">›</span><span class="miga-actual" aria-current="page">Personal</span>
+            </nav>
+            <h1 class="portada-titulo">Personal</h1>
+            <p class="portada-lema">Informes con contraseña: abiertos en este navegador durante 12 h.</p>
+            <form method="post" action="/personal/salir" class="portada-accion">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="boton-secundario pequeno">@Iconos.Svg("candado") Cerrar Personal</button>
+            </form>
+        </div>
+    </section>
+
+    <nav class="modulos" aria-label="Informes">
+        <a class="modulo" href="/sectores">
+            <div class="modulo-cab">
+                <span class="modulo-icono">@Iconos.Svg("personas")</span>
+                <span class="etiqueta">Informe</span>
+            </div>
+            <h2><small>CDM · Por sector</small>Rellamada y No solución</h2>
+            <p class="descripcion">La rellamada 72 h y la no solución de cada sector de Bogotá, mes a mes: YGMM, Jazztel, Orange y WhatsApp.</p>
+            <div class="modulo-pie">
+                <div class="modulo-pie-texto">
+                    @if (sectoresCuando is { } sc)
+                    {
+                        <span class="modulo-estado ok">@Cargados(sc)</span>
+                        <span class="detalle">Se renueva sola cada 6 h</span>
+                    }
+                    else if (sectoresEnCurso)
+                    {
+                        <span class="modulo-estado en-curso">Trayendo los datos…</span>
+                        <span class="detalle">Tarda unos segundos</span>
+                    }
+                    else
+                    {
+                        <span class="modulo-estado">Datos sin cargar</span>
+                        <span class="detalle">Se traen al abrir el informe</span>
+                    }
+                </div>
+                <span class="flecha">@Iconos.Svg("flecha")</span>
+            </div>
+        </a>
+        <a class="modulo" href="/pesos">
+            <div class="modulo-cab">
+                <span class="modulo-icono">@Iconos.Svg("diana")</span>
+                <span class="etiqueta">Informe</span>
+            </div>
+            <h2><small>Incentivos · Ranking</small>Pesos y metas</h2>
+            <p class="descripcion">Los KPI, pesos y metas de cada sector, leídos de los Excel de ranking del mes (la versión más reciente) y validados.</p>
+            <div class="modulo-pie">
+                <div class="modulo-pie-texto">
+                    @if (pesosEnCurso)
+                    {
+                        <span class="modulo-estado en-curso">Leyendo los Excel…</span>
+                        <span class="detalle">Tarda un par de minutos</span>
+                    }
+                    else if (pesosCuando is { } pc)
+                    {
+                        <span class="modulo-estado ok">Analizado @(pc.Date == DateTime.Today ? "a las " + pc.ToString("HH:mm", Formato.Es) : "el " + pc.ToString("dd/MM", Formato.Es))</span>
+                        <span class="detalle">Se vuelve a leer con «Analizar y validar»</span>
+                    }
+                    else
+                    {
+                        <span class="modulo-estado">Sin analizar</span>
+                        <span class="detalle">Se analiza al abrir el informe</span>
+                    }
+                </div>
+                <span class="flecha">@Iconos.Svg("flecha")</span>
+            </div>
+        </a>
+    </nav>
+</main>

@@ -1,5 +1,6 @@
 using System.Globalization;
 using CDM_Auditorias_Calidad.Models.Pesos;
+using CDM_Auditorias_Calidad.Servicios.Acceso;
 using CDM_Auditorias_Calidad.Servicios.Comun;
 using CDM_Auditorias_Calidad.Servicios.Pesos;
 using Microsoft.AspNetCore.Mvc;
@@ -10,6 +11,7 @@ namespace CDM_Auditorias_Calidad.Controllers;
 /// «Pesos y metas por sector»: los bloques de objetivos de los Excel de ranking de incentivos de cada mes, con su
 /// validación. «Analizar» vuelve a leer las carpetas; un mes que nunca se analizó se analiza solo al abrirlo.
 /// </summary>
+[AccesoPersonal] // Grupo «Personal» de la portada: con contraseña (13-10-2026).
 [Route(PaginaPesos.Ruta)]
 public sealed class PesosController : Controller
 {

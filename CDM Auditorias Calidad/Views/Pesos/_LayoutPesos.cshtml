@@ -7,6 +7,7 @@
     ViewData["Marca"] = "orange";
     ViewData["Area"] = "Pesos";
     ViewData["Migas"] = new[] { "Pesos y metas", Model.Mes is { } m ? PaginaPesos.TextoMes(m) : "Sin datos" };
+    ViewData["Volver"] = "/personal"; // El logotipo vuelve a su grupo de la portada.
     var cabecera = new CabeceraModelo("Pesos y metas por sector", "Los objetivos de los Excel de ranking de incentivos");
 }
 <partial name="_Cabecera" model="cabecera" />

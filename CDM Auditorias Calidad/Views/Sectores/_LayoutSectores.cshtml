@@ -8,6 +8,7 @@
     ViewData["Marca"] = Model.MarcaPagina;
     ViewData["Area"] = "Sectores";
     ViewData["Migas"] = new[] { "Por sector", Model.Indicador.Titulo };
+    ViewData["Volver"] = "/personal"; // El logotipo vuelve a su grupo de la portada.
     var cabecera = new CabeceraModelo(PaginaSectores.Titulo, "Cifra mensual de cada sector de Bogotá");
 }
 <partial name="_Cabecera" model="cabecera" />
